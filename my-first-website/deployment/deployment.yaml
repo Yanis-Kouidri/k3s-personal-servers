@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: my-first-website
+  name: my-first-website
+  namespace: portfolio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-first-website
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: my-first-website
+    spec:
+      containers:
+      - image: yaniskouidri/my-first-website
+        name: my-first-website
+
+        livenessProbe:
+          httpGet:
+            path: /Page_principale/page_principale.html
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /Page_principale/page_principale.html
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
