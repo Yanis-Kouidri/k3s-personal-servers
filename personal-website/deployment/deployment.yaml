@@ -17,6 +17,6 @@ spec:
         app: personal-website
     spec:
       containers:
-      - image: yaniskouidri/personal-website
+      - image: yaniskouidri/personal-website:0.3
         name: personal-website
         imagePullPolicy: Always

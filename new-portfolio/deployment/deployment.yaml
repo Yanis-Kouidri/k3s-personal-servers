@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: new-portfolio
+  name: new-portfolio
+  namespace: portfolio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: new-portfolio
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: new-portfolio
+    spec:
+      containers:
+      - image: yaniskouidri/new-portfolio:0.0.7
+        name: new-portfolio
+        imagePullPolicy: Always
+        env:
+          - name: REACT_APP_BASENAME
+            value: "/beta"
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "500Mi"

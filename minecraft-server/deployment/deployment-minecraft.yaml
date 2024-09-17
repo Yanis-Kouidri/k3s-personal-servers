@@ -15,10 +15,12 @@ spec:
     spec:
       containers:
       - name: minecraft-server
-        image: itzg/minecraft-server
-        env:
-        - name: EULA
-          value: "TRUE"
+        image: marctv/minecraft-papermc-server:latest
+        env: 
+        - name: PAPERMC_FLAGS
+          value: ''
+        - name: MEMORYSIZE
+          value: "1G"
         ports:
         - containerPort: 25565
         resources:
