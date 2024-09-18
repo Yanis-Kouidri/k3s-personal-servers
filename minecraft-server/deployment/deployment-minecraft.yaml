@@ -7,33 +7,25 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: minecraft-server
+      app: minecraft
   template:
     metadata:
       labels:
-        app: minecraft-server
+        app: minecraft
     spec:
       containers:
-      - name: minecraft-server
-        image: marctv/minecraft-papermc-server:latest
-        env: 
-        - name: PAPERMC_FLAGS
-          value: ''
-        - name: MEMORYSIZE
-          value: "1G"
+      - name: minecraft
+        image: itzg/minecraft-server
         ports:
         - containerPort: 25565
-        resources:
-          limits:
-            cpu: "1"
-            memory: "1Gi"
-          requests:
-            cpu: "0.5"
-            memory: "500Mi"
+        env:
+        - name: EULA
+          value: "TRUE"
         volumeMounts:
-        - name: minecraft-data
-          mountPath: /data
+        - mountPath: /data
+          name: minecraft-data
       volumes:
       - name: minecraft-data
         persistentVolumeClaim:
           claimName: minecraft-pvc
+

@@ -9,6 +9,6 @@ spec:
   accessModes:
     - ReadWriteMany
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: microk8s-hostpath
+  storageClassName: manual
   hostPath:
     path: /minecraft/data
