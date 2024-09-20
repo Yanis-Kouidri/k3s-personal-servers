@@ -10,4 +10,4 @@ spec:
     targetPort: 25565
     protocol: TCP
   selector:
-    app: minecraft-server
+    app: minecraft

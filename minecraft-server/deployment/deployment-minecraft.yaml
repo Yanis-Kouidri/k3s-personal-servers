@@ -16,6 +16,10 @@ spec:
       containers:
       - name: minecraft
         image: itzg/minecraft-server
+        resources:
+          limits:
+            cpu: "1.5"
+            memory: "1.5Gi"
         ports:
         - containerPort: 25565
         env:
@@ -28,4 +32,5 @@ spec:
       - name: minecraft-data
         persistentVolumeClaim:
           claimName: minecraft-pvc
+
 
