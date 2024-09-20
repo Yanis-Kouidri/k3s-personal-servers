@@ -26,11 +26,16 @@ spec:
           - configMapRef:
               name: minecraft-server-config
         volumeMounts:
-        - mountPath: /data
+        - mountPath: /data  # Volume de données pour Minecraft
           name: minecraft-data
+        - mountPath: /data/whitelist.json  # Montage de la whitelist
+          name: whitelist-volume
+          subPath: whitelist.json  # Monte uniquement le fichier whitelist.json
+
       volumes:
-      - name: minecraft-data
+      - name: minecraft-data  # Volume persistant pour les données Minecraft
         persistentVolumeClaim:
           claimName: minecraft-pvc
-
-
+      - name: whitelist-volume  # ConfigMap pour la whitelist
+        configMap:
+          name: minecraft-whitelist
