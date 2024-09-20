@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: minecraft-server-config
+  namespace: minecraft
+data:
+  EULA: "TRUE"
+  DIFFICULTY: "hard"
+  MODE: "creative"
+  MOTD: "Bienvenue sur mon serveur Minecraft!"
+  MAX_PLAYERS: "5"
+  ONLINE_MODE: "TRUE"
+  FORCE_GAMEMODE: "TRUE"
+
