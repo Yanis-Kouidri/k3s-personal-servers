@@ -5,6 +5,7 @@ metadata:
   namespace: minecraft
 data:
   EULA: "TRUE"
+  TYPE: "PAPER"
   DIFFICULTY: "hard"
   MODE: "creative"
   MOTD: "Bienvenue sur mon serveur Minecraft!"
@@ -12,3 +13,4 @@ data:
   ONLINE_MODE: "TRUE"
   FORCE_GAMEMODE: "TRUE"
   ENABLE_WHITELIST: "TRUE" 
+  PLUGINS: "https://dev.bukkit.org/projects/worldedit/files/latest"
