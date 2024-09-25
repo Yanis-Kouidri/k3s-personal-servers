@@ -1,3 +1,4 @@
+# This file contains all properties used my the Minecraft server
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -6,11 +7,15 @@ metadata:
 data:
   EULA: "TRUE"
   TYPE: "PAPER"
-  DIFFICULTY: "hard"
+  ENABLE_RCON: "TRUE"
+  BROADCAST_RCON_TO_OPS: "TRUE"
+  DIFFICULTY: "normal"
   MODE: "creative"
   MOTD: "Bienvenue sur mon serveur Minecraft!"
   MAX_PLAYERS: "5"
   ONLINE_MODE: "TRUE"
   FORCE_GAMEMODE: "TRUE"
   ENABLE_WHITELIST: "TRUE" 
-  PLUGINS: "https://dev.bukkit.org/projects/worldedit/files/latest"
+  PLUGINS: |
+    https://dev.bukkit.org/projects/worldedit/files/latest
+    https://download.luckperms.net/1556/bukkit/loader/LuckPerms-Bukkit-5.4.141.jar
