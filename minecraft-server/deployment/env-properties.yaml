@@ -19,3 +19,4 @@ data:
   PLUGINS: |
     https://dev.bukkit.org/projects/worldedit/files/latest
     https://download.luckperms.net/1556/bukkit/loader/LuckPerms-Bukkit-5.4.141.jar
+    https://dev.bukkit.org/projects/worldguard/files/latest
