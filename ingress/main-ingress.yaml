@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: personal-website-ingress
+  name: main-ingress
   namespace: portfolio
   annotations:
     kubernetes.io/ingress.class: "nginx"
@@ -14,8 +14,7 @@ spec:
     - hosts:
       - beta.kouidri.fr
       - www.kouidri.fr
-      - kouidri.fr
-      secretName: kouidri-tls
+      secretName: subdomain-kouidri-tls
   rules:
   - host: beta.kouidri.fr
     http:
@@ -28,16 +27,6 @@ spec:
             port:
               number: 80
   - host: www.kouidri.fr
-    http:
-      paths:
-      - pathType: Prefix
-        path: "/"
-        backend:
-          service:
-            name: personal-website-service
-            port:
-              number: 80
-  - host: kouidri.fr
     http:
       paths:
       - pathType: Prefix
