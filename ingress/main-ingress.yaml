@@ -12,8 +12,8 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-      - beta.kouidri.fr
       - www.kouidri.fr
+      - beta.kouidri.fr
       secretName: subdomain-kouidri-tls
   rules:
   - host: beta.kouidri.fr
