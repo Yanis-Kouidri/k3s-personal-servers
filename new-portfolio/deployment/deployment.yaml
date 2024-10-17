@@ -17,13 +17,10 @@ spec:
         app: new-portfolio
     spec:
       containers:
-      - image: yaniskouidri/new-portfolio:0.0.7
+      - image: yaniskouidri/new-portfolio:0.0.8-arm
         name: new-portfolio
         imagePullPolicy: Always
-        env:
-          - name: REACT_APP_BASENAME
-            value: "/beta"
         resources:
           limits:
             cpu: "500m"
-            memory: "500Mi"
+            memory: "1Gi"

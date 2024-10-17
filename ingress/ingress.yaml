@@ -12,10 +12,21 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
+      - beta.kouidri.fr
       - www.kouidri.fr
       - kouidri.fr
       secretName: kouidri-tls
   rules:
+  - host: beta.kouidri.fr
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: new-portfolio-service
+            port:
+              number: 80
   - host: www.kouidri.fr
     http:
       paths:
