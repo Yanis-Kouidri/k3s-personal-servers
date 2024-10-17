@@ -12,6 +12,7 @@ metadata:
     nginx.ingress.kubernetes.io/permanent-redirect-code: "301"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
     #cert-manager.io/cluster-issuer: "letsencrypt-staging"
+    cert-manager.io/private-key-algorithm: "ECDSA"
 spec:
   ingressClassName: nginx
   tls:
