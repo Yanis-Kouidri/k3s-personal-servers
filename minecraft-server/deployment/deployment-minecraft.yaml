@@ -7,14 +7,14 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: minecraft
+      app: minecraft-server
   template:
     metadata:
       labels:
-        app: minecraft
+        app: minecraft-server
     spec:
       containers:
-      - name: minecraft
+      - name: minecraft-server
         image: itzg/minecraft-server
         ports:
         - containerPort: 25565
