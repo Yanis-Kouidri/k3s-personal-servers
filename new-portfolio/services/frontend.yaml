@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: new-portfolio-service
+  name: portfolio-frontend-service
   namespace: portfolio
 spec:
   selector:
-    app: new-portfolio
+    app: portfolio-frontend
   ports:
     - protocol: TCP
       port: 80

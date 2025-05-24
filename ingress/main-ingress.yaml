@@ -25,9 +25,16 @@ spec:
         path: "/"
         backend:
           service:
-            name: new-portfolio-service
+            name: portfolio-frontend-service
             port:
               number: 80
+      - path: "/api/"
+        pathType: Prefix
+        backend:
+          service:
+            name: backend
+            port:
+              number: 3001
   - host: www.kouidri.fr
     http:
       paths:
