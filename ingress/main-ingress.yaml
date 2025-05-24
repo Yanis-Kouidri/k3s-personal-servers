@@ -21,14 +21,21 @@ spec:
   - host: beta.kouidri.fr
     http:
       paths:
-      - pathType: Prefix
-        path: "/"
+      - path: "/"
+        pathType: Prefix
         backend:
           service:
             name: portfolio-frontend-service
             port:
               number: 80
       - path: "/api/"
+        pathType: Prefix
+        backend:
+          service:
+            name: backend
+            port:
+              number: 3001
+      - path: "/data/"
         pathType: Prefix
         backend:
           service:
