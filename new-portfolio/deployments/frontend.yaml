@@ -17,9 +17,18 @@ spec:
         app: portfolio-frontend
     spec:
       containers:
-      - image: yaniskouidri/portfolio-frontend:0.1.5-arm
+      - image: yaniskouidri/portfolio-frontend:0.1.6-arm
         name: portfolio-frontend
         imagePullPolicy: Always
+        env:
+        - name: ASSET_DIR
+          value: /usr/share/nginx/html
+        - name: APP_PREFIX
+          value: PREFIX_
+        - name: PREFIX_BACKEND_URL
+          value: "http://localhost:3001"
+        - name: PREFIX_DOCS_ROUTE
+          value: "/data/docs"
         resources:
           limits:
             cpu: "500m"
