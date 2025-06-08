@@ -26,7 +26,7 @@ spec:
         - name: APP_PREFIX
           value: PREFIX_
         - name: PREFIX_BACKEND_URL
-          value: "http://localhost:3001"
+          value: "https://beta.kouidri.fr"
         - name: PREFIX_DOCS_ROUTE
           value: "/data/docs"
         resources:
