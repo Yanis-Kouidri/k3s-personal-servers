@@ -2,23 +2,23 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: portfolio-frontend
-  name: portfolio-frontend
+    app: frontend
+  name: frontend
   namespace: portfolio
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: portfolio-frontend
+      app: frontend
   strategy: {}
   template:
     metadata:
       labels:
-        app: portfolio-frontend
+        app: frontend
     spec:
       containers:
       - image: yaniskouidri/portfolio-frontend:0.1.6-arm
-        name: portfolio-frontend
+        name: frontend
         imagePullPolicy: Always
         env:
         - name: ASSET_DIR

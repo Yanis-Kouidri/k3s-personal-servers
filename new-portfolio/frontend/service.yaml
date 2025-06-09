@@ -5,7 +5,7 @@ metadata:
   namespace: portfolio
 spec:
   selector:
-    app: portfolio-frontend
+    app: frontend
   ports:
     - protocol: TCP
       port: 80
