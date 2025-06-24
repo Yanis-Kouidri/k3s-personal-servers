@@ -24,12 +24,12 @@ spec:
         - name: MONGO_INITDB_ROOT_USERNAME
           valueFrom:
             secretKeyRef:
-              name: portfolio-secrets
+              name: backend
               key: MONGODB_USERNAME
         - name: MONGO_INITDB_ROOT_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: portfolio-secrets
+              name: backend
               key: MONGODB_PASSWORD
         volumeMounts:
         - name: mongodb-data
