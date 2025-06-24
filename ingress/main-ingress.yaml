@@ -14,11 +14,10 @@ spec:
   tls:
     - hosts:
       - www.kouidri.fr
-      - beta.kouidri.fr
       - eportfolio.kouidri.fr
       secretName: subdomain-kouidri-tls
   rules:
-  - host: beta.kouidri.fr
+  - host: www.kouidri.fr
     http:
       paths:
       - path: "/"
@@ -42,16 +41,6 @@ spec:
             name: backend
             port:
               number: 3001
-  - host: www.kouidri.fr
-    http:
-      paths:
-      - pathType: Prefix
-        path: "/"
-        backend:
-          service:
-            name: personal-website-service
-            port:
-              number: 80
   - host: eportfolio.kouidri.fr
     http:
       paths:

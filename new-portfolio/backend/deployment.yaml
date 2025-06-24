@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: backend
-        image: yaniskouidri/portfolio-backend:0.1.2-arm
+        image: yaniskouidri/portfolio-backend:0.1.4-arm
         ports:
         - containerPort: 3001
         envFrom:
