@@ -15,10 +15,11 @@ spec:
       labels:
         app: backend
     spec:
+      # Use initContainer to give access to nobody (NodeJS user) to storage
       initContainers:
       - name: init-permissions
         image: busybox
-        command: ["sh", "-c", "chown -R 65534:65534 /app/data"]
+        command: ["sh", "-c", "chown -R nobody:nobody /app/data"]
         volumeMounts:
           - name: data-volume
             mountPath: /app/data
