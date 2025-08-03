@@ -17,7 +17,7 @@ spec:
         app: frontend
     spec:
       containers:
-      - image: yaniskouidri/portfolio-frontend:0.1.6-arm
+      - image: yaniskouidri/portfolio-frontend:0.1.7-arm
         name: frontend
         imagePullPolicy: Always
         env:
