@@ -18,5 +18,5 @@ data:
   ENABLE_WHITELIST: "TRUE" 
   PLUGINS: |
     https://dev.bukkit.org/projects/worldedit/files/latest
-    https://download.luckperms.net/1568/bukkit/loader/LuckPerms-Bukkit-5.4.151.jar
+    https://download.luckperms.net/1595/bukkit/loader/LuckPerms-Bukkit-5.5.10.jar
     https://dev.bukkit.org/projects/worldguard/files/latest
