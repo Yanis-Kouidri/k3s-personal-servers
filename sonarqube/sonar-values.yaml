@@ -1,0 +1,46 @@
+postgresql:
+  enabled: false
+
+## Override JDBC values
+## for external Databases
+jdbcOverwrite:
+  enabled: true
+  jdbcUrl: "jdbc:postgresql://sonar-postgres-postgresql.sonarqube.svc.cluster.local:5432/sonar"
+  jdbcUsername: "sonar"
+  jdbcSecretName: "sonarqube-postgres-secret"
+  jdbcSecretPasswordKey: "password"
+
+monitoringPasscode: "admin"
+
+community:
+  enabled: true
+
+resources:
+  requests:
+    memory: "2Gi"
+    cpu: "500m"
+  limits:
+    memory: "3Gi"
+    cpu: "1"
+
+ingress:
+  enabled: true
+  hosts:
+    - name: sonarqube.kouidri.fr
+  annotations: 
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+
+  # Set the ingressClassName on the ingress record
+  # ingressClassName: nginx
+
+# Additional labels for Ingress manifest file
+  # labels:
+  #  traffic-type: external
+  #  traffic-type: internal
+  tls: 
+  # Secrets must be manually created in the namespace. To generate a self-signed certificate (and private key) and then create the secret in the cluster please refer to official documentation available at https://kubernetes.github.io/ingress-nginx/user-guide/tls/#tls-secrets
+    - secretName: sonar-tls
+      hosts:
+        - sonarqube.kouidri.fr
+

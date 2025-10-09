@@ -1,0 +1,14 @@
+# postgres-values.yaml
+global:
+  postgresql:
+    auth:
+      username: sonar
+      existingSecret: sonarqube-postgres-secret
+      passwordKey: postgresql-password
+      database: sonar
+
+primary:
+  persistence:
+    enabled: true
+    size: 5Gi
+    storageClass: local-path
