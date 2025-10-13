@@ -14,7 +14,6 @@ spec:
   tls:
     - hosts:
       - www.kouidri.fr
-      - eportfolio.kouidri.fr
       secretName: subdomain-kouidri-tls
   rules:
   - host: www.kouidri.fr
@@ -26,7 +25,7 @@ spec:
           service:
             name: frontend
             port:
-              number: 80
+              number: 8080
       - path: "/api/"
         pathType: Prefix
         backend:
@@ -41,14 +40,3 @@ spec:
             name: backend
             port:
               number: 3001
-  - host: eportfolio.kouidri.fr
-    http:
-      paths:
-      - pathType: Prefix
-        path: "/"
-        backend:
-          service:
-            name: n7-eportfolio-service
-            port:
-              number: 80
-
