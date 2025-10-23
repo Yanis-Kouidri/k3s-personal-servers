@@ -17,7 +17,7 @@ spec:
         app: frontend
     spec:
       containers:
-      - image: ghcr.io/yanis-kouidri/frontend-react:0.0.0
+      - image: ghcr.io/yanis-kouidri/frontend-react:0.0.1
         name: frontend
         imagePullPolicy: Always
         envFrom:

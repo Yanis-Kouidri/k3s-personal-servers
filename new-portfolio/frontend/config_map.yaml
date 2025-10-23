@@ -8,3 +8,4 @@ data:
   APP_PREFIX: PREFIX_
   PREFIX_BACKEND_URL: "https://www.kouidri.fr"
   PREFIX_DOCS_ROUTE: "/data/docs"
+  PREFIX_STRAPI_URL: "https://cms.kouidri.fr"

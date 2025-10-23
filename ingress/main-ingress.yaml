@@ -14,6 +14,7 @@ spec:
   tls:
     - hosts:
       - www.kouidri.fr
+      - cms.kouidri.fr
       secretName: subdomain-kouidri-tls
   rules:
   - host: www.kouidri.fr
@@ -40,3 +41,13 @@ spec:
             name: backend
             port:
               number: 3001
+  - host: cms.kouidri.fr
+    http:
+      paths:
+      - path: "/"
+        pathType: Prefix
+        backend:
+          service:
+            name: strapi
+            port:
+              number: 1337

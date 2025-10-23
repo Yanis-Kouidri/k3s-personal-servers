@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-strapi-db
+  namespace: portfolio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: strapi-db
+  template:
+    metadata:
+      labels:
+        app: strapi-db
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:18.0-alpine3.22
+        env:
+        - name: PGDATA  # Define data storage explicitly 
+          value: /var/lib/postgresql/18/docker
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: strapi-secrets
+              key: DATABASE_PASSWORD
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: strapi-secrets
+              key: DATABASE_USERNAME
+        - name: POSTGRES_DB
+          valueFrom:
+            secretKeyRef:
+              name: strapi-secrets
+              key: DATABASE_NAME
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/18/docker
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: postgres-strapi-pvc
