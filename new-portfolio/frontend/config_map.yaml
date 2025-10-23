@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend
+  namespace: portfolio
+data:
+  ASSET_DIR: /usr/share/nginx/html
+  APP_PREFIX: PREFIX_
+  PREFIX_BACKEND_URL: "https://www.kouidri.fr"
+  PREFIX_DOCS_ROUTE: "/data/docs"

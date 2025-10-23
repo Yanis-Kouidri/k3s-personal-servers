@@ -20,15 +20,9 @@ spec:
       - image: ghcr.io/yanis-kouidri/frontend-react:0.0.0
         name: frontend
         imagePullPolicy: Always
-        env:
-        - name: ASSET_DIR
-          value: /usr/share/nginx/html
-        - name: APP_PREFIX
-          value: PREFIX_
-        - name: PREFIX_BACKEND_URL
-          value: "https://www.kouidri.fr"
-        - name: PREFIX_DOCS_ROUTE
-          value: "/data/docs"
+        envFrom:
+          - configMapRef:
+              name: frontend
         resources:
           limits:
             cpu: "500m"
