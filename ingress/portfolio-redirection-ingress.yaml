@@ -3,7 +3,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: redirection-ingress
+  name: portfolio-redirection-ingress
   namespace: portfolio
   annotations:
     kubernetes.io/ingress.class: "nginx"
@@ -19,17 +19,16 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-      - kouidri.fr
+        - kouidri.fr
       secretName: kouidri-fr-tls
   rules:
-  - host: kouidri.fr
-    http:
-      paths:
-      - pathType: Prefix
-        path: "/"
-        backend:
-          service:
-            name: redirection-service 
-            port:
-              number: 80
-
+    - host: kouidri.fr
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: redirection-service
+                port:
+                  number: 80

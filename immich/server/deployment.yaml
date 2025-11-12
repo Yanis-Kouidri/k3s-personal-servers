@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: immich-server
+  name: immich-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: immich-server
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: immich-server
+    spec:
+      containers:
+        - envFrom:
+            - configMapRef:
+                name: immich-server-config
+          env:
+            # ConfigMap
+            - name: DB_DATABASE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: immich-db-config
+                  key: POSTGRES_DB
+            - name: DB_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: immich-db-config
+                  key: POSTGRES_USER
+            # Secret
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: immich-db-secret
+                  key: POSTGRES_PASSWORD
+          image: ghcr.io/immich-app/immich-server:v2
+          name: immich-server
+          ports:
+            - containerPort: 2283
+              protocol: TCP
+          volumeMounts:
+            - name: server-storage
+              mountPath: /data
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "500m"
+            limits:
+              memory: "2Gi"
+              cpu: "1"
+      volumes:
+        - name: server-storage
+          persistentVolumeClaim:
+            claimName: server-immich-pvc
