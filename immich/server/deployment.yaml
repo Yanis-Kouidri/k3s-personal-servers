@@ -4,6 +4,7 @@ metadata:
   labels:
     app: immich-server
   name: immich-server
+  namespace: immich
 spec:
   replicas: 1
   selector:
@@ -17,7 +18,9 @@ spec:
         app: immich-server
     spec:
       containers:
-        - envFrom:
+        - image: ghcr.io/immich-app/immich-server:v2
+          name: immich-server
+          envFrom:
             - configMapRef:
                 name: immich-server-config
           env:
@@ -38,8 +41,7 @@ spec:
                 secretKeyRef:
                   name: immich-db-secret
                   key: POSTGRES_PASSWORD
-          image: ghcr.io/immich-app/immich-server:v2
-          name: immich-server
+
           ports:
             - containerPort: 2283
               protocol: TCP
