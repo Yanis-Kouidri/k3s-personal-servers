@@ -1,0 +1,156 @@
+# GatewayClass
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: envoy-gateway
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+---
+# Gateway
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: portfolio-gateway
+  namespace: portfolio
+spec:
+  gatewayClassName: envoy-gateway
+  listeners:
+    # CMS
+    - hostname: cms.kouidri.fr
+      name: cms-kouidri-fr-http
+      port: 80
+      protocol: HTTP
+
+    - hostname: cms.kouidri.fr
+      name: cms-kouidri-fr-https
+      port: 443
+      protocol: HTTPS
+      tls:
+        certificateRefs:
+          - name: subdomain-kouidri-tls
+
+    # Portfolio
+    - hostname: kouidri.fr
+      name: kouidri-fr-http
+      port: 80
+      protocol: HTTP
+
+    - hostname: kouidri.fr
+      name: kouidri-fr-https
+      port: 443
+      protocol: HTTPS
+      tls:
+        certificateRefs:
+          - name: kouidri-fr-tls
+
+    - hostname: www.kouidri.fr
+      name: www-kouidri-fr-http
+      port: 80
+      protocol: HTTP
+
+    - hostname: www.kouidri.fr
+      name: www-kouidri-fr-https
+      port: 443
+      protocol: HTTPS
+      tls:
+        certificateRefs:
+          - name: subdomain-kouidri-tls
+
+---
+# Redirection HTTP -> HTTPS for all HTTP listners
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: http-to-https-filter-redirect
+  namespace: portfolio
+spec:
+  parentRefs:
+    - name: portfolio-gateway
+      sectionName: cms-kouidri-fr-http
+    - name: portfolio-gateway
+      sectionName: kouidri-fr-http
+    - name: portfolio-gateway
+      sectionName: www-kouidri-fr-http
+  rules:
+    - filters:
+        - type: RequestRedirect
+          requestRedirect:
+            scheme: https
+            statusCode: 301
+
+---
+# Portfolio frontend and backend
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: portfolio-www-kouidri-fr
+  namespace: portfolio
+spec:
+  hostnames:
+    - www.kouidri.fr
+  parentRefs:
+    - name: portfolio-gateway
+      sectionName: www-kouidri-fr-https
+  rules:
+    - backendRefs:
+        - name: frontend
+          port: 8080
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
+    - backendRefs:
+        - name: backend
+          port: 3001
+      matches:
+        - path:
+            type: PathPrefix
+            value: /api/
+    - backendRefs:
+        - name: backend
+          port: 3001
+      matches:
+        - path:
+            type: PathPrefix
+            value: /data/
+---
+# CMS
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: portfolio-cms-kouidri-fr
+  namespace: portfolio
+spec:
+  hostnames:
+    - cms.kouidri.fr
+  parentRefs:
+    - name: portfolio-gateway
+      sectionName: cms-kouidri-fr-https
+  rules:
+    - backendRefs:
+        - name: strapi
+          port: 1337
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
+---
+# https://kouidri.fr -> https://www.kouidri.fr
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: kouidri-to-www-redirect
+  namespace: portfolio
+spec:
+  hostnames:
+    - kouidri.fr
+  parentRefs:
+    - name: portfolio-gateway
+      sectionName: kouidri-fr-https
+  rules:
+    - filters:
+        - type: RequestRedirect
+          requestRedirect:
+            scheme: https
+            statusCode: 301
+            hostname: www.kouidri.fr
