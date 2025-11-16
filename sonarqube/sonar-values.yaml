@@ -14,6 +14,7 @@ monitoringPasscode: "admin"
 
 community:
   enabled: true
+  buildNumber: "25.11.0.114957"
 
 resources:
   requests:
@@ -24,23 +25,12 @@ resources:
     cpu: "1"
 
 ingress:
+  enabled: false
+
+# For HTTPS with API gateway
+httproute:
   enabled: true
-  hosts:
-    - name: sonarqube.kouidri.fr
-  annotations: 
-    kubernetes.io/ingress.class: "nginx"
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
-
-  # Set the ingressClassName on the ingress record
-  # ingressClassName: nginx
-
-# Additional labels for Ingress manifest file
-  # labels:
-  #  traffic-type: external
-  #  traffic-type: internal
-  tls: 
-  # Secrets must be manually created in the namespace. To generate a self-signed certificate (and private key) and then create the secret in the cluster please refer to official documentation available at https://kubernetes.github.io/ingress-nginx/user-guide/tls/#tls-secrets
-    - secretName: sonar-tls
-      hosts:
-        - sonarqube.kouidri.fr
-
+  gateway: envoy-gateway
+  gatewayNamespace: envoy-gateway-system
+  hostnames:
+    - sonarqube.kouidri.fr
