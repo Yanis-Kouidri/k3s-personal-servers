@@ -16,3 +16,4 @@ spec:
     - cms.kouidri.fr
   privateKey:
     algorithm: ECDSA
+    size: 384
