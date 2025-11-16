@@ -15,3 +15,7 @@ spec:
       set:
         - name: Strict-Transport-Security
           value: max-age=31536000; includeSubDomains; preload
+  tls:
+    session:
+      resumption:
+        stateless: {}
