@@ -10,8 +10,8 @@ spec:
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
-  name: portfolio-gateway
-  namespace: portfolio
+  name: envoy-gateway
+  namespace: envoy-gateway-system
 spec:
   gatewayClassName: envoy-gateway
   listeners:
@@ -20,6 +20,9 @@ spec:
       name: cms-kouidri-fr-http
       port: 80
       protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: All
 
     - hostname: cms.kouidri.fr
       name: cms-kouidri-fr-https
@@ -27,13 +30,19 @@ spec:
       protocol: HTTPS
       tls:
         certificateRefs:
-          - name: subdomain-kouidri-tls
+          - name: kouidri-tls
+      allowedRoutes:
+        namespaces:
+          from: All
 
     # Portfolio
     - hostname: kouidri.fr
       name: kouidri-fr-http
       port: 80
       protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: All
 
     - hostname: kouidri.fr
       name: kouidri-fr-https
@@ -42,11 +51,17 @@ spec:
       tls:
         certificateRefs:
           - name: kouidri-fr-tls
+      allowedRoutes:
+        namespaces:
+          from: All
 
     - hostname: www.kouidri.fr
       name: www-kouidri-fr-http
       port: 80
       protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: All
 
     - hostname: www.kouidri.fr
       name: www-kouidri-fr-https
@@ -54,7 +69,10 @@ spec:
       protocol: HTTPS
       tls:
         certificateRefs:
-          - name: subdomain-kouidri-tls
+          - name: kouidri-tls
+      allowedRoutes:
+        namespaces:
+          from: All
 
 ---
 # Redirection HTTP -> HTTPS for all HTTP listners
@@ -65,11 +83,14 @@ metadata:
   namespace: portfolio
 spec:
   parentRefs:
-    - name: portfolio-gateway
+    - name: envoy-gateway
+      namespace: envoy-gateway-system
       sectionName: cms-kouidri-fr-http
-    - name: portfolio-gateway
+    - name: envoy-gateway
+      namespace: envoy-gateway-system
       sectionName: kouidri-fr-http
-    - name: portfolio-gateway
+    - name: envoy-gateway
+      namespace: envoy-gateway-system
       sectionName: www-kouidri-fr-http
   rules:
     - filters:
@@ -89,7 +110,8 @@ spec:
   hostnames:
     - www.kouidri.fr
   parentRefs:
-    - name: portfolio-gateway
+    - name: envoy-gateway
+      namespace: envoy-gateway-system
       sectionName: www-kouidri-fr-https
   rules:
     - backendRefs:
@@ -124,7 +146,8 @@ spec:
   hostnames:
     - cms.kouidri.fr
   parentRefs:
-    - name: portfolio-gateway
+    - name: envoy-gateway
+      namespace: envoy-gateway-system
       sectionName: cms-kouidri-fr-https
   rules:
     - backendRefs:
@@ -145,7 +168,8 @@ spec:
   hostnames:
     - kouidri.fr
   parentRefs:
-    - name: portfolio-gateway
+    - name: envoy-gateway
+      namespace: envoy-gateway-system
       sectionName: kouidri-fr-https
   rules:
     - filters:
