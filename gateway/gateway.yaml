@@ -15,61 +15,19 @@ metadata:
 spec:
   gatewayClassName: envoy-gateway
   listeners:
-    # CMS
-    - hostname: cms.kouidri.fr
-      name: cms-kouidri-fr-http
+    - name: http
       port: 80
       protocol: HTTP
       allowedRoutes:
         namespaces:
           from: All
 
-    - hostname: cms.kouidri.fr
-      name: cms-kouidri-fr-https
-      port: 443
-      protocol: HTTPS
-      tls:
-        certificateRefs:
-          - name: kouidri-tls
-      allowedRoutes:
-        namespaces:
-          from: All
-
-    # Portfolio
-    - hostname: kouidri.fr
-      name: kouidri-fr-http
-      port: 80
-      protocol: HTTP
-      allowedRoutes:
-        namespaces:
-          from: All
-
-    - hostname: kouidri.fr
-      name: kouidri-fr-https
+    - name: https
       port: 443
       protocol: HTTPS
       tls:
         certificateRefs:
           - name: kouidri-fr-tls
-      allowedRoutes:
-        namespaces:
-          from: All
-
-    - hostname: www.kouidri.fr
-      name: www-kouidri-fr-http
-      port: 80
-      protocol: HTTP
-      allowedRoutes:
-        namespaces:
-          from: All
-
-    - hostname: www.kouidri.fr
-      name: www-kouidri-fr-https
-      port: 443
-      protocol: HTTPS
-      tls:
-        certificateRefs:
-          - name: kouidri-tls
       allowedRoutes:
         namespaces:
           from: All
@@ -85,13 +43,7 @@ spec:
   parentRefs:
     - name: envoy-gateway
       namespace: envoy-gateway-system
-      sectionName: cms-kouidri-fr-http
-    - name: envoy-gateway
-      namespace: envoy-gateway-system
-      sectionName: kouidri-fr-http
-    - name: envoy-gateway
-      namespace: envoy-gateway-system
-      sectionName: www-kouidri-fr-http
+      sectionName: http
   rules:
     - filters:
         - type: RequestRedirect
@@ -112,7 +64,7 @@ spec:
   parentRefs:
     - name: envoy-gateway
       namespace: envoy-gateway-system
-      sectionName: www-kouidri-fr-https
+      sectionName: https
   rules:
     - backendRefs:
         - name: frontend
@@ -148,7 +100,7 @@ spec:
   parentRefs:
     - name: envoy-gateway
       namespace: envoy-gateway-system
-      sectionName: cms-kouidri-fr-https
+      sectionName: https
   rules:
     - backendRefs:
         - name: strapi
@@ -170,7 +122,7 @@ spec:
   parentRefs:
     - name: envoy-gateway
       namespace: envoy-gateway-system
-      sectionName: kouidri-fr-https
+      sectionName: https
   rules:
     - filters:
         - type: RequestRedirect
