@@ -14,6 +14,7 @@ spec:
     - kouidri.fr
     - www.kouidri.fr
     - cms.kouidri.fr
+    - photos.kouidri.fr
   privateKey:
     algorithm: ECDSA
     size: 384
