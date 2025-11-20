@@ -1,4 +1,5 @@
 #!/bin/bash
+# DO NOT RUN THIS SCRIPT, JUST COPY PASTE COMMAND AND ADAPT THEM
 
 # Install or upgrade Postgres database
 helm upgrade --install --create-namespace -n sonarqube sonar-postgres bitnami/postgresql -f postgres-values.yaml
@@ -8,12 +9,19 @@ helm upgrade --install --create-namespace -n sonarqube sonarqube sonarqube/sonar
 
 # It may be necessary to go en sonarqube.kouidri.fr/setup to upgrade database after upgrade
 
+
+# Setting up Secret:
+
 # To encrypt:
 
-sops --encrypt --age <PUBLIC_KEY_IN_TXT_FILE> secrets.yaml > secrets.enc.yaml
+export PUBLIC_AGE_KEY=age1XXXXXXXX # Paste the public key here
+sops --encrypt --age $PUBLIC_AGE_KEY secrets.yaml > secrets.enc.yaml
 
 
 # To decrypt and apply
 
-export SOPS_AGE_KEY=$(cat age-key.txt)
-sops --input-type yaml --output-type yaml -d secrets.yaml.enc | kubectl apply -f -
+read -s -p "Fill the private Age key: " SOPS_AGE_KEY && export SOPS_AGE_KEY && echo  # Paste the secret age key here
+sops --input-type yaml --output-type yaml -d secrets.enc.yaml | kubectl apply -f -
+
+# To decrypt
+sops --input-type yaml --output-type yaml -d secrets.enc.yaml > secrets.yaml
