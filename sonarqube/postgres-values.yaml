@@ -3,9 +3,9 @@ global:
   postgresql:
     auth:
       username: sonar
-      existingSecret: sonarqube-postgres-secret
-      passwordKey: postgresql-password
       database: sonar
+      existingSecret: sonarqube-postgres-secret
+      # NB name of the key on the secret "sonarqube-postgres-secret" must be password for user sonar and postgres-password
 
 primary:
   persistence:
