@@ -1,2 +1,6 @@
+# SonarQube
 sonarqube/secrets.yaml
 sonarqube/age-key.txt
+
+# New Portfolio
+new-portfolio/backend/secrets.yaml
