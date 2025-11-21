@@ -6,7 +6,7 @@ metadata:
   labels:
     app: mongodb
 spec:
-  replicas: 1 # MongoDB en standalone pour simplifier
+  replicas: 1
   selector:
     matchLabels:
       app: mongodb
@@ -16,42 +16,42 @@ spec:
         app: mongodb
     spec:
       containers:
-      - name: mongodb
-        image: mongo:latest
-        ports:
-        - containerPort: 27017
-        env:
-        - name: MONGO_INITDB_ROOT_USERNAME
-          valueFrom:
-            secretKeyRef:
-              name: backend
-              key: NODE_JS_MONGODB_USERNAME
-        - name: MONGO_INITDB_ROOT_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: backend
-              key: NODE_JS_MONGODB_PASSWORD
-        volumeMounts:
-        - name: mongodb-data
-          mountPath: /data/db
-        resources:
-          requests:
-            cpu: "200m"
-            memory: "512Mi"
-          limits:
-            cpu: "1"
-            memory: "1Gi"
-        readinessProbe:
-          tcpSocket:
-            port: 27017
-          initialDelaySeconds: 10
-          periodSeconds: 10
-        livenessProbe:
-          tcpSocket:
-            port: 27017
-          initialDelaySeconds: 15
-          periodSeconds: 20
+        - name: mongodb
+          image: mongo:latest
+          ports:
+            - containerPort: 27017
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: backend
+                  key: NODE_JS_MONGODB_USERNAME
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: backend
+                  key: NODE_JS_MONGODB_PASSWORD
+          volumeMounts:
+            - name: mongodb-data
+              mountPath: /data/db
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+          readinessProbe:
+            tcpSocket:
+              port: 27017
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 27017
+            initialDelaySeconds: 15
+            periodSeconds: 20
       volumes:
-      - name: mongodb-data
-        persistentVolumeClaim:
-          claimName: mongodb-pvc
+        - name: mongodb-data
+          persistentVolumeClaim:
+            claimName: mongodb-pvc
