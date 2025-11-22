@@ -17,35 +17,34 @@ spec:
     spec:
       # Use initContainer to give access to nobody (NodeJS user) to storage
       initContainers:
-      - name: init-permissions
-        image: busybox
-        command: ["sh", "-c", "chown -R nobody:nobody /app/data"]
-        volumeMounts:
-          - name: data-volume
-            mountPath: /app/data
+        - name: init-permissions
+          image: busybox
+          command: ["sh", "-c", "chown -R nobody:nobody /app/data"]
+          volumeMounts:
+            - name: data-volume
+              mountPath: /app/data
       containers:
-      - name: backend
-        image: ghcr.io/yanis-kouidri/backend-node 
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 3001
-        envFrom:
-          - secretRef:
-              name: backend
-          - configMapRef:
-              name: backend
-        resources:
-          requests:
-            cpu: "200m"
-            memory: "256Mi"
-          limits:
-            cpu: "1"
-            memory: "512Mi"
-        volumeMounts:
-          - name: data-volume
-            mountPath: /app/data
+        - name: backend
+          image: ghcr.io/yanis-kouidri/backend-node
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3001
+          envFrom:
+            - secretRef:
+                name: backend
+            - configMapRef:
+                name: backend
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "1"
+              memory: "512Mi"
+          volumeMounts:
+            - name: data-volume
+              mountPath: /app/data
       volumes:
         - name: data-volume
           persistentVolumeClaim:
             claimName: backend-data-pvc
-

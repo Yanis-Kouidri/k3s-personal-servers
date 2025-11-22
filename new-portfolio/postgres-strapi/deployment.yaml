@@ -14,32 +14,39 @@ spec:
         app: strapi-db
     spec:
       containers:
-      - name: postgres
-        image: postgres:18.0-alpine3.22
-        env:
-        - name: PGDATA  # Define data storage explicitly 
-          value: /var/lib/postgresql/18/docker
-        - name: POSTGRES_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: strapi-secrets
-              key: DATABASE_PASSWORD
-        - name: POSTGRES_USER
-          valueFrom:
-            secretKeyRef:
-              name: strapi-secrets
-              key: DATABASE_USERNAME
-        - name: POSTGRES_DB
-          valueFrom:
-            secretKeyRef:
-              name: strapi-secrets
-              key: DATABASE_NAME
-        ports:
-        - containerPort: 5432
-        volumeMounts:
-        - name: postgres-storage
-          mountPath: /var/lib/postgresql/18/docker
+        - name: postgres
+          image: postgres:18.0-alpine3.22
+          env:
+            - name: PGDATA # Define data storage explicitly
+              value: /var/lib/postgresql/18/docker
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: strapi-secrets
+                  key: DATABASE_PASSWORD
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: strapi-secrets
+                  key: DATABASE_USERNAME
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: strapi-secrets
+                  key: DATABASE_NAME
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/18/docker
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
       volumes:
-      - name: postgres-storage
-        persistentVolumeClaim:
-          claimName: postgres-strapi-pvc
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: postgres-strapi-pvc

@@ -4,7 +4,7 @@ metadata:
   name: strapi
   namespace: portfolio
 spec:
-  replicas: 1  
+  replicas: 1
   selector:
     matchLabels:
       app: strapi
@@ -14,24 +14,24 @@ spec:
         app: strapi
     spec:
       containers:
-      - name: strapi
-        image: ghcr.io/yanis-kouidri/cms-strapi:0.1.0
-        envFrom:
-        - secretRef:
-            name: strapi-secrets
-        ports:
-        - containerPort: 1337
-        volumeMounts:
-        - name: uploads-storage
-          mountPath: /opt/app/public/uploads  # Path defines in Dockerfile/Docker Compose
-        resources:  
-          requests:
-            memory: "256Mi"
-            cpu: "250m"
-          limits:
-            memory: "512Mi"
-            cpu: "500m"
+        - name: strapi
+          image: ghcr.io/yanis-kouidri/cms-strapi:0.1.0
+          envFrom:
+            - secretRef:
+                name: strapi-secrets
+          ports:
+            - containerPort: 1337
+          volumeMounts:
+            - name: uploads-storage
+              mountPath: /opt/app/public/uploads # Path defines in Dockerfile/Docker Compose
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "200m"
+            limits:
+              memory: "768Mi"
+              cpu: "1"
       volumes:
-      - name: uploads-storage
-        persistentVolumeClaim:
-          claimName: strapi-pvc
+        - name: uploads-storage
+          persistentVolumeClaim:
+            claimName: strapi-pvc
