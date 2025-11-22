@@ -5,8 +5,8 @@ metadata:
   namespace: minecraft
 spec:
   accessModes:
-    - ReadWriteMany
-  storageClassName: manual
+    - ReadWriteOnce
+  storageClassName: longhorn
   resources:
     requests:
       storage: 10Gi

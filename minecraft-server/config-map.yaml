@@ -17,6 +17,7 @@ data:
   ONLINE_MODE: "TRUE"
   FORCE_GAMEMODE: "TRUE"
   ENABLE_WHITELIST: "TRUE"
+  WHITELIST: "Volgare"
   PLUGINS: |
     https://cdn.modrinth.com/data/1u6JkXh5/versions/3ISh7ADm/worldedit-bukkit-7.3.17.jar
     https://download.luckperms.net/1609/bukkit/loader/LuckPerms-Bukkit-5.5.20.jar
