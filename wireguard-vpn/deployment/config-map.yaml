@@ -12,4 +12,3 @@ data:
   PEERS: "5"
   PEERDNS: "auto"
   INTERNAL_SUBNET: "10.13.13.0"
-

@@ -14,27 +14,48 @@ spec:
         app: wireguard
     spec:
       containers:
-      - name: wireguard
-        image: linuxserver/wireguard
-        securityContext:
-          capabilities:
-            add: ["NET_ADMIN", "SYS_MODULE"]
-        envFrom:
-        - configMapRef:
-            name: wireguard-config
-        ports:
-        - containerPort: 51820
-          protocol: UDP
-        volumeMounts:
-        - name: config
-          mountPath: /config
-        - name: modules
-          mountPath: /lib/modules
+        - name: wireguard
+          image: linuxserver/wireguard
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN", "SYS_MODULE"]
+          envFrom:
+            - configMapRef:
+                name: wireguard-config
+          ports:
+            - containerPort: 51820
+              protocol: UDP
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: modules
+              mountPath: /lib/modules
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "200m"
+            limits:
+              memory: "768Mi"
+              cpu: "1000m"
+          livenessProbe:
+            exec:
+              command: ["wg", "show", "all", "dump"]
+            initialDelaySeconds: 30
+            periodSeconds: 300
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - "wg show ${SERVER_INTERFACE:-wg0} > /dev/null 2>&1"
+            initialDelaySeconds: 3
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
       volumes:
-      - name: config
-        persistentVolumeClaim:
-          claimName: wireguard-pvc
-      - name: modules
-        hostPath:
-          path: /lib/modules
-
+        - name: config
+          persistentVolumeClaim:
+            claimName: wireguard-pvc
+        - name: modules
+          hostPath:
+            path: /lib/modules
