@@ -5,6 +5,7 @@ metadata:
   name: minecraft-server-config
   namespace: minecraft
 data:
+  VERSION: 1.21.8
   EULA: "TRUE"
   TYPE: "PAPER"
   ENABLE_RCON: "TRUE"
@@ -15,8 +16,8 @@ data:
   MAX_PLAYERS: "5"
   ONLINE_MODE: "TRUE"
   FORCE_GAMEMODE: "TRUE"
-  ENABLE_WHITELIST: "TRUE" 
+  ENABLE_WHITELIST: "TRUE"
   PLUGINS: |
-    https://dev.bukkit.org/projects/worldedit/files/latest
-    https://download.luckperms.net/1595/bukkit/loader/LuckPerms-Bukkit-5.5.10.jar
-    https://dev.bukkit.org/projects/worldguard/files/latest
+    https://cdn.modrinth.com/data/1u6JkXh5/versions/3ISh7ADm/worldedit-bukkit-7.3.17.jar
+    https://download.luckperms.net/1609/bukkit/loader/LuckPerms-Bukkit-5.5.20.jar
+    https://cdn.modrinth.com/data/DKY9btbd/versions/PO4MKx7e/worldguard-bukkit-7.0.14-dist.jar
