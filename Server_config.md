@@ -154,3 +154,29 @@ Then kill with:
 ```bash
 kill -9 PID
 ```
+
+### Set replicas count to 1
+
+If longhorn is installed on a mono-node kubernetes cluster, longhorn won't be able to create replicas so it is better to set default value to 1.
+
+Go on UI -> Setting tabs -> Default Replica Count -> 1
+
+## Minecraft
+
+Replace world map: (adapte pod name)
+
+delete previous one:
+
+    k exec minecraft-server-569794569d-ltz7v -- rm -rf /data/world
+
+Copy the new one
+
+    k cp world minecraft-server-569794569d-ltz7v:/data/world
+
+Give correct right:
+
+    k exec -n minecraft  minecraft-server-569794569d-ltz7v  -- chown -R minecraft:minecraft /data/world
+
+Restart:
+
+     kubectl rollout restart deployment minecraft-server -n minecraft
