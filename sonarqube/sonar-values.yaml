@@ -5,7 +5,7 @@ postgresql:
 ## for external Databases
 jdbcOverwrite:
   enabled: true
-  jdbcUrl: "jdbc:postgresql://sonar-postgres-postgresql.sonarqube.svc.cluster.local:5432/sonar"
+  jdbcUrl: "jdbc:postgresql://postgres-sonarqube-postgresql.sonarqube.svc.cluster.local:5432/sonar"
   jdbcUsername: "sonar"
   jdbcSecretName: "sonarqube-postgres-secret"
   jdbcSecretPasswordKey: "password" # Key on secret sonarqube-postgres-secret
