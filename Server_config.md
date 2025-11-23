@@ -186,3 +186,9 @@ Give correct right:
 Restart:
 
      kubectl rollout restart deployment minecraft-server -n minecraft
+
+## Wireguard
+
+To get peer1 config file (adapt to peer2, peer3, etc)
+
+    kubectl exec deployments/wireguard -- cat /config/peer1/peer1.conf
