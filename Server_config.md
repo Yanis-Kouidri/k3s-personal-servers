@@ -146,6 +146,12 @@ Access from client to [http://localhost:8080](http://localhost:8080).
 Find the pid with:
 
 ```bash
+jobs -l
+```
+
+or
+
+```bash
 ss -plantu | grep 8080
 ```
 
