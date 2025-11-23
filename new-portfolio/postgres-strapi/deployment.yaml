@@ -39,6 +39,7 @@ spec:
           volumeMounts:
             - name: postgres-storage
               mountPath: /var/lib/postgresql/18/docker
+              subPath: postgres-data
           resources:
             requests:
               cpu: "200m"

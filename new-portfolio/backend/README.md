@@ -9,3 +9,5 @@
     db.auth("admin", "old-password")
 
     db.changeUserPassword("admin", "new-password")
+
+Think to update `secrets.yaml` and encrypt it in `secrets.enc.yaml`
