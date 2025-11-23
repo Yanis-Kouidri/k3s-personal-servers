@@ -4,7 +4,7 @@ This project uses [SOPS](https://github.com/getsops/sops) and [age](https://gith
 
 ## Prerequisites
 
-- `sops` installed
+- `sops` installed: [Here](https://github.com/getsops/sops/releases)
 - `age` key pair generated
 - `kubectl` configured for the target cluster
 
