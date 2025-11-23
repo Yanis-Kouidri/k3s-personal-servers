@@ -27,4 +27,4 @@ Currently running (or planned):
 
 ## How to set up
 
-Look Server_config.md
+Look SERVER_CONFIG.md
