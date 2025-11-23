@@ -1,26 +1,30 @@
-# Secrets with SOPS and age
+# Personal k3s Homelab Cluster - All-in-One Kubernetes Setup
 
-This project uses [SOPS](https://github.com/getsops/sops) and [age](https://github.com/FiloSottile/age) to manage Kubernetes secrets.
+This repository contains my complete **Infrastructure as Code (IaC)** setup for a lightweight, personal Kubernetes cluster using **k3s**.  
+It runs on a single node (or small cluster) on a VPS and hosts all my self-hosted services: personal website, game servers, photo management, code quality tools, monitoring, and more.
+
+## Hosted Services
+
+Currently running (or planned):
+
+- **Immich** – Self-hosted Google Photos alternative
+- **SonarQube** – Code quality & security analysis
+- **Minecraft Server** (via Itzg Docker image)
+- **Personal Website** (using MERN stack)
+- **Longhorn** – Distributed block storage with backups
+- **Cert-Manager** – Automatic SSL certificates
+- **Envoy API Gateway** - Reverse proxy
+- **Wireguard** - Fast and secure VPN
+- And more to come…
 
 ## Prerequisites
 
-- `sops` installed: [Here](https://github.com/getsops/sops/releases)
-- `age` key pair generated
-- `kubectl` configured for the target cluster
+- A Linux server (Ubuntu/Debian recommended) with at least:
+  - 8 GB RAM (16+ recommended)
+  - 4+ CPU cores
+  - 200+ GB SSD/NVMe
+- A domain name (for SSL and pretty URLs)
 
-## Set up public key
+## How to set up
 
-    export PUBLIC_AGE_KEY=age1XXXXXXXX # Paste your age public key here
-
-## Encrypt secrets
-
-    sops --encrypt --age "$PUBLIC_AGE_KEY" secrets.yaml > secrets.enc.yaml
-
-## Decrypt and apply to Kubernetes
-
-    read -s -p "Fill the private Age key: " SOPS_AGE_KEY && export SOPS_AGE_KEY && echo
-    sops --input-type yaml --output-type yaml -d secrets.enc.yaml | kubectl apply -f -
-
-## Decrypt to a file
-
-    sops --input-type yaml --output-type yaml -d secrets.enc.yaml > secrets.yaml
+Look Server_config.md

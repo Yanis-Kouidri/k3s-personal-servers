@@ -110,85 +110,39 @@ sudo apt install kubectx
 sudo snap install helm --classic
 ```
 
-## Longhorn
+## Secrets with SOPS and age
 
-Add repo:
+This project uses [SOPS](https://github.com/getsops/sops) and [age](https://github.com/FiloSottile/age) to manage Kubernetes secrets.
 
-```bash
-helm repo add longhorn https://charts.longhorn.io
-helm repo update
-```
+### Prerequisites
 
-Install (*look for the latest version on [GitHub](https://github.com/longhorn/longhorn)*):
+- `sops` installed: [Here](https://github.com/getsops/sops/releases)
+- `age` key pair generated
+- `kubectl` configured for the target cluster
 
-```bash
-helm install longhorn longhorn/longhorn --namespace longhorn-system --create-namespace --version VERSION
-```
-
-### Access UI
-
-Port forward:
+### Set up public key
 
 ```bash
-kubectl port-forward svc/longhorn-frontend 8080:80 -n longhorn-system > /dev/null 2>&1 &
+    export PUBLIC_AGE_KEY=age1XXX # Paste your age public key here
 ```
 
-Setup a tunnel from the local PC (not the VPS):
+### Encrypt secrets
 
 ```bash
-ssh vps-name -NL 8080:localhost:8080
+    sops --encrypt --age "$PUBLIC_AGE_KEY" secrets.yaml > secrets.enc.yaml
 ```
 
-Access from client to [http://localhost:8080](http://localhost:8080).
-
-**To kill port forward:**
-
-Find the pid with:
+### Decrypt and apply to Kubernetes
 
 ```bash
-jobs -l
+    read -s -p "Fill the private Age key: " SOPS_AGE_KEY && export SOPS_AGE_KEY && echo
 ```
 
-or
+```bash    
+    sops --input-type yaml --output-type yaml -d secrets.enc.yaml | kubectl apply -f -
+```
+### Decrypt to a file
 
 ```bash
-ss -plantu | grep 8080
+    sops --input-type yaml --output-type yaml -d secrets.enc.yaml > secrets.yaml
 ```
-
-Then kill with:
-
-```bash
-kill -9 PID
-```
-
-### Set replicas count to 1
-
-If longhorn is installed on a mono-node kubernetes cluster, longhorn won't be able to create replicas so it is better to set default value to 1.
-
-Go on UI -> Setting tabs -> Default Replica Count -> 1
-
-## Minecraft
-
-Replace world map: (adapte pod name)
-
-delete previous one:
-
-    k exec minecraft-server-569794569d-ltz7v -- rm -rf /data/world
-
-Copy the new one
-
-    k cp world minecraft-server-569794569d-ltz7v:/data/world
-
-Give correct right:
-
-    k exec -n minecraft  minecraft-server-569794569d-ltz7v  -- chown -R minecraft:minecraft /data/world
-
-Restart:
-
-     kubectl rollout restart deployment minecraft-server -n minecraft
-
-## Wireguard
-
-To get peer1 config file (adapt to peer2, peer3, etc)
-
-    kubectl exec deployments/wireguard -- cat /config/peer1/peer1.conf
