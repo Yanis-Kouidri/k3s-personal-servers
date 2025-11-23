@@ -7,7 +7,7 @@ data:
   PUID: "1000"
   PGID: "1000"
   TZ: "Europe/Paris"
-  SERVERURL: "kouidri.fr"
+  SERVERURL: "auto"
   SERVERPORT: "51820"
   PEERS: "5"
   PEERDNS: "auto"
