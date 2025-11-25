@@ -5,7 +5,7 @@
 Delete previous one
 
 ```bash
-    k exec minecraft-server-569794569d-ltz7v -- rm -rf /data/world
+    k exec deployments/minecraft-server -- rm -rf /data/world
 ```
 
 Copy the new one
@@ -17,5 +17,5 @@ Copy the new one
 Give correct right
 
 ```bash
-    k exec -n minecraft  minecraft-server-569794569d-ltz7v  -- chown -R minecraft:minecraft /data/world
+    k exec deployments/minecraft-server  -- chown -R minecraft:minecraft /data/world
 ```
