@@ -11,7 +11,7 @@ primary:
   persistence:
     enabled: true
     size: 10Gi
-    storageClass: longhorn
+    storageClass: local-path
   resources:
     limits:
       cpu: 1000m
