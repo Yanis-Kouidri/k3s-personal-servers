@@ -14,12 +14,15 @@ log() {
     echo -e "[$(date '+%Y-%m-%d %H:%M:%S')] $*"
 }
 
+export KUBECONFIG="${KUBECONFIG:-/home/ubuntu/.kube/config}"
+NAMESPACE="immich"
+
 log "${YELLOW}=== Immich Library Backup Started ===${NC}"
 
-VOLUME=$(kubectl get pvc server-immich-pvc -ojsonpath='{.spec.volumeName}')
+VOLUME=$(kubectl get pvc server-immich-pvc -n $NAMESPACE -ojsonpath='{.spec.volumeName}')
 log "Volume name: $VOLUME"
 
-IMMICH_PATH=$(kubectl get pv $VOLUME -ojsonpath='{.spec.local.path}')
+IMMICH_PATH=$(kubectl get pv $VOLUME -n $NAMESPACE -ojsonpath='{.spec.local.path}')
 log "IMMICH_PATH: $IMMICH_PATH"
 
 LIBRARY_PATH="$IMMICH_PATH/library"
