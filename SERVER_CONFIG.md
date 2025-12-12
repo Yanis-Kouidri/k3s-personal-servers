@@ -148,3 +148,9 @@ Securly set private key
 ```bash
     sops --input-type yaml --output-type yaml -d secrets.enc.yaml > secrets.yaml
 ```
+
+## Back up
+
+Look on `./backups/` folder to save all local data on a remote computer.
+
+Look for `backup.sh` files over differents servicies to locally save data
