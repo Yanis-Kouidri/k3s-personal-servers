@@ -17,5 +17,27 @@ Copy the new one
 Give correct right
 
 ```bash
-    k exec deployments/minecraft-server  -- chown -R minecraft:minecraft /data/world
+    k exec deployments/minecraft-server -- chown -R minecraft:minecraft /data/world
+```
+
+## User rcon
+
+```bash
+    k exec deployments/minecraft-server -it -- rcon-cli
+```
+
+## Backup
+
+### Crontask
+
+Do
+
+```bash
+crontab -e
+```
+
+And add this line (adapt do correct location if needed)
+
+```bash
+0 3 * * * /home/ubuntu/k3s-personal-servers/minecraft/backup.sh >> /home/ubuntu/backups/minecraft/backup-minecraft.log 2>&
 ```
