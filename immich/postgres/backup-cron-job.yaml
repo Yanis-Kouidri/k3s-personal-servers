@@ -23,7 +23,7 @@ spec:
                   DATE=$(date +%Y-%m-%d_%H-%M-%S)
                   # La commande pg_dump
                   # PGPASSWORD est utilisé pour éviter le prompt interactif
-                  PGPASSWORD=$POSTGRES_PASSWORD pg_dump -h immich-db -U postgres -d immich > /backups/immich_db_$DATE.sql
+                  PGPASSWORD=$POSTGRES_PASSWORD pg_dump -h postgres -U postgres -d immich > /backups/immich_db_$DATE.sql
 
                   # Nettoyage optionnel : supprimer les fichiers de plus de 7 jours
                   find /backups -type f -mtime +7 -name "*.sql" -delete
