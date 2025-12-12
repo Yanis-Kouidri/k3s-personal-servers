@@ -15,6 +15,23 @@ spec:
       set:
         - name: Strict-Transport-Security
           value: max-age=31536000; includeSubDomains; preload
+        - name: X-Content-Type-Options
+          value: nosniff
+        - name: X-Frame-Options
+          value: DENY
+        - name: Referrer-Policy
+          value: no-referrer
+        - name: Permissions-Policy
+          value: geolocation=(), microphone=(), camera=()
+        - name: Cross-Origin-Opener-Policy
+          value: same-origin
+        - name: Cross-Origin-Embedder-Policy
+          value: require-corp
+        - name: Cross-Origin-Resource-Policy
+          value: same-origin
+      remove:
+        - server # Do not reveal server information (nginx, envoy, etc.)
+        - x-powered-by # Do not reveal server information (Express, PHP, etc.)
   tls:
     session:
       resumption:
