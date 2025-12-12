@@ -134,6 +134,8 @@ This project uses [SOPS](https://github.com/getsops/sops) and [age](https://gith
 
 ### Decrypt and apply to Kubernetes
 
+Securly set private key
+
 ```bash
     read -s -p "Fill the private Age key: " SOPS_AGE_KEY && export SOPS_AGE_KEY && echo
 ```
