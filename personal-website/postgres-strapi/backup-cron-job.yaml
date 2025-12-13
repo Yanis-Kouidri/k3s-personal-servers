@@ -1,0 +1,50 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: strapi-db-backup
+  namespace: portfolio
+spec:
+  schedule: "0 2 * * *"
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: postgres-backup
+              image: postgres:18-alpine
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  echo "Début du backup..."
+                  # La date pour nommer le fichier
+                  DATE=$(date +%Y-%m-%d_%H-%M-%S)
+
+                  DB_SERVICE=postgres-strapi-db-service # Name of the k8s Postgres service
+                  USERNAME=strapi
+                  DATABASE=strapi
+
+                  # La commande pg_dump
+                  # PGPASSWORD est utilisé pour éviter le prompt interactif
+                  PGPASSWORD=$POSTGRES_PASSWORD pg_dump -h $DB_SERVICE -U $USERNAME -d $DATABASE > /backups/strapi_db_$DATE.sql
+
+                  # Nettoyage optionnel : supprimer les fichiers de plus de 7 jours
+                  find /backups -type f -mtime +7 -name "*.sql" -delete
+                  echo "Backup terminé : /backups/strapi_db_$DATE.sql"
+              env:
+                # Récupère les secrets de ta base de données existante
+                - name: POSTGRES_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: strapi-secrets
+                      key: DATABASE_PASSWORD
+              volumeMounts:
+                - name: backup-storage
+                  mountPath: /backups
+          restartPolicy: OnFailure
+          volumes:
+            - name: backup-storage
+              persistentVolumeClaim:
+                claimName: backup-postgres-strapi-pvc
