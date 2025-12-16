@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: immich-redis
-          image: docker.io/valkey/valkey:8@sha256:e6519c81133f55170dcaf1c7711dea0770dc756a7aef0cb919204c8d6e325776
+          image: docker.io/valkey/valkey:9@sha256:fb8d272e529ea567b9bf1302245796f21a2672b8368ca3fcb938ac334e613c8f
           resources:
             requests:
               memory: "64Mi"
