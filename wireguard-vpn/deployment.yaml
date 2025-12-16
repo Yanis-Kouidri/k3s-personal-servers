@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: wireguard
-          image: linuxserver/wireguard
+          image: linuxserver/wireguard:1.0.20250521
           securityContext:
             capabilities: # Add "SYS_MODULE" if necessary
               add: ["NET_ADMIN"]
