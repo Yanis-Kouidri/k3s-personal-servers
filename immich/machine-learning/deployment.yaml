@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: machine-learning-server
+  name: machine-learning-server
+  namespace: immich
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: machine-learning-server
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: machine-learning-server
+    spec:
+      containers:
+        - image: ghcr.io/immich-app/immich-machine-learning:v2
+          name: machine-learning-server
+          envFrom:
+            - configMapRef:
+                name: immich-server-config
+          volumeMounts:
+            - name: modele-cache
+              mountPath: /cache
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+            limits:
+              memory: "4Gi"
+              cpu: "2"
+      volumes:
+        - name: modele-cache
+          persistentVolumeClaim:
+            claimName: machine-learning-server-pvc
