@@ -3,4 +3,10 @@
   "extends": [
     "config:recommended"
   ]
+  "kubernetes": {
+    "fileMatch": ["\\.yaml$"]
+  },
+  "helm-values": {
+    "fileMatch": ["values.yaml$"]
+  }
 }
