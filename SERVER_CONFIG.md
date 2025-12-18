@@ -173,3 +173,15 @@ Securly set private key
 Look on `./backups/` folder to save all local data on a remote computer.
 
 Look for `backup.sh` files over differents servicies to locally save data
+
+## Firewall
+
+Do not use `ufw` or over firewall on the vps itselt, it may collaps with `k3s`.
+
+Instead use the host firewall (OVH, Hetzner, etc.) and allow only requiered port.
+
+Exemple with this priority : 
+1. Allow TCP destination port 22, 80, 443, 25565, 51820
+2. Allow TCP established to be able to reach internet
+3. Allow UDP source port 53 and 123 to get UDP response for DNS and NTP
+4. Refuse all
