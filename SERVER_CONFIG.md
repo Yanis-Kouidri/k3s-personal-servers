@@ -96,6 +96,25 @@ Check node:
 kubectl get node
 ```
 
+### Secure k3s
+
+Create or edit this file:
+
+```bash
+sudo vi /etc/rancher/k3s/config.yaml
+```
+
+Add these lines:
+
+```yaml
+# Do not expose server API on public IP address
+bind-address: "127.0.0.1"
+
+# Do not expose kublet on public IP address
+kubelet-arg:
+  - "address=127.0.0.1"
+```
+
 ## Kubens
 
 To easly change namespace
