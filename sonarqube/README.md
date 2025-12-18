@@ -38,5 +38,5 @@ conrtab -e
 add this line
 
 ```bash
-0 3 * * * /home/ubuntu/k3s-personal-servers/sonarqube/backup.sh >> /home/ubuntu/backups/sonarqube/backup-sonarqube.log 2>&
+0 3 * * * /home/ubuntu/k3s-personal-servers/sonarqube/backup.sh >> /home/ubuntu/backups/sonarqube/backup-sonarqube.log 2>&1
 ```

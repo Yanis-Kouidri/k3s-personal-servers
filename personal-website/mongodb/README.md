@@ -14,7 +14,7 @@ crontab -e
 Add this line:
 
 ```bash
-0 3 * * * /home/ubuntu/k3s-personal-servers/personal-website/mongodb/backup.sh >> /home/ubuntu/backups/portfolio/backup-mongodb.log 2>&
+0 3 * * * /home/ubuntu/k3s-personal-servers/personal-website/mongodb/backup.sh >> /home/ubuntu/backups/portfolio/backup-mongodb.log 2>&1
 ```
 
 ## Restore 

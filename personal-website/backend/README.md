@@ -29,6 +29,6 @@ crontab -e
 And add this line:
 
 ```bash
-0 3 * * * /home/ubuntu/k3s-personal-servers/personal-website/backend/backup.sh >> /home/ubuntu/backups/portfolio/backup-backend.log 2>&
+0 3 * * * /home/ubuntu/k3s-personal-servers/personal-website/backend/backup.sh >> /home/ubuntu/backups/portfolio/backup-backend.log 2>&1
 ```
 

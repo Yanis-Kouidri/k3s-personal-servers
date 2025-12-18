@@ -33,5 +33,5 @@ crontab -e
 And add this line (adapt do correct location if needed)
 
 ```bash
-0 3 * * * /home/ubuntu/k3s-personal-servers/immich/server/backup.sh >> /home/ubuntu/backups/immich/backup-immich.log 2>&
+0 3 * * * /home/ubuntu/k3s-personal-servers/immich/server/backup.sh >> /home/ubuntu/backups/immich/backup-immich.log 2>&1
 ```
