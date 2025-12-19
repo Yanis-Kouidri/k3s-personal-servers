@@ -61,6 +61,12 @@ Set a good host name:
 sudo hostnamectl set-hostname vps-ovh-prod
 ```
 
+Set a good time zone:
+
+```bash
+sudo timedatectl set-timezone Europe/Paris
+```
+
 Install dotfiles: [https://github.com/Yanis-Kouidri/dotfiles](https://github.com/Yanis-Kouidri/dotfiles)
 
 ## Install K3s
