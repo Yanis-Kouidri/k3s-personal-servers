@@ -14,6 +14,7 @@ Currently running:
 - **Cert-Manager** – Automatic SSL certificates
 - **Envoy API Gateway** - Reverse proxy
 - **Wireguard** - Fast and secure VPN
+- **n8n** - Workflow automation platform
 - And more to come…
 
 ## Prerequisites
