@@ -1,0 +1,20 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: n8n-kouidri-fr
+  namespace: n8n
+spec:
+  hostnames:
+    - n8n.kouidri.fr
+  parentRefs:
+    - name: envoy-gateway
+      namespace: envoy-gateway-system
+      sectionName: https
+  rules:
+    - backendRefs:
+        - name: n8n
+          port: 5678
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
