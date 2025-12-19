@@ -123,13 +123,13 @@ This project uses [SOPS](https://github.com/getsops/sops) and [age](https://gith
 ### Set up public key
 
 ```bash
-    export PUBLIC_AGE_KEY=age1XXX # Paste your age public key here
+export PUBLIC_AGE_KEY=age1XXX # Paste your age public key here
 ```
 
 ### Encrypt secrets
 
 ```bash
-    sops --encrypt --age "$PUBLIC_AGE_KEY" secrets.yaml > secrets.enc.yaml
+sops --encrypt --age "$PUBLIC_AGE_KEY" secrets.yaml > secrets.enc.yaml
 ```
 
 ### Decrypt and apply to Kubernetes
@@ -137,16 +137,16 @@ This project uses [SOPS](https://github.com/getsops/sops) and [age](https://gith
 Securly set private key
 
 ```bash
-    read -s -p "Fill the private Age key: " SOPS_AGE_KEY && export SOPS_AGE_KEY && echo
+read -s -p "Fill the private Age key: " SOPS_AGE_KEY && export SOPS_AGE_KEY && echo
 ```
 
 ```bash    
-    sops --input-type yaml --output-type yaml -d secrets.enc.yaml | kubectl apply -f -
+sops --input-type yaml --output-type yaml -d secrets.enc.yaml | kubectl apply -f -
 ```
 ### Decrypt to a file
 
 ```bash
-    sops --input-type yaml --output-type yaml -d secrets.enc.yaml > secrets.yaml
+sops --input-type yaml --output-type yaml -d secrets.enc.yaml > secrets.yaml
 ```
 
 ## Back up
