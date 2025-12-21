@@ -155,6 +155,12 @@ sops --input-type yaml --output-type yaml -d secrets.enc.yaml | kubectl apply -f
 sops --input-type yaml --output-type yaml -d secrets.enc.yaml > secrets.yaml
 ```
 
+### Decrypt to a test (in the terminal)
+
+```bash
+sops --input-type yaml --output-type yaml -d secrets.enc.yaml
+```
+
 ## Back up
 
 Look on `./backups/` folder to save all local data on a remote computer.
