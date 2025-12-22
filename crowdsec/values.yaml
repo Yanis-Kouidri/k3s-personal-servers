@@ -13,6 +13,8 @@ agent:
   env:
     - name: COLLECTIONS
       value: "crowdsecurity/base-http-scenarios"
+    - name: PARSERS
+      value: "crowdsecurity/cri-logs"
 lapi:
   envFrom:
     - secretRef:
@@ -27,42 +29,39 @@ config:
     ## @param config.parsers.s01-parse Second step custom parsers definitions, usually to normalize logs into events
     s01-parse:
       envoy-parser.yaml: |
-        filter: "evt.Line.Labels.program == 'envoy' || evt.Line.Labels.type == 'envoy'"
+        filter: "evt.Parsed.logsource == 'cri'"
         onsuccess: next_stage
         name: custom/envoy
-        description: "Parse Envoy logs from CRI/Kubernetes format"
-
-        # 1. On utilise GROK pour isoler le JSON pur
-        # On cherche tout ce qui est après 'stdout F ' ou 'stderr F '
-        grok:
-          pattern: '^.*?std(?:out|err)\s+[A-Z]\s+%{GREEDYDATA:envoy_json}$'
-          apply_on: Line.Raw
-
+        description: envoy json logs parser
         statics:
-          # 2. On définit l'horodatage
           - target: evt.StrTime
-            expression: "JsonExtract(evt.Parsed.envoy_json, 'start_time')"
+            expression: JsonExtract(evt.Parsed.message, "start_time")
 
-          # 3. On remplit les METAS (Obligatoire pour que le scénario http-cve-probing s'active)
+          - parsed: raw_remote_addr
+            expression: JsonExtract(evt.Parsed.message, "downstream_remote_address")
+          - parsed: remote_addr
+            expression: "Split(evt.Parsed.raw_remote_addr, ':')[0]"
+          - parsed: request
+            expression: JsonExtract(evt.Parsed.message, "x-envoy-origin-path")
+          - parsed: verb
+            expression: JsonExtract(evt.Parsed.message, "method")
+          - parsed: http_status
+            expression: JsonExtract(evt.Parsed.message, "response_code")
+          - parsed: user_agent
+            expression: JsonExtract(evt.Parsed.message, "user-agent")
+          - parsed: target_fqdn
+            expression: JsonExtract(evt.Parsed.message, ":authority")
+          - parsed: program
+            expression: evt.Line.Labels.program
           - meta: service
             value: http
           - meta: log_type
             value: http_access-log
-          
-          # Extraction des valeurs depuis le champ 'envoy_json' créé par le grok ci-dessus
           - meta: source_ip
-            expression: "Split(JsonExtract(evt.Parsed.envoy_json, 'downstream_remote_address'), ':')[0]"
-          
+            expression: "evt.Parsed.remote_addr"
           - meta: http_path
-            expression: "JsonExtract(evt.Parsed.envoy_json, 'x-envoy-origin-path')"
-          
-          - meta: http_status
-            expression: "JsonExtract(evt.Parsed.envoy_json, 'response_code')"
-          
+            expression: "evt.Parsed.request"
           - meta: http_verb
-            expression: "JsonExtract(evt.Parsed.envoy_json, 'method')"
-            
-          - meta: target_fqdn
-            expression: "JsonExtract(evt.Parsed.envoy_json, ':authority')"
-
-    ## @param config.parsers.s02-enrich Third step custom parsers definitions, usually to enrich events
+            expression: "evt.Parsed.verb"
+          - meta: http_status
+            expression: "evt.Parsed.http_status"
