@@ -18,6 +18,60 @@ helm install crowdsec crowdsec/crowdsec -n crowdsec -f values.yaml
 Reinstall with a new `values.yaml` config:
 
 ```bash
-helm upgrade --install crowdsec crowdsec/crowdsec -n crowdsec -f
-values.yaml
+helm upgrade --install crowdsec crowdsec/crowdsec -n crowdsec -f values.yaml
+```
+
+## Bouncer component
+
+check if iptables or nftables is used
+
+```bash
+iptables -V
+```
+
+install repo:
+
+curl -s https://install.crowdsec.net | sudo sh
+
+### nftables
+
+```bash
+sudo apt install crowdsec-firewall-bouncer-nftables
+```
+
+### iptables
+
+```bash
+sudo apt install crowdsec-firewall-bouncer-iptables
+```
+
+Generate a API key en LAPI:
+
+```bash
+kubectl exec -n crowdsec <POD_LAPI> -- cscli bouncers add vps-host-bouncer
+```
+
+Edit this file:
+
+```bash
+sudo vi /etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml
+```
+
+change :
+
+```yaml
+api_url: http://<SERVICE_CLUSTER_IP>:8080/
+api_key: <API_KEY>
+```
+
+Restart:
+
+```bash
+sudo systemctl restart crowdsec-firewall-bouncer
+```
+
+Check:
+
+```bash
+kubectl exec -n crowdsec <POD_LAPI> -- cscli bouncers list
 ```
