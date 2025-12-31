@@ -35,7 +35,7 @@ config:
     ## @param config.parsers.s01-parse Second step custom parsers definitions, usually to normalize logs into events
     s01-parse:
       envoy-parser.yaml: |
-        filter: "evt.Parsed.logsource == 'cri'"
+        filter: "evt.Parsed.logsource == 'cri' && evt.Parsed.program == 'envoy'"
         onsuccess: next_stage
         name: custom/envoy
         description: envoy json logs parser
