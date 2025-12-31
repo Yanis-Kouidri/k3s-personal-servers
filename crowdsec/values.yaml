@@ -12,7 +12,7 @@ agent:
       poll_without_inotify: true
   env:
     - name: COLLECTIONS
-      value: "crowdsecurity/base-http-scenarios"
+      value: "crowdsecurity/base-http-scenarios crowdsecurity/http-cve crowdsecurity/http-dos crowdsecurity/cdn-whitelist crowdsecurity/seo-bots-whitelist crowdsecurity/whitelist-good-actors"
     - name: PARSERS
       value: "crowdsecurity/cri-logs"
 lapi:
