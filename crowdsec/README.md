@@ -29,17 +29,19 @@ check if iptables or nftables is used
 iptables -V
 ```
 
-install repo:
+Install repo:
 
+```bash
 curl -s https://install.crowdsec.net | sudo sh
+```
 
-### nftables
+### If nftables
 
 ```bash
 sudo apt install crowdsec-firewall-bouncer-nftables
 ```
 
-### iptables
+### If iptables
 
 ```bash
 sudo apt install crowdsec-firewall-bouncer-iptables
@@ -48,7 +50,7 @@ sudo apt install crowdsec-firewall-bouncer-iptables
 Generate a API key en LAPI:
 
 ```bash
-kubectl exec -n crowdsec <POD_LAPI> -- cscli bouncers add vps-host-bouncer
+kubectl exec -n crowdsec deployment/crowdsec-lapi -- cscli bouncers add vps-host-bouncer
 ```
 
 Edit this file:
@@ -74,4 +76,24 @@ Check:
 
 ```bash
 kubectl exec -n crowdsec <POD_LAPI> -- cscli bouncers list
+```
+
+## Debug
+
+To see decision tooken by LAPI
+
+```bash
+kubectl exec deployment/crowdsec-lapi -n crowdsec -- cscli decisions list
+```
+
+To see metrics
+
+```bash
+kubectl exec daemonsets/crowdsec-agent -n crowdsec -- cscli metrics
+```
+
+To see aquisition files (`aquis.yaml`)
+
+```bash
+kubectl exec daemonsets/crowdsec-agent -n crowdsec -- cat /etc/crowdsec/acquis.yaml
 ```
