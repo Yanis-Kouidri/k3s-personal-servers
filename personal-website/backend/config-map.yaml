@@ -5,8 +5,5 @@ metadata:
   namespace: portfolio
 data:
   NODE_ENV: production
-  NODE_JS_MONGODB_ADDRESS: mongodb
-  NODE_JS_MONGODB_PORT: "27017"
-  NODE_JS_MONGODB_DATABASE: mydb?authSource=admin
-  NODE_JS_FRONTEND_URL: https://www.kouidri.fr # my domaine (ex: http://portfolio.kouidri.fr)
-  NODE_JS_PORT: "3001"
+  ALLOWED_ORIGIN: https://www.kouidri.fr # my domaine (ex: http://portfolio.kouidri.fr)
+  PORT: "3001" # The port the server should listen on
