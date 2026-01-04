@@ -25,7 +25,7 @@ spec:
 
                   # 1. Dump and compression on the fly
                   # --archive outputs a single file, --gzip compresses it
-                  mongodump --uri="mongodb://$MONGO_USERNAME:$MONGO_PASSWORD@$MONGO_ADDRESS:$MONGO_PORT/$MONGO_DATABASE" --archive=/backup/$BACKUP_NAME --gzip
+                  mongodump --uri="$MONGODB_URI" --archive=/backup/$BACKUP_NAME --gzip
 
                   if [ $? -eq 0 ]; then
                     echo "Success: Backup created: $BACKUP_NAME"
@@ -38,31 +38,11 @@ spec:
                   echo "--- Cleaning up old backups ---"
                   find /backup -name "mongo-backup-*" -mtime +7 -delete
               env:
-                - name: MONGO_USERNAME
+                - name: MONGODB_URI
                   valueFrom:
                     secretKeyRef:
                       name: backend
-                      key: NODE_JS_MONGODB_USERNAME
-                - name: MONGO_PASSWORD
-                  valueFrom:
-                    secretKeyRef:
-                      name: backend
-                      key: NODE_JS_MONGODB_PASSWORD
-                - name: MONGO_PORT
-                  valueFrom:
-                    configMapKeyRef:
-                      name: backend
-                      key: NODE_JS_MONGODB_PORT
-                - name: MONGO_ADDRESS
-                  valueFrom:
-                    configMapKeyRef:
-                      name: backend
-                      key: NODE_JS_MONGODB_ADDRESS
-                - name: MONGO_DATABASE
-                  valueFrom:
-                    configMapKeyRef:
-                      name: backend
-                      key: NODE_JS_MONGODB_DATABASE
+                      key: MONGODB_URI
               volumeMounts:
                 - name: backup-storage
                   mountPath: /backup
