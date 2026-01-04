@@ -25,12 +25,12 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: backend
-                  key: NODE_JS_MONGODB_USERNAME
+                  key: NODE_JS_MONGODB_USERNAME #FIXME
             - name: MONGO_INITDB_ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: backend
-                  key: NODE_JS_MONGODB_PASSWORD
+                  key: NODE_JS_MONGODB_PASSWORD #FIXME
           volumeMounts:
             - name: mongodb-data
               mountPath: /data/db
