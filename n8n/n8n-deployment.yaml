@@ -54,7 +54,31 @@ spec:
             - name: N8N_PORT
               value: "5678"
           image: n8nio/n8n:stable
+          imagePullPolicy: Always
           name: n8n
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: 5678
+            failureThreshold: 30
+            periodSeconds: 10 # 5 minutes max to start (30 * 10s)
+
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 5678
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 5678
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            failureThreshold: 5
+
           ports:
             - containerPort: 5678
           resources:
