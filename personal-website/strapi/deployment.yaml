@@ -16,6 +16,7 @@ spec:
       containers:
         - name: strapi
           image: ghcr.io/yanis-kouidri/cms-strapi:0.1.0
+          imagePullPolicy: Always
           envFrom:
             - secretRef:
                 name: strapi-secrets
