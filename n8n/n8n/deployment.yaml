@@ -39,6 +39,8 @@ spec:
               value: "5432"
             - name: DB_POSTGRESDB_DATABASE
               value: n8n
+            - name: N8N_PROXY_HOPS
+              value: "1"
             - name: DB_POSTGRESDB_USER
               valueFrom:
                 secretKeyRef:
