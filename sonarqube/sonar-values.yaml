@@ -14,7 +14,7 @@ monitoringPasscode: "admin"
 
 community:
   enabled: true
-  buildNumber: "25.11.0.114957"
+  buildNumber: "26.1.0.118079"
 
 resources:
   requests:
@@ -22,7 +22,7 @@ resources:
     cpu: "500m"
   limits:
     memory: "3Gi"
-    cpu: "1"
+    cpu: "3"
 
 ingress:
   enabled: false
