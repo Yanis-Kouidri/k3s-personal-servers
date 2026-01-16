@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tor-daemon
+  namespace: envoy-gateway-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tor-daemon
+  template:
+    metadata:
+      labels:
+        app: tor-daemon
+    spec:
+      securityContext:
+        fsGroup: 100
+
+      initContainers:
+        - name: fix-permissions
+          image: alpine:latest
+          command:
+            [
+              "sh",
+              "-c",
+              "chown -R 100:100 /var/lib/tor && chmod -R 700 /var/lib/tor",
+            ]
+          volumeMounts:
+            - name: tor-data
+              mountPath: /var/lib/tor
+
+      containers:
+        - name: tor
+          image: alpine:latest
+          command: ["sh", "-c"]
+          args:
+            - |
+              apk add --no-cache tor && \
+              tor -f /etc/tor/torrc --User tor
+          volumeMounts:
+            - name: tor-config
+              mountPath: /etc/tor/torrc
+              subPath: torrc
+            - name: tor-data
+              mountPath: /var/lib/tor
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"
+
+      volumes:
+        - name: tor-config
+          configMap:
+            name: tor-config
+        - name: tor-data
+          persistentVolumeClaim:
+            claimName: tor-hostname-data
