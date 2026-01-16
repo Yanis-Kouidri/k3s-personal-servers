@@ -20,13 +20,17 @@ helm repo update
 helm upgrade --install --create-namespace -n sonarqube postgres-sonarqube oci://registry-1.docker.io/bitnamicharts/postgresql -f postgres-values.yaml
 ```
 
-# Install or upgrade Sonarqube 
+# Install or upgrade Sonarqube
+
+NB: To upgrade sonarqube, get the last build version on [GitHub](https://github.com/SonarSource/sonarqube/releases) and paste it in `sonar-values.yaml`.
+
+Then:
 
 ```bash
 helm upgrade --install --create-namespace -n sonarqube sonarqube sonarqube/sonarqube -f sonar-values.yaml
 ```
 
-It may be necessary to go en sonarqube.kouidri.fr/setup to upgrade database after upgrade
+It may be necessary to go on https://sonarqube.kouidri.fr/setup to upgrade database after upgrade.
 
 
 ## Database backup 
