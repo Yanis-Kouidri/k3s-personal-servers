@@ -178,3 +178,68 @@ Exemple with this priority :
 2. Allow TCP established to be able to reach internet
 3. Allow UDP source port 53 and 123 to get UDP response for DNS and NTP
 4. Refuse all
+
+## IPv6
+
+### IPv6 bridge to IPv4
+
+If k3s was installed vanilla, it will not listen on IPv6 or provite IPv6 range.
+Therefore, easiet way to handle IPv6 request is to create a bridge thanks to socat.
+
+Install socat
+
+```bash
+sudo apt update && sudo apt install socat -y
+```
+
+Create a service here:
+
+```bash
+sudo vi /etc/systemd/system/ipv6-proxy@.service
+```
+
+And paste
+
+```ini
+[Unit]
+Description=IPv6 to IPv4 Proxy Bridge for Port %i
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/socat TCP6-LISTEN:%i,ipv6only=1,reuseaddr,fork TCP4:127.0.0.1:%i
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Create 2 services one for port 80 and one for port 443
+
+```bash
+sudo systemctl daemon-reload
+
+sudo systemctl enable --now ipv6-proxy@80
+
+sudo systemctl enable --now ipv6-proxy@443
+```
+
+Check status:
+
+```bash
+sudo systemctl status ipv6-proxy@80
+sudo systemctl status ipv6-proxy@443
+```
+
+Test from another machine, it should test both 80 and 443 thanks to redirection
+
+```bash
+curl -6 -v -L http://www.kouidri.fr
+```
+
+To be sure:
+
+```bash
+curl -6 -v -L https://www.kouidri.fr
+```
