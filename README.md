@@ -10,12 +10,16 @@ Currently running:
 - **Immich** – Self-hosted Google Photos alternative
 - **SonarQube** – Code quality & security analysis
 - **Minecraft Server** (via Itzg Docker image)
-- **Personal Website** (using MERN stack)
+- **Personal Website** (using MERN stack) and accessible from TOR network
 - **Cert-Manager** – Automatic SSL certificates
 - **Envoy API Gateway** - Reverse proxy
 - **Wireguard** - Fast and secure VPN
 - **n8n** - Workflow automation platform
 - And more to come…
+
+### Personal website
+
+Accessible from https://www.kouidri.fr or http://kouidri6bhboadbevagrvs52nmyvfhgafavqozvs6b756bzh3e4sd7qd.onion using [TOR browser](https://www.torproject.org) (Work in progress)
 
 ## Prerequisites
 
