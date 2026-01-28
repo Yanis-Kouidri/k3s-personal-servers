@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: postgres
-          image: ghcr.io/immich-app/postgres:16-vectorchord0.4.3-pgvectors0.2.0@sha256:1a078b237c1d9b420b0ee59147386b4aa60d3a07a8e6a402fc84a57e41b043a4
+          image: ghcr.io/immich-app/postgres:18-vectorchord0.5.3-pgvector0.8.1
           envFrom:
             - secretRef:
                 name: immich-db-secret
@@ -25,8 +25,7 @@ spec:
             - containerPort: 5432
           volumeMounts:
             - name: postgres-storage
-              mountPath: /var/lib/postgresql/data
-              subPath: postgres-data
+              mountPath: /var/lib/postgresql
           resources:
             requests:
               memory: "256Mi"
