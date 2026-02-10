@@ -5,7 +5,7 @@ metadata:
   name: minecraft-server-config
   namespace: minecraft
 data:
-  VERSION: 1.21.8
+  VERSION: 1.21.11
   EULA: "TRUE"
   TYPE: "PAPER"
   ENABLE_RCON: "TRUE"
@@ -19,6 +19,6 @@ data:
   ENABLE_WHITELIST: "TRUE"
   WHITELIST: "Volgare"
   PLUGINS: |
-    https://cdn.modrinth.com/data/1u6JkXh5/versions/3ISh7ADm/worldedit-bukkit-7.3.17.jar
-    https://download.luckperms.net/1609/bukkit/loader/LuckPerms-Bukkit-5.5.20.jar
-    https://cdn.modrinth.com/data/DKY9btbd/versions/PO4MKx7e/worldguard-bukkit-7.0.14-dist.jar
+    https://cdn.modrinth.com/data/1u6JkXh5/versions/CkT32vix/worldedit-bukkit-7.4.0.jar
+    https://download.luckperms.net/1620/bukkit/loader/LuckPerms-Bukkit-5.5.32.jar
+    https://cdn.modrinth.com/data/DKY9btbd/versions/WaElxvDz/worldguard-bukkit-7.0.15.jar
