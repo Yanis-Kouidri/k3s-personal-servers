@@ -102,6 +102,21 @@ Check node:
 kubectl get node
 ```
 
+To ensure that traefik won't be installed in a next update:
+
+```bash
+sudo vi /etc/rancher/k3s/config.yaml
+```
+
+Add this:
+
+```yaml
+disable:
+    - traefik
+```
+
+
+
 ## Kubens
 
 To easly change namespace
@@ -251,3 +266,13 @@ Simply run:
 ```
 curl -sfL https://get.k3s.io | sh -s -
 ```
+
+## k3s monitoring
+
+Inspect logs:
+
+```
+journalctl -u k3s.service -f
+```
+
+
