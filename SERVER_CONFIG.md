@@ -243,3 +243,11 @@ To be sure:
 ```bash
 curl -6 -v -L https://www.kouidri.fr
 ```
+
+## k3s update
+
+Simply run:
+
+```
+curl -sfL https://get.k3s.io | sh -s -
+```
