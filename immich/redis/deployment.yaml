@@ -26,5 +26,6 @@ spec:
           livenessProbe:
             exec:
               command:
-                - redis-cli ping || exit 1
+                - valkey-cli 
+                - ping
       restartPolicy: Always
