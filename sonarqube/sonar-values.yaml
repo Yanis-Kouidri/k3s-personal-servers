@@ -14,7 +14,7 @@ monitoringPasscode: "admin"
 
 community:
   enabled: true
-  buildNumber: "26.1.0.118079"
+  buildNumber: "26.2.0.119303"
 
 resources:
   requests:
