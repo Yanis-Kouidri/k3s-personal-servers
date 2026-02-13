@@ -8,5 +8,16 @@
   },
   "helm-values": {
     "fileMatch": ["values.yaml$"]
-  }
+  },
+  "regexManagers": [
+    {
+      "fileMatch": ["(^|/)values\\.yaml$"],
+      "matchStrings": [
+        "buildNumber:\\s*\"(?<currentValue>.*?)\""
+      ],
+      "depNameTemplate": "SonarSource/sonarqube",
+      "datasourceTemplate": "github-releases",
+      "versioningTemplate": "loose"
+    }
+  ]
 }
