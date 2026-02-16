@@ -47,7 +47,7 @@ sudo apt install crowdsec-firewall-bouncer-nftables
 sudo apt install crowdsec-firewall-bouncer-iptables
 ```
 
-Generate a API key en LAPI:
+Generate a API key on LAPI:
 
 ```bash
 kubectl exec -n crowdsec deployment/crowdsec-lapi -- cscli bouncers add vps-host-bouncer
@@ -56,13 +56,13 @@ kubectl exec -n crowdsec deployment/crowdsec-lapi -- cscli bouncers add vps-host
 Edit this file:
 
 ```bash
-sudo vi /etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml
+sudoedit /etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml
 ```
 
 change :
 
 ```yaml
-api_url: http://<SERVICE_CLUSTER_IP>:8080/
+api_url: http://<CROWDSEC_SERVICE_CLUSTER_IP>:8080/
 api_key: <API_KEY>
 ```
 
