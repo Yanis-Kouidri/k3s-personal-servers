@@ -33,6 +33,10 @@ spec:
         - server # Do not reveal server information (nginx, envoy, etc.)
         - x-powered-by # Do not reveal server information (Express, PHP, etc.)
   tls:
+    ecdhCurves:
+      - X25519MLKEM768
+      - X25519
+      - P-256
     session:
       resumption:
         stateless: {}
