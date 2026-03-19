@@ -18,7 +18,7 @@ spec:
         app: machine-learning-server
     spec:
       containers:
-        - image: ghcr.io/immich-app/immich-machine-learning:v2.5.6
+        - image: ghcr.io/immich-app/immich-machine-learning:v2.6.1
           name: machine-learning-server
           envFrom:
             - configMapRef:
