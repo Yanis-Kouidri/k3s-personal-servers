@@ -4,14 +4,21 @@
     "config:recommended"
   ],
   "kubernetes": {
-    "fileMatch": ["\\.yaml$"]
+    "managerFilePatterns": [
+      "/\\.yaml$/"
+    ]
   },
   "helm-values": {
-    "fileMatch": ["values.yaml$"]
+    "managerFilePatterns": [
+      "/values.yaml$/"
+    ]
   },
-  "regexManagers": [
+  "customManagers": [
     {
-      "fileMatch": ["(^|/)sonar-values\\.yaml$"],
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/(^|/)sonar-values\\.yaml$/"
+      ],
       "matchStrings": [
         "buildNumber:\\s*\"(?<currentValue>.*?)\""
       ],
