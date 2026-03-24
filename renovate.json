@@ -20,5 +20,12 @@
       "versioningTemplate": "loose"
     }
   ],
-  "followTag": "stable"
+  "packageRules": [
+    {
+      "description": "Force n8n to follow the tag stable because their releases SemVer include pre-releases",
+      "matchPackageNames": ["n8nio/n8n"],
+      "matchDatasources": ["docker"],
+      "followTag": "stable"
+    }
+  ]
 }
