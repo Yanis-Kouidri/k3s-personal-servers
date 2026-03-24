@@ -19,5 +19,6 @@
       "datasourceTemplate": "github-releases",
       "versioningTemplate": "loose"
     }
-  ]
+  ],
+  "followTag": "stable"
 }
