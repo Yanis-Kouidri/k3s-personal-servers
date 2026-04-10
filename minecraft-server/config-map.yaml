@@ -19,6 +19,6 @@ data:
   ENABLE_WHITELIST: "TRUE"
   WHITELIST: "Volgare"
   PLUGINS: |
-    https://cdn.modrinth.com/data/1u6JkXh5/versions/CkT32vix/worldedit-bukkit-7.4.0.jar
-    https://download.luckperms.net/1620/bukkit/loader/LuckPerms-Bukkit-5.5.32.jar
-    https://cdn.modrinth.com/data/DKY9btbd/versions/WaElxvDz/worldguard-bukkit-7.0.15.jar
+    https://cdn.modrinth.com/data/1u6JkXh5/versions/p8T2aZ8U/worldedit-bukkit-7.4.2.jar
+    https://download.luckperms.net/1631/bukkit/loader/LuckPerms-Bukkit-5.5.42.jar
+    https://cdn.modrinth.com/data/DKY9btbd/versions/EZl3moba/worldguard-bukkit-7.0.16.jar
