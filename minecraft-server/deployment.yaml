@@ -5,6 +5,9 @@ metadata:
   namespace: minecraft
 spec:
   replicas: 1
+  revisionHistoryLimit: 2 
+  strategy:
+    type: Recreate # Use to avoid to have 2 minecraft server pods simutanniously
   selector:
     matchLabels:
       app: minecraft-server
