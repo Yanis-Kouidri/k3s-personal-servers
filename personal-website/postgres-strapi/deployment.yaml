@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: postgres
-          image: postgres:18.3-alpine3.22
+          image: postgres:18.4-alpine3.22
           env:
             - name: PGDATA # Define data storage explicitly
               value: /var/lib/postgresql/18/docker
