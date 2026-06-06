@@ -4,7 +4,7 @@ resources:
   # - crowdsec
   # - immich
   - minecraft-server
-  # - n8n
+  - n8n
   # - personal-website
   # - personal-website-v2
   # - sonarqube (tu peux le commenter si tu veux le désactiver temporairement)
