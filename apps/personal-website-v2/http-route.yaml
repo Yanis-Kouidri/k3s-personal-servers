@@ -1,0 +1,20 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: personal-website-v2-beta-kouidri-fr
+  namespace: personal-website-v2
+spec:
+  hostnames:
+    - beta.kouidri.fr
+  parentRefs:
+    - name: envoy-gateway
+      namespace: envoy-gateway-system
+      sectionName: https
+  rules:
+    - backendRefs:
+        - name: personal-website-v2
+          port: 80
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
