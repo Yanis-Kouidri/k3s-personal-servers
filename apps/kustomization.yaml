@@ -6,6 +6,6 @@ resources:
   - minecraft-server
   - n8n
   # - personal-website
-  # - personal-website-v2
+  - personal-website-v2
   # - sonarqube
   - wireguard-vpn
