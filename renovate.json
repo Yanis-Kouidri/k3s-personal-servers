@@ -1,16 +1,14 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "timezone": "Europe/Paris",
+  "schedule": ["before 6am"],
+  "labels": ["renovate", "dependencies"],
   "extends": [
     "config:recommended"
   ],
   "kubernetes": {
     "managerFilePatterns": [
       "/\\.yaml$/"
-    ]
-  },
-  "helm-values": {
-    "managerFilePatterns": [
-      "/values.yaml$/"
     ]
   },
   "customManagers": [
@@ -25,6 +23,27 @@
       "depNameTemplate": "SonarSource/sonarqube",
       "datasourceTemplate": "github-releases",
       "versioningTemplate": "loose"
+    }
+  ],
+  "platformAutomerge": true,
+  "packageRules": [
+      {
+      "matchUpdateTypes": ["pin", "digest"],
+      "automerge": true
+    },
+    {
+      "matchUpdateTypes": ["patch"],
+      "automerge": true,
+      "minimumReleaseAge": "3 days"
+    },
+    {
+      "matchUpdateTypes": ["minor"],
+      "automerge": true,
+      "minimumReleaseAge": "5 days"
+    },
+    {
+      "matchUpdateTypes": ["major"],
+      "automerge": false
     }
   ]
 }
