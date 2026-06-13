@@ -26,7 +26,7 @@ log() {
 
 usage() {
     echo -e "${YELLOW}Usage: $0 -n <namespace> -p <pvc_name> -N <backup_name> [-s <sub_path>]${NC}"
-    echo -e "  -n  Kubernetes Namespace (e.g., portfolio)"
+    echo -e "  -n  Kubernetes Namespace (e.g., personal-website-v2)"
     echo -e "  -p  PVC name to backup (e.g., mongodb-backup-pvc)"
     echo -e "  -N  Backup name (e.g., mongodb)"
     echo -e "  -s  (Optional) Sub-directory within the volume"
