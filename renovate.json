@@ -7,10 +7,12 @@
     "config:recommended"
   ],
   "kubernetes": {
-    "managerFilePatterns": [
-      "/\\.yaml$/"
-    ]
+    "fileMatch": ["^(apps|clusters|infra)/.*\\.yaml$"]
   },
+  "ignorePaths": [
+    "**/*.enc.yaml",
+    "backups/**"
+  ],
   "customManagers": [
     {
       "customType": "regex",
@@ -45,5 +47,11 @@
       "matchUpdateTypes": ["major"],
       "automerge": false
     }
-  ]
+  ],
+  "vulnerabilityAlerts": {
+    "description": "Immediate updates for security vulnerabilities",
+    "labels": ["security"],
+    "schedule": ["at any time"],
+    "minimumReleaseAge": null
+  }
 }
