@@ -1,9 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: backend
-  namespace: portfolio
-data:
-  NODE_ENV: production
-  ALLOWED_ORIGIN: https://www.kouidri.fr # my domaine (ex: http://portfolio.kouidri.fr)
-  PORT: "3001" # The port the server should listen on
