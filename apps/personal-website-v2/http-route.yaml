@@ -39,3 +39,25 @@ spec:
             scheme: https
             statusCode: 301
             hostname: www.kouidri.fr
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: personal-website-v2-onion-route
+  namespace: personal-website-v2
+spec:
+  parentRefs:
+    - name: envoy-gateway
+      namespace: envoy-gateway-system
+      sectionName: http # Stay in HTTP with TOR
+  hostnames:
+    - "kouidri6bhboadbevagrvs52nmyvfhgafavqozvs6b756bzh3e4sd7qd.onion"
+  rules:
+    - backendRefs:
+        - name: personal-website-v2
+          port: 80
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
+---
