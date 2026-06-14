@@ -1,2 +1,4 @@
 **/*values.yaml
+!apps/sonarqube/sonar-values.yaml
+!apps/sonarqube/postgres-values.yaml
 **/*.sh

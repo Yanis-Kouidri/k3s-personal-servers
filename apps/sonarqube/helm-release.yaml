@@ -1,0 +1,19 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: sonarqube
+  namespace: sonarqube
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: sonarqube
+      sourceRef:
+        kind: HelmRepository
+        name: sonarqube
+        namespace: sonarqube
+  # No version pinned: Flux always installs/upgrades to the latest chart version
+  valuesFrom:
+    - kind: ConfigMap
+      name: sonarqube-values
+      valuesKey: values.yaml

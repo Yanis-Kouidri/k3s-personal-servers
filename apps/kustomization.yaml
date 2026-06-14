@@ -7,5 +7,5 @@ resources:
   - n8n
   # - personal-website
   - personal-website-v2
-  # - sonarqube
+  - sonarqube
   - wireguard-vpn
