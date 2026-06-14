@@ -8,6 +8,7 @@ spec:
   chart:
     spec:
       chart: sonarqube
+      version: "^2026.x.x"
       sourceRef:
         kind: HelmRepository
         name: sonarqube
