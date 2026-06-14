@@ -16,6 +16,10 @@ configMapGenerator:
   - name: sonarqube-values
     files:
       - values.yaml=sonar-values.yaml
+    options:
+      disableNameSuffixHash: true
   - name: postgres-sonarqube-values
     files:
       - values.yaml=postgres-values.yaml
+    options:
+      disableNameSuffixHash: true
