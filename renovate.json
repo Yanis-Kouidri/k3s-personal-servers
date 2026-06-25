@@ -7,7 +7,9 @@
     "config:recommended"
   ],
   "kubernetes": {
-    "fileMatch": ["^(apps|clusters|infra)/.*\\.yaml$"]
+    "managerFilePatterns": [
+      "/^(apps|clusters|infra)/.*\\.yaml$/"
+    ]
   },
   "ignorePaths": [
     "**/*.enc.yaml",
