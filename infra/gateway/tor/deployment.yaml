@@ -31,7 +31,7 @@ spec:
 
       containers:
         - name: tor
-          image: alpine:3.24.0
+          image: alpine:3.24.1
           command: ["sh", "-c"]
           args:
             - |
