@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: personal-website-v2
-          image: ghcr.io/yanis-kouidri/personal-website-v2:0.0.3
+          image: ghcr.io/yanis-kouidri/personal-website-v2:0.0.4
           imagePullPolicy: Always
           resources:
             limits:
