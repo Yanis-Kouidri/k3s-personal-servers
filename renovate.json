@@ -50,7 +50,7 @@
       "automerge": false
     },
     {
-      "matchPaths": [
+      "matchFileNames": [
         "**/gotk-components.yaml"
       ],
       "enabled": false
