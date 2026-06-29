@@ -48,6 +48,12 @@
     {
       "matchUpdateTypes": ["major"],
       "automerge": false
+    },
+    {
+      "matchPaths": [
+        "**/gotk-components.yaml"
+      ],
+      "enabled": false
     }
   ],
   "vulnerabilityAlerts": {
