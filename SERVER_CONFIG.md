@@ -16,7 +16,7 @@ SSH the server with password and add your client public key on `authorized_keys`
 
 Check if it works.
 
-If yes, copy the file `ssh/99-security-hardening.conf` into `/etc/ssh/sshd_config.d/99-security-hardening.conf`
+If yes, copy the file `config-install/99-security-hardening.conf` into `/etc/ssh/sshd_config.d/99-security-hardening.conf`
 
 **Check:**
 
@@ -58,17 +58,24 @@ Install dotfiles: [https://github.com/Yanis-Kouidri/dotfiles](https://github.com
 
 ## Install K3s
 
+Update system and disable firewall:
+
 ```bash
 sudo apt update && sudo apt upgrade -y
 sudo ufw disable
-curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--disable=traefik" sh -
 ```
 
-Check status and nodes:
+Setup k3s config file:
 
 ```bash
-sudo systemctl status k3s
-sudo kubectl get nodes
+sudo mkdir -p /etc/rancher/k3s/
+sudo cp config-install/config.yaml /etc/rancher/k3s/config.yaml
+```
+
+Install k3s:
+
+```bash
+curl -sfL https://get.k3s.io | sh -
 ```
 
 Configure kubeconfig:
@@ -77,32 +84,14 @@ Configure kubeconfig:
 mkdir -p ~/.kube
 sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
 sudo chown $USER:$USER ~/.kube/config
-chmod 600 ~/.kube/config
-
-echo 'export KUBECONFIG=~/.kube/config' >> ~/.bashrc
-source ~/.bashrc
 ```
 
-Check node:
+Check status and nodes:
 
 ```bash
-kubectl get node
+sudo systemctl status k3s
+kubectl get nodes
 ```
-
-To ensure that traefik won't be installed in a next update:
-
-```bash
-sudo vi /etc/rancher/k3s/config.yaml
-```
-
-Add this:
-
-```yaml
-disable:
-    - traefik
-```
-
-
 
 ## Kubens
 

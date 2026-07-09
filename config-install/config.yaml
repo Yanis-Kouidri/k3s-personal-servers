@@ -1,0 +1,9 @@
+disable:
+  - traefik
+
+# Configure Kubeconfig permissions upon generation
+write-kubeconfig-mode: "0600"
+
+# Native Dual-Stack IPv4/IPv6 configuration
+cluster-cidr: "10.42.0.0/16,2001:db8:42::/64"
+service-cidr: "10.43.0.0/16,2001:db8:43::/112"
