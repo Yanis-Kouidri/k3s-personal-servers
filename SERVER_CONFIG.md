@@ -18,6 +18,10 @@ Check if it works.
 
 If yes, copy the file `config-install/99-security-hardening.conf` into `/etc/ssh/sshd_config.d/99-security-hardening.conf`
 
+```bash
+sudo cp config-install/99-security-hardening.conf /etc/ssh/sshd_config.d/99-security-hardening.conf
+```
+
 **Check:**
 
 ```bash
@@ -172,56 +176,7 @@ Exemple with this priority :
 
 ## IPv6
 
-### IPv6 bridge to IPv4
-
-If k3s was installed vanilla, it will not listen on IPv6 or provite IPv6 range.
-Therefore, easiet way to handle IPv6 request is to create a bridge thanks to socat.
-
-Install socat
-
-```bash
-sudo apt update && sudo apt install socat -y
-```
-
-Create a service here:
-
-```bash
-sudo vi /etc/systemd/system/ipv6-proxy@.service
-```
-
-And paste
-
-```ini
-[Unit]
-Description=IPv6 to IPv4 Proxy Bridge for Port %i
-After=network.target
-
-[Service]
-Type=simple
-ExecStart=/usr/bin/socat TCP6-LISTEN:%i,ipv6only=1,reuseaddr,fork TCP4:127.0.0.1:%i
-Restart=always
-RestartSec=5
-
-[Install]
-WantedBy=multi-user.target
-```
-
-Create 2 services one for port 80 and one for port 443
-
-```bash
-sudo systemctl daemon-reload
-
-sudo systemctl enable --now ipv6-proxy@80
-
-sudo systemctl enable --now ipv6-proxy@443
-```
-
-Check status:
-
-```bash
-sudo systemctl status ipv6-proxy@80
-sudo systemctl status ipv6-proxy@443
-```
+IPv6 is handled by default by k3s with the `config.yaml` file
 
 Test from another machine, it should test both 80 and 443 thanks to redirection
 
@@ -250,5 +205,3 @@ Inspect logs:
 ```
 journalctl -u k3s.service -f
 ```
-
-
