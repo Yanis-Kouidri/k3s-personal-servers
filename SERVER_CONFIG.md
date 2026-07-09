@@ -4,32 +4,19 @@
 
 ## SSH
 
+During the VPS provisioning on OVH (or other), provide a brand new ED25519 ssh public key to be able to connect to the VPS directly via SSH. If it's not possible, check host fingerprint, connect to the VPS with password and add manually SSH key as explained here:
+
 Get the ssh fingerprint on server (via web interface for example):
 
 ```bash
 ssh-keygen -l -f /etc/ssh/ssh_host_ed25519_key.pub
 ```
 
-SSH the server with password and add your client public key on `authorized_host` file.
+SSH the server with password and add your client public key on `authorized_keys` file.
 
 Check if it works.
 
-If yes, edit the file `/etc/ssh/sshd_config` on the server:
-
-```bash
-sudo vi /etc/ssh/sshd_config
-```
-
-**Comment:** `Include /etc/ssh/sshd_config.d/*.conf` to avoid overiding conf.
-
-**Set:**
-
-```ssh
-PasswordAuthentication no
-PermitRootLogin no
-X11Forwarding no
-PubkeyAuthentication yes
-```
+If yes, copy the file `ssh/99-security-hardening.conf` into `/etc/ssh/sshd_config.d/99-security-hardening.conf`
 
 **Check:**
 
