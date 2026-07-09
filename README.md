@@ -19,7 +19,7 @@ Currently running:
 
 ### Personal website
 
-Accessible from https://www.kouidri.fr or http://kouidri6bhboadbevagrvs52nmyvfhgafavqozvs6b756bzh3e4sd7qd.onion using [TOR browser](https://www.torproject.org) (Work in progress)
+Accessible from https://www.kouidri.fr or http://kouidri6bhboadbevagrvs52nmyvfhgafavqozvs6b756bzh3e4sd7qd.onion using [TOR browser](https://www.torproject.org)
 
 ## How to set up
 
