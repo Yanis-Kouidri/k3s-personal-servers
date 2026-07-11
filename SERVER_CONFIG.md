@@ -97,9 +97,15 @@ curl -sfL https://get.k3s.io | sh -
 Configure kubeconfig:
 
 ```bash
-mkdir -p ~/.kube
-sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
-sudo chown $USER:$USER ~/.kube/config
+unset KUBECONFIG
+
+mkdir -p "$HOME/.kube"
+sudo install -o "$USER" -g "$USER" -m 0600 \
+  /etc/rancher/k3s/k3s.yaml \
+  "$HOME/.kube/config"
+
+export KUBECONFIG="$HOME/.kube/config"
+echo 'export KUBECONFIG="$HOME/.kube/config"' >> ~/.bashrc
 ```
 
 Check status and nodes:
