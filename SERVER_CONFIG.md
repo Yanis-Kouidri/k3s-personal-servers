@@ -72,6 +72,13 @@ Then:
 echo 'eval "$(starship init bash)"' >> ~/.bashrc
 ```
 
+Apply the config:
+
+```bash
+mkdir ~/.config/
+cp config-install/starship.toml ~/.config/starship.toml
+```
+
 ## Install K3s
 
 Update system and disable firewall:
