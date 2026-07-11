@@ -60,6 +60,18 @@ sudo timedatectl set-timezone Europe/Paris
 
 Install dotfiles: [https://github.com/Yanis-Kouidri/dotfiles](https://github.com/Yanis-Kouidri/dotfiles)
 
+Set a good shell:
+
+```bash
+curl -sS https://starship.rs/install.sh | sh
+```
+
+Then:
+
+```bash
+echo 'eval "$(starship init bash)"' >> ~/.bashrc
+```
+
 ## Install K3s
 
 Update system and disable firewall:
