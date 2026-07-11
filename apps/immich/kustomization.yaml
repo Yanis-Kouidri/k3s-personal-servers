@@ -3,6 +3,7 @@ kind: Kustomization
 
 resources:
   # PostgreSQL
+  - postgres/secrets.enc.yaml
   - postgres/config-map.yaml
   - postgres/deployment.yaml
   - postgres/pvc.yaml

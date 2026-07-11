@@ -3,6 +3,7 @@ kind: Kustomization
 
 resources:
   - namespace.yaml
+  - secrets.enc.yaml
   - n8n/deployment.yaml
   - n8n/http-route.yaml
   - n8n/pvc.yaml
