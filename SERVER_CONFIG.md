@@ -144,6 +144,20 @@ sudo apt-get update
 sudo apt-get install helm
 ```
 
+## FluxCD
+
+Install the CLI:
+
+```bash
+curl -s https://fluxcd.io/install.sh | sudo bash
+```
+
+check:
+
+```bash
+flux --version
+```
+
 ## Secrets with SOPS and age
 
 This project uses [SOPS](https://github.com/getsops/sops) and [age](https://github.com/FiloSottile/age) to manage Kubernetes secrets.
