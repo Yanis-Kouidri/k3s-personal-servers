@@ -121,6 +121,22 @@ This project uses [SOPS](https://github.com/getsops/sops) and [age](https://gith
 - `age` key pair generated
 - `kubectl` configured for the target cluster
 
+### Bootstrap for FluxCD
+
+Enter private Age Key:
+
+```bash
+read -s -p "Fill the private Age key: " SOPS_AGE_KEY && export SOPS_AGE_KEY && echo
+```
+
+Create a secret:
+
+```bash
+kubectl create secret generic sops-age \
+  --namespace=flux-system \
+  --from-literal=age.agekey="$SOPS_AGE_KEY"
+```
+
 ### Set up public key
 
 ```bash
@@ -133,7 +149,7 @@ export PUBLIC_AGE_KEY=age1XXX # Paste your age public key here
 sops --encrypt --age "$PUBLIC_AGE_KEY" secrets.yaml > secrets.enc.yaml
 ```
 
-### Decrypt and apply to Kubernetes
+### Decrypt and apply to Kubernetes (obsolete, FluxCD handles it)
 
 Securly set private key
 
