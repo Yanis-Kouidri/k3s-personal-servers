@@ -1,0 +1,20 @@
+format = """
+$username\
+$hostname\
+$directory\
+$kubernetes\
+$git_branch\
+$git_status\
+$cmd_duration\
+$line_break\
+$character"""
+
+[hostname]
+style = 'bold green'
+
+[kubernetes]
+disabled = false
+format = 'on [⎈ \($namespace\)](bold blue) '
+detect_extensions = []
+detect_files = []
+detect_folders = []
