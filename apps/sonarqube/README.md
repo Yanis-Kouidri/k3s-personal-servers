@@ -48,4 +48,5 @@ crontab -e
 Add this line:
 
 ```bash
-0 3 * * * /home/ubuntu/k3s-personal-servers/apps/sonarqube/backup.sh >> /home/ubuntu/backups/sonarqube/backup-sonarqube.log 2>&1
+0 3 * * * /home/ubuntu/k3s-personal-servers/backups/general_pvc_backup.sh -n sonarqube -N sonarqube-postgres -p backup-sonarqube-pvc >> /home/ubuntu/backups/sonarqube/backup-sonarqube.log 2>&1
+```
