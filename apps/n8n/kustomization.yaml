@@ -11,3 +11,5 @@ resources:
   - postgres/deployment.yaml
   - postgres/postgres-service.yaml
   - postgres/pvc.yaml
+  - postgres/backup-pvc.yaml
+  - postgres/backup-cron-job.yaml

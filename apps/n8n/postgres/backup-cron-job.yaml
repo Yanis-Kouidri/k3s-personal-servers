@@ -1,0 +1,61 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: n8n-db-backup
+  namespace: n8n
+spec:
+  schedule: "0 2 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: postgres-backup
+              image: postgres:18.4-alpine
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -eu
+                  DATE="$(date +%Y-%m-%d_%H-%M-%S)"
+                  BACKUP_FILE="/backups/n8n_db_${DATE}.dump"
+
+                  echo "Starting n8n PostgreSQL backup..."
+                  PGPASSWORD="$POSTGRES_PASSWORD" pg_dump \
+                    -h postgres-service \
+                    -U "$POSTGRES_USER" \
+                    -d n8n \
+                    --format=custom \
+                    --file="$BACKUP_FILE"
+
+                  find /backups -type f -mtime +7 -name "*.dump" -delete
+                  echo "Backup completed: $BACKUP_FILE"
+              env:
+                - name: POSTGRES_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-secret
+                      key: POSTGRES_USER
+                - name: POSTGRES_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-secret
+                      key: POSTGRES_PASSWORD
+              resources:
+                requests:
+                  cpu: "100m"
+                  memory: "128Mi"
+                limits:
+                  cpu: "500m"
+                  memory: "512Mi"
+              volumeMounts:
+                - name: backup-storage
+                  mountPath: /backups
+          volumes:
+            - name: backup-storage
+              persistentVolumeClaim:
+                claimName: backup-n8n-pvc
