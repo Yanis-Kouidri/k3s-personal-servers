@@ -6,3 +6,4 @@ resources:
   - apps.yaml
   - envoy.yaml
   - infra.yaml
+  - cert-manager.yaml

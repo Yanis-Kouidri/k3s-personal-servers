@@ -9,6 +9,7 @@ spec:
   prune: true
   dependsOn:
     - name: envoy
+    - name: cert-manager
   sourceRef:
     kind: GitRepository
     name: flux-system
