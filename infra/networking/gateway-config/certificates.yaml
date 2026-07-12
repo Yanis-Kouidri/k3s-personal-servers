@@ -13,7 +13,6 @@ spec:
   dnsNames:
     - kouidri.fr
     - www.kouidri.fr
-    - cms.kouidri.fr
     - photos.kouidri.fr
     - sonarqube.kouidri.fr
     - n8n.kouidri.fr
