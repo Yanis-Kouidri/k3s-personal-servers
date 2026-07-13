@@ -1,0 +1,47 @@
+# Edit this file to introduce tasks to be run by cron.
+# 
+# Each task to run has to be defined through a single line
+# indicating with different fields when the task will be run
+# and what command to run for the task
+# 
+# To define the time you can provide concrete values for
+# minute (m), hour (h), day of month (dom), month (mon),
+# and day of week (dow) or use '*' in these fields (for 'any').
+# 
+# Notice that tasks will be started based on the cron's system
+# daemon's notion of time and timezones.
+# 
+# Output of the crontab jobs (including errors) is sent through
+# email to the user the crontab file belongs to (unless redirected).
+# 
+# For example, you can run a backup of all your user accounts
+# at 5 a.m every week with:
+# 0 5 * * 1 tar -zcf /var/backups/home.tgz /home/
+# 
+# For more information see the manual pages of crontab(5) and cron(8)
+# 
+# m h  dom mon dow   command
+
+# -- n8n --
+
+0 3 * * * /home/ubuntu/k3s-personal-servers/backups/general_pvc_backup.sh -n n8n -N n8n-postgres -p backup-n8n-pvc >> /home/ubuntu/backups/n8n/backup-n8n.log 2>&1
+
+0 3 * * * /home/ubuntu/k3s-personal-servers/backups/general_pvc_backup.sh -n n8n -N n8n-itself -p n8n-claim0 >> /home/ubuntu/backups/n8n/backup-n8n.log 2>&1
+
+# -- Immich --
+
+0 3 * * * /home/ubuntu/k3s-personal-servers/backups/general_pvc_backup.sh -n immich -N immich-server -p server-immich-pvc >> /home/ubuntu/backups/immich/backup-immich-server.log 2>&1
+
+0 3 * * * /home/ubuntu/k3s-personal-servers/backups/general_pvc_backup.sh -n immich -N immich-postgres -p backup-immich-pvc >> /home/ubuntu/backups/immich/backup-immich-postgres.log 2>&1
+
+# -- WireGuard -- 
+
+0 3 * * * /home/ubuntu/k3s-personal-servers/backups/general_pvc_backup.sh -n wireguard -N wireguard -p wireguard-pvc >> /home/ubuntu/backups/wireguard/backup-wireguard.log 2>&1
+
+# -- Tor --
+
+0 3 * * * /home/ubuntu/k3s-personal-servers/backups/general_pvc_backup.sh -n envoy-gateway-system -N tor -p tor-hostname-data >> /home/ubuntu/backups/envoy-gateway-system/backup-tor.log 2>&1
+
+# -- Minecraft --
+
+# -- Sonarqube --

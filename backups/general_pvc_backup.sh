@@ -58,8 +58,24 @@ fi
 BACKUP_PATH="/home/ubuntu/backups/$NAMESPACE/$NAME/"
 BACKUP_FILENAME="$NAME-$(date +%Y-%m-%d-%H%M).tar.zst"
 BACKUP_FILE="${BACKUP_PATH}${BACKUP_FILENAME}"
+LOCK_FILE="/tmp/backup-${NAMESPACE}-${NAME}.lock"
 
 export KUBECONFIG
+
+# --- Anti-concurrency lock (point 1) ---
+exec 200>"$LOCK_FILE"
+if ! flock -n 200; then
+    log "${RED}Error: A backup for '$NAME' ($NAMESPACE) is already running. Aborting.${NC}"
+    exit 1
+fi
+
+# Cleanup: release the lock fd and remove the lock file on any exit
+# (success, error via set -e, or signal like SIGINT/SIGTERM)
+cleanup() {
+    exec 200>&-
+    rm -f "$LOCK_FILE"
+}
+trap cleanup EXIT
 
 # --- Execution ---
 
@@ -75,7 +91,15 @@ fi
 log "Volume name: $VOLUME_NAME"
 
 # Retrieve local path on the node (Note: pod must be on the same node as this script)
-VOLUME_PATH=$(kubectl get pv "$VOLUME_NAME" -ojsonpath='{.spec.local.path}')
+if ! VOLUME_PATH=$(kubectl get pv "$VOLUME_NAME" -ojsonpath='{.spec.local.path}'); then
+    log "${RED}Error: Unable to retrieve PV '$VOLUME_NAME' details.${NC}"
+    exit 1
+fi
+
+if [[ -z "$VOLUME_PATH" ]]; then
+    log "${RED}Error: '.spec.local.path' is empty for PV '$VOLUME_NAME'.${NC}"
+    exit 1
+fi
 log "Volume path: $VOLUME_PATH"
 
 # Build source path
@@ -100,8 +124,20 @@ if ! sudo test -d "$PATH_TO_BACKUP"; then
 fi
 
 # Create archive
-# Using 'sudo' because PV volumes often belong to root
-sudo tar --use-compress-program=zstd --acls -cpvf "$BACKUP_FILE" -C "$PATH_TO_BACKUP" .
+# --numeric-owner (point 2): preserve UID/GID as numbers, safe for cross-host restore
+# --checkpoint (point 5): lightweight progress instead of full file listing (-v)
+sudo tar --use-compress-program=zstd --acls --numeric-owner \
+    --checkpoint=1000 --checkpoint-action=echo="Archived %u files..." \
+    -cpf "$BACKUP_FILE" -C "$PATH_TO_BACKUP" .
+
+# Integrity check (point 3): make sure the archive isn't corrupted before trusting it
+log "Verifying archive integrity..."
+if ! sudo tar --use-compress-program=zstd -tf "$BACKUP_FILE" > /dev/null; then
+    log "${RED}Error: Archive '$BACKUP_FILE' appears corrupted. Removing it.${NC}"
+    sudo rm -f "$BACKUP_FILE"
+    exit 1
+fi
+log "Archive integrity OK."
 
 # Backup rotation: Keep the 2 most recent files
 # Note: using 'ls' carefully. If no files exist, we don't want the script to fail (set -e).

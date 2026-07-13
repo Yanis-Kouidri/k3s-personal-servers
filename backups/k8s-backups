@@ -1,0 +1,9 @@
+# Place this file into /etc/logrotate.d/k8s-backups
+
+/home/ubuntu/backups/*/*.log {
+    weekly
+    rotate 8
+    missingok
+    notifempty
+    copytruncate
+}
