@@ -10,6 +10,7 @@ resources:
   - postgres/pvc.yaml
   - postgres/service.yaml
   - postgres/backup-pvc.yaml
+  - postgres/backup-cron-job.yaml
 
   # Redis
   - redis/deployment.yaml
