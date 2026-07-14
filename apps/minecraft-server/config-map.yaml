@@ -9,6 +9,7 @@ data:
   EULA: "TRUE"
   TYPE: "PAPER"
   MEMORY: "2G"
+  ENFORCE_SECURE_PROFILE: "FALSE" # Mandatory to have chat ingame, but maybe in the future we can use a secure profile to have chat ingame
   ENABLE_RCON: "TRUE"
   BROADCAST_RCON_TO_OPS: "TRUE"
   DIFFICULTY: "normal"
