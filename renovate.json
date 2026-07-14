@@ -15,6 +15,20 @@
     "**/*.enc.yaml",
     "backups/**"
   ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/(^|/)sonar-values\\.yaml$/"
+      ],
+      "matchStrings": [
+        "buildNumber:\\s*\"(?<currentValue>.*?)\""
+      ],
+      "depNameTemplate": "SonarSource/sonarqube",
+      "datasourceTemplate": "github-releases",
+      "versioningTemplate": "loose"
+    }
+  ],
   "platformAutomerge": true,
   "packageRules": [
       {
