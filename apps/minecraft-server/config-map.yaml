@@ -5,7 +5,7 @@ metadata:
   name: minecraft-server-config
   namespace: minecraft
 data:
-  VERSION: 1.21.11
+  VERSION: 26.1.2
   EULA: "TRUE"
   TYPE: "PAPER"
   ENABLE_RCON: "TRUE"
