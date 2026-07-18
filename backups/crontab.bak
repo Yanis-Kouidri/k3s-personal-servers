@@ -44,4 +44,6 @@
 
 # -- Minecraft --
 
+0 3 * * * /home/ubuntu/k3s-personal-servers/backups/general_pvc_backup.sh -n minecraft -N minecraft -p minecraft-pvc -m minecraft-server >> /home/ubuntu/backups/minecraft/backup-minecraft.log 2>&1
+
 # -- Sonarqube --
