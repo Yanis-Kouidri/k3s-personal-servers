@@ -1,0 +1,24 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: crowdsec
+  namespace: crowdsec
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: crowdsec
+      version: "0.24.0" # renovate: datasource=helm depName=crowdsec registryUrl=https://crowdsecurity.github.io/helm-charts
+      sourceRef:
+        kind: HelmRepository
+        name: crowdsec
+        namespace: crowdsec
+  valuesFrom:
+    - kind: ConfigMap
+      name: crowdsec-values
+  install:
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
