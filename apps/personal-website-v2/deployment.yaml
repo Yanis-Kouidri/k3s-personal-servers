@@ -80,9 +80,13 @@ spec:
               mountPath: /var/log/caddy
             - name: goaccess-db
               mountPath: /db
+            - name: goaccess-report
+              mountPath: /report
 
       volumes:
         - name: caddy-logs
+          emptyDir: {}
+        - name: goaccess-report
           emptyDir: {}
         - name: goaccess-db
           persistentVolumeClaim:
