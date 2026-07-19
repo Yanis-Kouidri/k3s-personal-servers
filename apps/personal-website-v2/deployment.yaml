@@ -23,7 +23,7 @@ spec:
             requests:
               memory: "256Mi"
               cpu: "200m"
-
+          
           startupProbe:
             httpGet:
               path: /healthz
@@ -47,71 +47,3 @@ spec:
             timeoutSeconds: 3
             failureThreshold: 2
             successThreshold: 1
-
-          volumeMounts:
-            - name: caddy-logs
-              mountPath: /var/log/caddy
-
-        - name: goaccess
-          image: allinurl/goaccess:1.9.3
-          command:
-            - goaccess
-            - /var/log/caddy/access.log
-            - --log-format=CADDY
-            - -o
-            - /report/report.html
-            - --real-time-html
-            - --port=7890
-            - --ws-url=wss://stats.kouidri.fr/ws
-            - --persist
-            - --restore
-            - --db-path=/db
-          ports:
-            - containerPort: 7890
-          resources:
-            limits:
-              memory: "128Mi"
-              cpu: "200m"
-            requests:
-              memory: "64Mi"
-              cpu: "50m"
-          volumeMounts:
-            - name: caddy-logs
-              mountPath: /var/log/caddy
-            - name: goaccess-db
-              mountPath: /db
-            - name: goaccess-report
-              mountPath: /report
-
-      volumes:
-        - name: caddy-logs
-          emptyDir: {}
-        - name: goaccess-report
-          emptyDir: {}
-        - name: goaccess-db
-          persistentVolumeClaim:
-            claimName: goaccess-db-pvc
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: goaccess-db-pvc
-  namespace: personal-website-v2
-spec:
-  accessModes: ["ReadWriteOnce"]
-  storageClassName: local-path
-  resources:
-    requests:
-      storage: 500Mi
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: goaccess
-  namespace: personal-website-v2
-spec:
-  selector:
-    app: personal-website-v2
-  ports:
-    - port: 7890
-      targetPort: 7890

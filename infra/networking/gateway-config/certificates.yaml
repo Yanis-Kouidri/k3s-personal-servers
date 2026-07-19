@@ -16,7 +16,6 @@ spec:
     - photos.kouidri.fr
     - sonarqube.kouidri.fr
     - n8n.kouidri.fr
-    - stats.kouidri.fr
   privateKey:
     algorithm: ECDSA
     size: 384
