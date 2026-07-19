@@ -21,6 +21,6 @@ data:
   ENABLE_WHITELIST: "FALSE"
   WHITELIST: "Volgare"
   MODRINTH_PROJECTS: |
-    worldedit
+    fastasyncworldedit
     luckperms
     worldguard
