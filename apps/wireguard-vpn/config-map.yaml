@@ -9,6 +9,6 @@ data:
   TZ: "Europe/Paris"
   SERVERURL: "auto"
   SERVERPORT: "51820"
-  PEERS: "5"
+  PEERS: "pc,laptop,neusta,iphone,guest1,guest2,guest3"
   PEERDNS: "auto"
   INTERNAL_SUBNET: "10.13.13.0"
