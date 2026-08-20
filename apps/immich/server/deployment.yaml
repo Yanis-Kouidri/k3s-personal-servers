@@ -18,7 +18,7 @@ spec:
         app: immich-server
     spec:
       containers:
-        - image: ghcr.io/immich-app/immich-server:v3.0.1
+        - image: ghcr.io/immich-app/immich-server:v3.1.0
           name: immich-server
           envFrom:
             - configMapRef:
