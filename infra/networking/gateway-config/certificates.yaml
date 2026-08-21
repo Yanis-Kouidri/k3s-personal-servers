@@ -16,6 +16,7 @@ spec:
     - photos.kouidri.fr
     - sonarqube.kouidri.fr
     - n8n.kouidri.fr
+    - mail.kouidri.fr
     - kouidri.me
   privateKey:
     algorithm: ECDSA

@@ -1,0 +1,23 @@
+# Web UI (webmail) access via Envoy Gateway. TLS is terminated at Envoy using
+# the shared kouidri-fr-tls certificate (which includes mail.kouidri.fr).
+# Backend is the internal HTTP listener; the mgmt/admin port stays internal.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: mail-kouidri-fr
+  namespace: mail
+spec:
+  hostnames:
+    - mail.kouidri.fr
+  parentRefs:
+    - name: envoy-gateway
+      namespace: envoy-gateway-system
+      sectionName: https
+  rules:
+    - backendRefs:
+        - name: stalwart-headless
+          port: 80
+      matches:
+        - path:
+            type: PathPrefix
+            value: /

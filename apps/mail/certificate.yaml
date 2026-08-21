@@ -1,0 +1,19 @@
+# Let's Encrypt certificate for the mail hostname, stored as a TLS Secret
+# mounted into the Stalwart pod and used by its SMTP/Submission/IMAPS TLS
+# listeners. Reuses the existing letsencrypt-prod ClusterIssuer (HTTP01 via
+# Envoy Gateway); no second ACME system is introduced.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: mail-kouidri-tls
+  namespace: mail
+spec:
+  secretName: mail-kouidri-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+    - mail.kouidri.fr
+  privateKey:
+    algorithm: ECDSA
+    size: 384
