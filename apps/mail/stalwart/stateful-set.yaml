@@ -18,6 +18,9 @@ spec:
         - name: stalwart
           image: stalwartlabs/stalwart:v0.16.18
           imagePullPolicy: IfNotPresent
+          args:
+          - "--config"
+          - "/etc/stalwart/config.json"
 
           ports:
             - name: smtp
@@ -40,7 +43,7 @@ spec:
             - name: data
               mountPath: /var/lib/stalwart
             - name: config
-              mountPath: /opt/stalwart/etc/config.json
+              mountPath: /etc/stalwart/config.json
               subPath: config.json
               readOnly: true
 
