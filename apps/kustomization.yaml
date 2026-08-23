@@ -8,3 +8,4 @@ resources:
   - personal-website-v2
   - sonarqube
   - wireguard-vpn
+  - mail
