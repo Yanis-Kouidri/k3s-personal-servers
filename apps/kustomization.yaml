@@ -3,7 +3,6 @@ kind: Kustomization
 resources:
   - crowdsec
   - immich
-  - mail
   - minecraft-server
   - n8n
   - personal-website-v2
