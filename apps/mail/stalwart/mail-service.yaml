@@ -4,6 +4,7 @@ metadata:
   name: stalwart-mail
   namespace: mail
 spec:
+  externalTrafficPolicy: Local
   selector:
     app.kubernetes.io/name: stalwart
   ports:
