@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: stalwart-mail
+  namespace: mail
+spec:
+  selector:
+    app.kubernetes.io/name: stalwart
+  ports:
+    - name: smtp
+      protocol: TCP
+      port: 25
+      targetPort: smtp
+
+    - name: submissions
+      protocol: TCP
+      port: 465
+      targetPort: submissions
+
+    - name: submission
+      protocol: TCP
+      port: 587
+      targetPort: submission
+
+    - name: imaps
+      protocol: TCP
+      port: 993
+      targetPort: imaps
+
+  type: LoadBalancer
