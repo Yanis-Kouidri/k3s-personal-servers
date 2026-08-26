@@ -5,6 +5,10 @@ metadata:
   namespace: mail
 spec:
   externalTrafficPolicy: Local
+  ipFamilyPolicy: PreferDualStack
+  ipFamilies:
+    - IPv4
+    - IPv6
   selector:
     app.kubernetes.io/name: stalwart
   ports:
