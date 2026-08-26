@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: stalwart
-          image: stalwartlabs/stalwart:v0.16.18
+          image: stalwartlabs/stalwart:v0.16.19
           imagePullPolicy: IfNotPresent
           args:
           - "--config"
