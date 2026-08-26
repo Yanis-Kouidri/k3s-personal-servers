@@ -1,0 +1,27 @@
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: stalwart-webmail-cors
+  namespace: mail
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: stalwart
+  cors:
+    allowOrigins:
+      - https://webmail.kouidri.fr
+    allowMethods:
+      - GET
+      - POST
+      - PUT
+      - PATCH
+      - DELETE
+      - OPTIONS
+    allowHeaders:
+      - Authorization
+      - Content-Type
+      - Accept
+    exposeHeaders:
+      - Content-Disposition
+      - ETag

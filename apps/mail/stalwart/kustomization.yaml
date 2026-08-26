@@ -7,4 +7,5 @@ resources:
   - service.yaml
   - http-service.yaml
   - http-route.yaml
+  - cors-policy.yaml
   - mail-service.yaml

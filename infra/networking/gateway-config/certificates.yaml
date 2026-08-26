@@ -23,6 +23,7 @@ spec:
     - sonarqube.kouidri.fr
     - n8n.kouidri.fr
     - mail.kouidri.fr
+    - webmail.kouidri.fr
     - kouidri.me
   privateKey:
     algorithm: ECDSA
