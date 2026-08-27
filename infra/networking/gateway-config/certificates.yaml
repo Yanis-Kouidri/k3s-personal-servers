@@ -27,4 +27,5 @@ spec:
     - kouidri.me
   privateKey:
     algorithm: ECDSA
-    size: 384
+    size: 256
+    rotationPolicy: Always
