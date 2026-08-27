@@ -15,28 +15,35 @@ spec:
       set:
         - name: Strict-Transport-Security
           value: max-age=31536000; includeSubDomains; preload
+
         - name: X-Content-Type-Options
           value: nosniff
-#        - name: X-Frame-Options
-#          value: DENY
+
         - name: Referrer-Policy
-          value: no-referrer
+          value: strict-origin-when-cross-origin
+
         - name: Permissions-Policy
           value: geolocation=(), microphone=(), camera=()
+
         - name: Cross-Origin-Opener-Policy
-          value: same-origin
-        - name: Cross-Origin-Embedder-Policy
-          value: require-corp
-#        - name: Cross-Origin-Resource-Policy
-#          value: same-origin
+          value: same-origin-allow-popups
+
+      addIfAbsent:
+        - name: X-Frame-Options
+          value: DENY
       remove:
         - server # Do not reveal server information (nginx, envoy, etc.)
         - x-powered-by # Do not reveal server information (Express, PHP, etc.)
   tls:
+    minVersion: "1.2"
+    maxVersion: "1.3"
     ecdhCurves:
       - X25519MLKEM768
       - X25519
       - P-256
+    alpnProtocols:
+      - h2
+      - http/1.1
     session:
       resumption:
         stateless: {}
