@@ -1,0 +1,29 @@
+# Sensitive values are supplied from secrets.enc.yaml.
+authentik:
+  error_reporting:
+    enabled: false
+
+server:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      memory: 1Gi
+
+worker:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      memory: 1Gi
+
+postgresql:
+  enabled: true
+  primary:
+    persistence:
+      enabled: true
+      size: 10Gi
