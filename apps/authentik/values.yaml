@@ -6,6 +6,8 @@ authentik:
 
 server:
   replicas: 1
+  podAnnotations:
+    checksum/authentik-config: "ab5008401c8012426db8f800e8457a5529d233f2d02f41286e71d5a5547a418a"
   resources:
     requests:
       cpu: 100m
@@ -15,6 +17,8 @@ server:
 
 worker:
   replicas: 1
+  podAnnotations:
+    checksum/authentik-config: "ab5008401c8012426db8f800e8457a5529d233f2d02f41286e71d5a5547a418a"
   resources:
     requests:
       cpu: 100m
