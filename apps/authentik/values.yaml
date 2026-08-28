@@ -1,5 +1,6 @@
-# Sensitive values are supplied from secrets.enc.yaml.
 authentik:
+  existingSecret:
+    secretName: authentik-config
   error_reporting:
     enabled: false
 
@@ -23,6 +24,10 @@ worker:
 
 postgresql:
   enabled: true
+  auth:
+    existingSecret: authentik-postgresql-credentials
+    secretKeys:
+      userPasswordKey: password
   primary:
     persistence:
       enabled: true
