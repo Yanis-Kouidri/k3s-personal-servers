@@ -52,6 +52,49 @@ Reconcile in that order via `config-install/flux-reconcile.sh`. New infra compon
 2. IPv6 is native (dual-stack in `config.yaml`). Test with `curl -6`.
 3. Firewall lives at the **host/provider** level (OVH) — do not run `ufw` inside k3s.
 
+## Exposed Services (Network topology)
+
+### HTTP/HTTPS — via Envoy Gateway API (ports 80/443)
+| Hostname | Service | Namespace | Backend port | Notes |
+|---|---|---|---|---|
+| `www.kouidri.fr` | personal-website-v2 | personal-website-v2 | 80 | Main website |
+| `kouidri.fr` | redirect → www.kouidri.fr | personal-website-v2 | — | 301 redirect |
+| `kouidri6bhboadbevagrvs52nmyvfhgafavqozvs6b756bzh3e4sd7qd.onion` | personal-website-v2 | personal-website-v2 | 80 | Tor hidden service (HTTP only) |
+| `n8n.kouidri.fr` | n8n | n8n | 5678 | Workflow automation |
+| `webmail.kouidri.fr` | bulwark (webmail) | mail | 3000 | Roundcube-like UI |
+| `sonarqube.kouidri.fr` | sonarqube | sonarqube | 9000 | Code quality (via Helm httproute) |
+| `kouidri.me`, `www.kouidri.me` | redirect → kouidri.fr | envoy-gateway-system | — | 301 redirect |
+
+**TLS**: certificate managed by cert-manager (`kouidri-fr-tls` in `envoy-gateway-system`). HTTP → HTTPS forced globally.
+
+### Non-HTTP — Direct LoadBalancer (bypass Envoy)
+| Service | Port(s) | Protocol | Namespace | K8s Service |
+|---|---|---|---|---|
+| Minecraft | 25565 | TCP | minecraft | `minecraft-service` |
+| WireGuard VPN | 51820 | UDP | wireguard | `wireguard-svc` |
+| Stalwart Mail (SMTP) | 25 | TCP | mail | `stalwart-mail` |
+| Stalwart Mail (Submissions) | 465 | TCP | mail | `stalwart-mail` |
+| Stalwart Mail (Submission) | 587 | TCP | mail | `stalwart-mail` |
+| Stalwart Mail (IMAPS) | 993 | TCP | mail | `stalwart-mail` |
+
+> **OVH Firewall**: open only these ports at provider level. No `ufw` inside k3s.
+
+### Cluster applications and servicies
+- **cert-manager**: certificate management (Let's Encrypt)
+- **Envoy Gateway**: ingress controller (dual-stack IPv4/IPv6)
+- **FluxCD**: source/helm/kustomize/notification controllers
+- **Reflector**: cross-namespace secret/configmap replication
+- **Tor daemon**: hidden service for `.onion`
+- **CrowdSec**: LAPI + agent (intrusion detection)
+- **Immich**: Self-hosted Google Photos alternative
+- **Minecraft Server**: Itzg-based Minecraft server
+- **Personal website**: Astro-based website, also accessible through Tor
+- **WireGuard**: Fast and secure VPN
+- **n8n**: Workflow automation platform
+- **SonarQube**: Static code quality and security analysis
+- **Bulwark**: Webmail interface, exposed at `webmail.kouidri.fr`
+- **Stalwart Mail**: Mail server providing SMTP, submission, and IMAPS services
+
 ## No-op for agents
 - No package.json / go.mod / Makefile / Taskfile — there is nothing to build or install locally.
 - `sonar-project.properties` only configures the CI-side SonarQube scan exclusions (`clusters/**/flux-system/*`).
