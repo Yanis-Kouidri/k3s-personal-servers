@@ -1,6 +1,6 @@
 # Steps to config the server
 
-> Tested on Ubuntu 24.04 on November 2025
+> Tested on Ubuntu 26.04 on June 2026
 
 ## SSH
 
