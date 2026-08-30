@@ -17,6 +17,6 @@ resources:
   # Network policies
   - network-policy-default-deny.yaml
   - network-policy-allow-dns.yaml
-  - network-policy-n8n.yaml
+  - network-policy-n8n-temporary.yaml
   - network-policy-postgres.yaml
   - network-policy-backup.yaml
