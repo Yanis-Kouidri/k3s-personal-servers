@@ -27,3 +27,11 @@ resources:
   - server/pvc.yaml
   - server/service.yaml
   - server/http-routes.yaml
+  # Network policies
+  - network-policy-default-deny.yaml
+  - network-policy-allow-dns.yaml
+  - network-policy-server.yaml
+  - network-policy-postgres.yaml
+  - network-policy-redis.yaml
+  - network-policy-machine-learning.yaml
+  - network-policy-backup.yaml

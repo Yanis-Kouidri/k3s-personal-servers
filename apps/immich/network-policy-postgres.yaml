@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: postgres-policy
+  namespace: immich
+spec:
+  podSelector:
+    matchLabels:
+      app: immich-db
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: immich
+          podSelector:
+            matchLabels:
+              app: immich-server
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: immich
+          podSelector:
+            matchLabels:
+              app: postgres-backup
+      ports:
+        - protocol: TCP
+          port: 5432
