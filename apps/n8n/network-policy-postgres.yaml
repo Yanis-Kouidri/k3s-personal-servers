@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: postgres-policy
+  namespace: n8n
+spec:
+  podSelector:
+    matchLabels:
+      service: postgres-n8n
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: n8n
+          podSelector:
+            matchLabels:
+              service: n8n
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: n8n
+          podSelector:
+            matchLabels:
+              service: postgres-backup
+      ports:
+        - protocol: TCP
+          port: 5432
