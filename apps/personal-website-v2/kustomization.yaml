@@ -5,3 +5,7 @@ resources:
   - service.yaml
   - http-route.yaml
   - namespace.yaml
+  # Network policies
+  - network-policy-default-deny.yaml
+  - network-policy-allow-dns.yaml
+  - network-policy-server.yaml

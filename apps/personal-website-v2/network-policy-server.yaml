@@ -1,0 +1,35 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: personal-website-v2-policy
+  namespace: personal-website-v2
+spec:
+  podSelector:
+    matchLabels:
+      app: personal-website-v2
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: envoy-gateway-system
+      ports:
+        - protocol: TCP
+          port: 80
+  egress:
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 192.168.0.0/16
+              - 172.16.0.0/12
+        - ipBlock:
+            cidr: ::/0
+            except:
+              - fc00::/7
+      ports:
+        - protocol: TCP
+          port: 443
