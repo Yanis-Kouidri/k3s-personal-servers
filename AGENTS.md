@@ -5,7 +5,7 @@ GitOps repository for a **single-node K3s homelab** (Ubuntu 26.04 on an OVH VPS,
 FluxCD v2 reconciles the cluster from Git; all changes are **declarative YAML manifests**.
 
 ## Golden rules
-- **Never** `kubectl apply` for permanent workloads. Write Git-tracked YAML and let Flux sync.
+- **Never** `kubectl apply` for permanent workloads. Write Git-tracked YAML, commit with a proper and clear commit message, push and finally run `config-install/flux-reconcile.sh` to apply modification and observe result.
 - Secrets are encrypted with **SOPS + age**. Files matching `.*\.enc\.yaml$` are encrypted per `.sops.yaml`.
   - Re-encrypt after editing: `sops --encrypt --age <pub> file.yaml > file.enc.yaml`
   - Decryption secret `sops-age` (age key) must exist in the `flux-system` namespace (see `SERVER_CONFIG.md`).
