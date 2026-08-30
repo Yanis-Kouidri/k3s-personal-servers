@@ -5,5 +5,7 @@ resources:
   - config-map.yaml
   - deployment.yaml
   - network-policy.yaml
+  - network-policy-allow-dns.yaml
+  - network-policy-default-deny.yaml
   - pvc.yaml
   - service.yaml
