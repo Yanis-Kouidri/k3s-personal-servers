@@ -43,3 +43,9 @@ spec:
       ports:
         - protocol: TCP
           port: 443
+        - protocol: TCP
+          port: 993   # IMAPS 
+        - protocol: TCP
+          port: 465   # SMTPS
+        - protocol: TCP
+          port: 587   # SMTP Submission
