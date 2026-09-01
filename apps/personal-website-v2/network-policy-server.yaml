@@ -17,7 +17,7 @@ spec:
               kubernetes.io/metadata.name: envoy-gateway-system
       ports:
         - protocol: TCP
-          port: 80
+          port: 8080
   egress:
     - to:
         - ipBlock:
