@@ -19,3 +19,4 @@ resources:
   - network-policy-allow-dns.yaml
   - network-policy-postgres.yaml
   - network-policy-backup.yaml
+  - network-policy-n8n.yaml
