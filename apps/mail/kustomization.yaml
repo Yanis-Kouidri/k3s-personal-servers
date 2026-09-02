@@ -5,3 +5,7 @@ resources:
   - pvc.yaml
   - stalwart
   - bulwark
+  - network-policies/network-policy-default-deny.yaml
+  - network-policies/network-policy-allow-dns.yaml
+  - network-policies/network-policy-bulwark.yaml
+  - network-policies/network-policy-stalwart.yaml
