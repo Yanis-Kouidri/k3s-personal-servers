@@ -199,6 +199,13 @@ export PUBLIC_AGE_KEY=age1XXX # Paste your age public key here
 
 ### Encrypt secrets
 
+With public key in `.sops.yaml`, the following command will output en encrypted version of the plain text `secrets.enc.yaml`
+```bash
+sops --encrypt secrets.enc.yaml
+```
+
+If you want to specify the key and create a file.
+
 ```bash
 sops --encrypt --age "$PUBLIC_AGE_KEY" secrets.yaml > secrets.enc.yaml
 ```
