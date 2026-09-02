@@ -59,3 +59,16 @@ spec:
     - ports:
         - protocol: TCP
           port: 443
+
+    # Authentik
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: authentik
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: authentik
+              app.kubernetes.io/component: server
+      ports:
+        - protocol: TCP
+          port: 9443
