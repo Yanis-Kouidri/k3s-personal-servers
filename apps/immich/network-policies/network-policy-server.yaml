@@ -19,6 +19,7 @@ spec:
         - protocol: TCP
           port: 2283
   egress:
+    # PostgreSQL
     - to:
         - namespaceSelector:
             matchLabels:
@@ -29,6 +30,8 @@ spec:
       ports:
         - protocol: TCP
           port: 5432
+
+    # Redis
     - to:
         - namespaceSelector:
             matchLabels:
@@ -39,6 +42,8 @@ spec:
       ports:
         - protocol: TCP
           port: 6379
+
+    # Machine Learning
     - to:
         - namespaceSelector:
             matchLabels:
@@ -49,3 +54,8 @@ spec:
       ports:
         - protocol: TCP
           port: 3003
+
+    # HTTPS Internet
+    - ports:
+        - protocol: TCP
+          port: 443
