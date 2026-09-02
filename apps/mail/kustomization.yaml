@@ -8,4 +8,5 @@ resources:
   - network-policies/network-policy-default-deny.yaml
   - network-policies/network-policy-allow-dns.yaml
   - network-policies/network-policy-bulwark.yaml
-  - network-policies/network-policy-stalwart.yaml
+  - network-policies/network-policy-stalwart-http.yaml
+  - network-policies/network-policy-stalwart-mail.yaml
