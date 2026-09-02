@@ -7,6 +7,9 @@ resources:
   - secrets.enc.yaml
   - helm-release.yaml
   - http-route.yaml
+  # Network policies
+  - network-policies/network-policy-default-deny.yaml
+  - network-policies/network-policy-allow-dns.yaml
 
 configMapGenerator:
   - name: authentik-values
