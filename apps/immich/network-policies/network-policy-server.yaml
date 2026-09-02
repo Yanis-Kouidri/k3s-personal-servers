@@ -55,7 +55,13 @@ spec:
         - protocol: TCP
           port: 3003
 
-    # HTTPS (autorise la sortie vers l'IP publique d'auth.kouidri.fr)
+    # Envoy Gateway (autorise le trafic DNAT/Hairpin vers auth.kouidri.fr)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: envoy-gateway-system
+
+    # HTTPS Internet (pour les flux sortants externes)
     - to:
         - ipBlock:
             cidr: 0.0.0.0/0
