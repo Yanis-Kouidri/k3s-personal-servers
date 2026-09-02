@@ -10,6 +10,7 @@ resources:
   # Network policies
   - network-policies/network-policy-default-deny.yaml
   - network-policies/network-policy-allow-dns.yaml
+  - network-policies/network-policy-authentik.yaml
 
 configMapGenerator:
   - name: authentik-values
