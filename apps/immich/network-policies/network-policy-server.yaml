@@ -55,18 +55,7 @@ spec:
         - protocol: TCP
           port: 3003
 
-    # Envoy Gateway (requis pour auth.kouidri.fr et les routes internes Envoy)
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: envoy-gateway-system
-      ports:
-        - protocol: TCP
-          port: 443
-        - protocol: TCP
-          port: 80
-
-    # HTTPS Internet (standardisé avec blocs IP)
+    # HTTPS (autorise la sortie vers l'IP publique d'auth.kouidri.fr)
     - to:
         - ipBlock:
             cidr: 0.0.0.0/0

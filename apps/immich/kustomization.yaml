@@ -28,10 +28,10 @@ resources:
   - server/service.yaml
   - server/http-routes.yaml
   # Network policies
-  # - network-policies/network-policy-default-deny.yaml
-  # - network-policies/network-policy-allow-dns.yaml
-  # - network-policies/network-policy-server.yaml
-  # - network-policies/network-policy-postgres.yaml
-  # - network-policies/network-policy-redis.yaml
-  # - network-policies/network-policy-machine-learning.yaml
-  # - network-policies/network-policy-backup.yaml
+  - network-policies/network-policy-default-deny.yaml
+  - network-policies/network-policy-allow-dns.yaml
+  - network-policies/network-policy-server.yaml
+  - network-policies/network-policy-postgres.yaml
+  - network-policies/network-policy-redis.yaml
+  - network-policies/network-policy-machine-learning.yaml
+  - network-policies/network-policy-backup.yaml
