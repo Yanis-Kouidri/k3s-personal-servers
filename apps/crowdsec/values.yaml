@@ -2,7 +2,7 @@
 container_runtime: containerd
 agent:
   # Enable alert forwarding to CrowdSec Central API
-  disableOnlineApi: false
+  # Set DISABLE_ONLINE_API=false in env to allow alert forwarding
   # Uncomment and set your CrowdSec API key to enable alert forwarding to Central API
   # onlineApi:
   #   key: "your-api-key-here"
@@ -22,6 +22,8 @@ agent:
       labels:
         type: syslog
   env:
+    - name: DISABLE_ONLINE_API
+      value: "false"
     - name: COLLECTIONS
       value: "yanis-kouidri/envoy crowdsecurity/base-http-scenarios crowdsecurity/http-cve crowdsecurity/http-dos crowdsecurity/whitelist-good-actors crowdsecurity/linux"
     - name: PARSERS
