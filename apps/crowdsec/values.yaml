@@ -1,12 +1,15 @@
 # for raw logs format: json or cri (docker|containerd)
 container_runtime: containerd
+
+# Agent environment variables (to avoid duplication with chart defaults)
+DISABLE_LOCAL_API: "true"
+DISABLE_ONLINE_API: "false"
+CROWDSEC_BYPASS_DB_VOLUME_CHECK: "true"
+LOCAL_API_URL: "http://crowdsec-service.crowdsec:8080"
+COLLECTIONS: "yanis-kouidri/envoy crowdsecurity/base-http-scenarios crowdsecurity/http-cve crowdsecurity/http-dos crowdsecurity/whitelist-good-actors crowdsecurity/linux"
+PARSERS: "crowdsecurity/cri-logs"
+
 agent:
-  # Enable alert forwarding to CrowdSec Central API
-  # Set DISABLE_ONLINE_API=false in env to allow alert forwarding
-  # Uncomment and set your CrowdSec API key to enable alert forwarding to Central API
-  # onlineApi:
-  #   key: "your-api-key-here"
-  # Specify each pod whose logs you want to process
   acquisition:
     # The namespace where the pod is located
     - namespace: envoy-gateway-system
@@ -21,19 +24,7 @@ agent:
         - /var/log/auth.log
       labels:
         type: syslog
-  env:
-    - name: DISABLE_LOCAL_API
-      value: "true"
-    - name: DISABLE_ONLINE_API
-      value: "false"
-    - name: CROWDSEC_BYPASS_DB_VOLUME_CHECK
-      value: "true"
-    - name: LOCAL_API_URL
-      value: "http://crowdsec-service.crowdsec:8080"
-    - name: COLLECTIONS
-      value: "yanis-kouidri/envoy crowdsecurity/base-http-scenarios crowdsecurity/http-cve crowdsecurity/http-dos crowdsecurity/whitelist-good-actors crowdsecurity/linux"
-    - name: PARSERS
-      value: "crowdsecurity/cri-logs"
+
 lapi:
   envFrom:
     - secretRef:
