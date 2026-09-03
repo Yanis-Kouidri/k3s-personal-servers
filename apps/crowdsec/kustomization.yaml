@@ -6,6 +6,7 @@ resources:
   - helmrepository.yaml
   - secrets.enc.yaml
   - helmrelease.yaml
+  - network-policy.yaml
 
 configMapGenerator:
   - name: crowdsec-values
