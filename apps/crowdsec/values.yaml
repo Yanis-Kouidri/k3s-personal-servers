@@ -22,8 +22,14 @@ agent:
       labels:
         type: syslog
   env:
+    - name: DISABLE_LOCAL_API
+      value: "true"
     - name: DISABLE_ONLINE_API
       value: "false"
+    - name: CROWDSEC_BYPASS_DB_VOLUME_CHECK
+      value: "true"
+    - name: LOCAL_API_URL
+      value: "http://crowdsec-service.crowdsec:8080"
     - name: COLLECTIONS
       value: "yanis-kouidri/envoy crowdsecurity/base-http-scenarios crowdsecurity/http-cve crowdsecurity/http-dos crowdsecurity/whitelist-good-actors crowdsecurity/linux"
     - name: PARSERS
