@@ -17,6 +17,8 @@ agent:
       labels:
         type: syslog
   env:
+    - name: DISABLE_ONLINE_API
+      value: "false"
     - name: COLLECTIONS
       value: "yanis-kouidri/envoy crowdsecurity/base-http-scenarios crowdsecurity/http-cve crowdsecurity/http-dos crowdsecurity/whitelist-good-actors crowdsecurity/linux"
     - name: PARSERS
