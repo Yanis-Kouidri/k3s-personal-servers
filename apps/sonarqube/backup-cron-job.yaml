@@ -10,6 +10,9 @@ spec:
   jobTemplate:
     spec:
       template:
+        metadata:
+          labels:
+            app: sonarqube-db-backup
         spec:
           containers:
             - name: postgres-backup

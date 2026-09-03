@@ -12,6 +12,12 @@ resources:
   - postgres-helm-release.yaml
   - backup-pvc.yaml
   - backup-cron-job.yaml
+  # Network policies
+  - network-policies/network-policy-default-deny.yaml
+  - network-policies/network-policy-allow-dns.yaml
+  - network-policies/network-policy-sonarqube.yaml
+  - network-policies/network-policy-postgres.yaml
+  - network-policies/network-policy-backup.yaml
 
 configMapGenerator:
   - name: sonarqube-values

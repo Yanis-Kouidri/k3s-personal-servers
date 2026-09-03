@@ -1,0 +1,70 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: sonarqube-policy
+  namespace: sonarqube
+spec:
+  podSelector:
+    matchLabels:
+      app: sonarqube
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Trafic HTTP entrant depuis le reverse-proxy Envoy Gateway
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: envoy-gateway-system
+      ports:
+        - protocol: TCP
+          port: 9000
+  egress:
+    # PostgreSQL local
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: sonarqube
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: postgresql
+              app.kubernetes.io/component: primary
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # CoreDNS
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+    # Envoy Gateway (trafic Hairpin vers d'autres services locaux exposés)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: envoy-gateway-system
+
+    # HTTPS Internet (télémétrie, plugins, webhooks/intégrations ALM GitHub/GitLab)
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 192.168.0.0/16
+              - 172.16.0.0/12
+        - ipBlock:
+            cidr: ::/0
+            except:
+              - fc00::/7
+      ports:
+        - protocol: TCP
+          port: 443
