@@ -19,6 +19,9 @@ agent:
   env:
     - name: DISABLE_ONLINE_API
       value: "false"
+    # Uncomment and set your CrowdSec API key to enable alert forwarding to Central API
+    # - name: CROWDSEC_API_KEY
+    #   value: "your-api-key-here"
     - name: COLLECTIONS
       value: "yanis-kouidri/envoy crowdsecurity/base-http-scenarios crowdsecurity/http-cve crowdsecurity/http-dos crowdsecurity/whitelist-good-actors crowdsecurity/linux"
     - name: PARSERS
