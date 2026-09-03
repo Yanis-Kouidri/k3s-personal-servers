@@ -1,6 +1,11 @@
 # for raw logs format: json or cri (docker|containerd)
 container_runtime: containerd
 agent:
+  # Enable alert forwarding to CrowdSec Central API
+  disableOnlineApi: false
+  # Uncomment and set your CrowdSec API key to enable alert forwarding to Central API
+  # onlineApi:
+  #   key: "your-api-key-here"
   # Specify each pod whose logs you want to process
   acquisition:
     # The namespace where the pod is located
@@ -17,11 +22,6 @@ agent:
       labels:
         type: syslog
   env:
-    - name: DISABLE_ONLINE_API
-      value: "false"
-    # Uncomment and set your CrowdSec API key to enable alert forwarding to Central API
-    # - name: CROWDSEC_API_KEY
-    #   value: "your-api-key-here"
     - name: COLLECTIONS
       value: "yanis-kouidri/envoy crowdsecurity/base-http-scenarios crowdsecurity/http-cve crowdsecurity/http-dos crowdsecurity/whitelist-good-actors crowdsecurity/linux"
     - name: PARSERS
