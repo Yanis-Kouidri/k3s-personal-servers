@@ -5,3 +5,8 @@ resources:
   - namespace.yaml
   - repository.yaml
   - release.yaml
+  - network-policy-default-deny.yaml
+  - network-policy-allow-dns.yaml
+  - network-policy-allow-ingress.yaml
+  - network-policy-allow-internal.yaml
+  - network-policy-allow-egress-to-cert-manager.yaml

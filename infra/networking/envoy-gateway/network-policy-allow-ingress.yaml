@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-http-https
+  namespace: envoy-gateway-system
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: proxy
+      app.kubernetes.io/managed-by: envoy-gateway
+      app.kubernetes.io/name: envoy
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow HTTP and HTTPS traffic from any source (internet)
+    - ports:
+        - protocol: TCP
+          port: 10080  # HTTP target port
+        - protocol: TCP
+          port: 10443  # HTTPS target port
+    # Allow health check from kube-proxy (NodePort range)
+    - ports:
+        - protocol: TCP
+          port: 30569  # HealthCheck NodePort
