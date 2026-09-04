@@ -1,0 +1,51 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-egress-to-backends
+  namespace: envoy-gateway-system
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: proxy
+      app.kubernetes.io/managed-by: envoy-gateway
+      app.kubernetes.io/name: envoy
+  policyTypes:
+    - Egress
+  egress:
+    # Allow egress from Envoy proxy to all application namespaces
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: authentik
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: crowdsec
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: immich
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: mail
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: minecraft
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: n8n
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: personal-website-v2
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: sonarqube
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: wireguard

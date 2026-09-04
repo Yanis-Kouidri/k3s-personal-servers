@@ -10,3 +10,4 @@ resources:
   - network-policy-allow-ingress.yaml
   - network-policy-allow-internal.yaml
   - network-policy-allow-egress-to-cert-manager.yaml
+  - network-policy-allow-egress-to-backends.yaml
