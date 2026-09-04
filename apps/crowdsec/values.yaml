@@ -28,3 +28,6 @@ lapi:
   envFrom:
     - secretRef:
         name: crowdsec-secret
+  service:
+    type: NodePort
+    nodePort: 30808
