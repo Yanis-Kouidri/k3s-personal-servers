@@ -30,4 +30,3 @@ lapi:
         name: crowdsec-secret
   service:
     type: NodePort
-    nodePort: 30808
