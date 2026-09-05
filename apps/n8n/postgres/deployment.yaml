@@ -16,6 +16,9 @@ spec:
       labels:
         service: postgres-n8n
     spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       terminationGracePeriodSeconds: 30
       containers:
         - image: postgres:18.6

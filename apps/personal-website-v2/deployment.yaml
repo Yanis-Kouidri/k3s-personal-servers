@@ -12,10 +12,18 @@ spec:
       labels:
         app: personal-website-v2
     spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: personal-website-v2
           image: ghcr.io/yanis-kouidri/personal-website-v2:0.0.4
           imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
           resources:
             limits:
               memory: "728Mi"

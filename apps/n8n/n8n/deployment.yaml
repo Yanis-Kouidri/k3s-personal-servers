@@ -17,6 +17,9 @@ spec:
       labels:
         service: n8n
     spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       initContainers:
         - name: volume-permissions
           image: busybox:1.38
@@ -58,6 +61,11 @@ spec:
           image: n8nio/n8n:2.37.6
           imagePullPolicy: Always
           name: n8n
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
           startupProbe:
             httpGet:
               path: /healthz

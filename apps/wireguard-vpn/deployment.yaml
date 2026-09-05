@@ -13,11 +13,16 @@ spec:
       labels:
         app: wireguard
     spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: wireguard
           image: linuxserver/wireguard:1.0.20260223
           securityContext:
+            allowPrivilegeEscalation: false
             capabilities: # Add "SYS_MODULE" if necessary
+              drop: ["ALL"]
               add: ["NET_ADMIN"]
           envFrom:
             - configMapRef:

@@ -17,9 +17,17 @@ spec:
       labels:
         app: immich-server
     spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - image: ghcr.io/immich-app/immich-server:v3.1.0
           name: immich-server
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
           envFrom:
             - configMapRef:
                 name: immich-server-config
