@@ -33,12 +33,11 @@ spec:
 
       containers:
         - name: tor
-          image: alpine:3.24.1
-          command: ["sh", "-c"]
+          image: dperson/torproxy@sha256:d161ddddd47b4d2a91b8fe93d61e81b0760c0452ab6983a35ed37452e24004f6
+          command: ["/usr/bin/tor"]
           args:
-            - |
-              apk add --no-cache tor && \
-              tor -f /etc/tor/torrc --User tor
+            - "-f"
+            - "/etc/tor/torrc"
           volumeMounts:
             - name: tor-config
               mountPath: /etc/tor/torrc
