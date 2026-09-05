@@ -1,25 +1,22 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   labels:
     service: postgres-n8n
   name: postgres
   namespace: n8n
 spec:
+  serviceName: postgres-service
   replicas: 1
   selector:
     matchLabels:
       service: postgres-n8n
-  strategy:
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 1
-    type: RollingUpdate
   template:
     metadata:
       labels:
         service: postgres-n8n
     spec:
+      terminationGracePeriodSeconds: 30
       containers:
         - image: postgres:18.6
           name: postgres
@@ -31,7 +28,9 @@ spec:
               cpu: "500m"
               memory: 752Mi
           ports:
-            - containerPort: 5432
+            - name: postgres
+              containerPort: 5432
+              protocol: TCP
           volumeMounts:
             - name: postgresql-pvc
               mountPath: /var/lib/postgresql/data
