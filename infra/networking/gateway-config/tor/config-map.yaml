@@ -6,7 +6,6 @@ metadata:
 data:
   torrc: |
     DataDirectory /var/lib/tor
-    User tor
     HiddenServiceDir /var/lib/tor/hidden_service/
     HiddenServicePort 80 envoy-envoy-gateway-system-envoy-gateway-dc2b3bc0.envoy-gateway-system.svc.cluster.local:80
     Log notice stdout

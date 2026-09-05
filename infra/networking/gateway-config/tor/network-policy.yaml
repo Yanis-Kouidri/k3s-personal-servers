@@ -1,0 +1,35 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-tor-public-egress
+  namespace: envoy-gateway-system
+spec:
+  podSelector:
+    matchLabels:
+      app: tor-daemon
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+              - 169.254.169.254/32
+        - ipBlock:
+            cidr: ::/0
+            except:
+              - 2001:db8:42::/64
+              - 2001:db8:43::/112
+              - fc00::/7
+      ports:
+        - protocol: TCP
+          port: 80
+        - protocol: TCP
+          port: 443
+        - protocol: TCP
+          port: 9001
+        - protocol: TCP
+          port: 9030
