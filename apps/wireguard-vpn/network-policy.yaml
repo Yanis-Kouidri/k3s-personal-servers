@@ -18,11 +18,23 @@ spec:
               - 10.0.0.0/8
               - 192.168.0.0/16
               - 172.16.0.0/12
+        - ipBlock:
+            cidr: ::/0
+            except:
+              - fc00::/7
       ports:
         - protocol: UDP
           port: 51820
-
   egress:
+    # VPN forwards arbitrary client traffic; block cluster/private ranges.
     - to:
         - ipBlock:
             cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 192.168.0.0/16
+              - 172.16.0.0/12
+        - ipBlock:
+            cidr: ::/0
+            except:
+              - fc00::/7
