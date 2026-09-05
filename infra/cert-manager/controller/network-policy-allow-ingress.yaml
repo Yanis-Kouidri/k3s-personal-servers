@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-cert-manager-ingress
+  namespace: cert-manager
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: webhook
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - ipBlock:
+            cidr: 91.134.243.146/32
+        - ipBlock:
+            cidr: 2001:41d0:305:2100::6ef0/128
+      ports:
+        - protocol: TCP
+          port: 10250
+        - protocol: TCP
+          port: 6080

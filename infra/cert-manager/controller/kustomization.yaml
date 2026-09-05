@@ -5,3 +5,9 @@ resources:
   - namespace.yaml
   - repository.yaml
   - release.yaml
+  - network-policy-default-deny.yaml
+  - network-policy-allow-dns.yaml
+  - network-policy-allow-api.yaml
+  - network-policy-allow-acme.yaml
+  - network-policy-allow-ingress.yaml
+  - network-policy-allow-metrics.yaml
