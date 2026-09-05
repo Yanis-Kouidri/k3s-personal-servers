@@ -36,5 +36,5 @@ postgresql:
     persistence:
       enabled: true
       size: 10Gi
-  networkPolicy:
-    enabled: false
+    networkPolicy:
+      enabled: false

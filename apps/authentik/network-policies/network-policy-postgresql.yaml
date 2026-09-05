@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: authentik-postgresql
+  name: authentik-postgresql-restricted
   namespace: authentik
 spec:
   podSelector:
@@ -12,6 +12,7 @@ spec:
   policyTypes:
     - Ingress
     - Egress
+  egress: []
   ingress:
     - from:
         - podSelector:
