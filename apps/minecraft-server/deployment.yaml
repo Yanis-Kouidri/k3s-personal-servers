@@ -22,11 +22,6 @@ spec:
       containers:
         - name: minecraft-server
           image: itzg/minecraft-server:2026.8.2-java25
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
           ports:
             - containerPort: 25565
           envFrom:

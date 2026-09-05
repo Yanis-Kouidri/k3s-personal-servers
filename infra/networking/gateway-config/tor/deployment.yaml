@@ -34,11 +34,6 @@ spec:
       containers:
         - name: tor
           image: alpine:3.24.1
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
           command: ["sh", "-c"]
           args:
             - |

@@ -21,11 +21,6 @@ spec:
         - name: stalwart
           image: stalwartlabs/stalwart:v0.16.20
           imagePullPolicy: IfNotPresent
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
           args:
           - "--config"
           - "/etc/stalwart/config.json"
