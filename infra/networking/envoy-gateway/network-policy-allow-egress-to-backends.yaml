@@ -12,40 +12,75 @@ spec:
   policyTypes:
     - Egress
   egress:
-    # Allow egress from Envoy proxy to all application namespaces
     - to:
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: authentik
-    - to:
-        - namespaceSelector:
+          podSelector:
             matchLabels:
-              kubernetes.io/metadata.name: crowdsec
+              app.kubernetes.io/component: server
+              app.kubernetes.io/name: authentik
+      ports:
+        - protocol: TCP
+          port: 80
     - to:
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: immich
+          podSelector:
+            matchLabels:
+              app: immich-server
+      ports:
+        - protocol: TCP
+          port: 2283
     - to:
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: mail
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: bulwark
+      ports:
+        - protocol: TCP
+          port: 3000
     - to:
         - namespaceSelector:
             matchLabels:
-              kubernetes.io/metadata.name: minecraft
+              kubernetes.io/metadata.name: mail
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: stalwart
+      ports:
+        - protocol: TCP
+          port: 8080
     - to:
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: n8n
+          podSelector:
+            matchLabels:
+              service: n8n
+      ports:
+        - protocol: TCP
+          port: 5678
     - to:
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: personal-website-v2
+          podSelector:
+            matchLabels:
+              app: personal-website-v2
+      ports:
+        - protocol: TCP
+          port: 80
     - to:
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: sonarqube
-    - to:
-        - namespaceSelector:
+          podSelector:
             matchLabels:
-              kubernetes.io/metadata.name: wireguard
+              app: sonarqube
+              release: sonarqube
+      ports:
+        - protocol: TCP
+          port: 9000

@@ -25,6 +25,8 @@ spec:
         - ipBlock:
             cidr: ::/0
             except:
+              - 2001:db8:42::/64
+              - 2001:db8:43::/112
               - fc00::/7
               - fe80::/10
       ports:

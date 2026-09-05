@@ -12,6 +12,7 @@ resources:
   - network-policies/network-policy-allow-dns.yaml
   - network-policies/network-policy-authentik-server.yaml
   - network-policies/network-policy-authentik-worker.yaml
+  - network-policies/network-policy-postgresql.yaml
 
 configMapGenerator:
   - name: authentik-values

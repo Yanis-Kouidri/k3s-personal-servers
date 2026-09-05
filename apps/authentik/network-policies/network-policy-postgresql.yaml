@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: authentik-postgresql
+  namespace: authentik
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: primary
+      app.kubernetes.io/instance: authentik
+      app.kubernetes.io/name: postgresql
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: server
+              app.kubernetes.io/name: authentik
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: worker
+              app.kubernetes.io/name: authentik
+      ports:
+        - protocol: TCP
+          port: 5432

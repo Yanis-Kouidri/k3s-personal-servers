@@ -21,6 +21,8 @@ spec:
         - ipBlock:
             cidr: ::/0
             except:
+              - 2001:db8:42::/64
+              - 2001:db8:43::/112
               - fc00::/7
       ports:
         - protocol: TCP
@@ -30,11 +32,14 @@ spec:
         - ipBlock:
             cidr: 0.0.0.0/0
             except:
+              - 10.0.0.0/8
               - 192.168.0.0/16
               - 172.16.0.0/12
         - ipBlock:
             cidr: ::/0
             except:
+              - 2001:db8:42::/64
+              - 2001:db8:43::/112
               - fc00::/7
       ports:
         - protocol: TCP
