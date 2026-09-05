@@ -1,9 +1,10 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: postgres-immich-db
   namespace: immich
 spec:
+  serviceName: postgres-headless
   replicas: 1
   selector:
     matchLabels:
@@ -13,6 +14,7 @@ spec:
       labels:
         app: immich-db
     spec:
+      terminationGracePeriodSeconds: 30
       containers:
         - name: postgres
           image: ghcr.io/immich-app/postgres:18-vectorchord0.5.3-pgvector0.8.1
@@ -22,7 +24,9 @@ spec:
             - configMapRef:
                 name: immich-db-config
           ports:
-            - containerPort: 5432
+            - name: postgres
+              containerPort: 5432
+              protocol: TCP
           volumeMounts:
             - name: postgres-storage
               mountPath: /var/lib/postgresql

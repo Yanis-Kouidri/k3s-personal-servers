@@ -9,6 +9,7 @@ resources:
   - postgres/deployment.yaml
   - postgres/pvc.yaml
   - postgres/service.yaml
+  - postgres/headless-service.yaml
   - postgres/backup-pvc.yaml
   - postgres/backup-cron-job.yaml
 

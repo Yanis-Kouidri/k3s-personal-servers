@@ -1,5 +1,16 @@
 # Immich database Postgres
 
+The database runs as a single-replica `StatefulSet`. The existing
+`postgres-immich-pvc` is referenced explicitly instead of using
+`volumeClaimTemplates`, so the database data remains on the current volume.
+The existing `postgres` Service remains unchanged for clients, while the
+dedicated `postgres-headless` Service provides the stable network identity
+required by the StatefulSet.
+
+During the migration, scale the existing Deployment to zero before applying
+the Kustomization, then remove the obsolete Deployment after the StatefulSet
+is ready. The PVC must not be deleted.
+
 ## Backup
 
 ### Crontask
