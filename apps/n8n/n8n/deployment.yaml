@@ -58,7 +58,7 @@ spec:
               value: http
             - name: N8N_PORT
               value: "5678"
-          image: n8nio/n8n:2.37.6
+          image: n8nio/n8n:2.37.7
           imagePullPolicy: Always
           name: n8n
           securityContext:
