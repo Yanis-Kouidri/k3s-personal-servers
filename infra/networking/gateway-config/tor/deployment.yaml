@@ -19,7 +19,7 @@ spec:
 
       containers:
         - name: tor
-          image: dockurr/tor:0.4.9.11@sha256:446881b3366cbc2cc5cf8d13a76e3104f60824b7c15343d14defe903ded18f0d
+          image: dockurr/tor:0.4.9.11
           volumeMounts:
             - name: tor-config
               mountPath: /etc/tor
