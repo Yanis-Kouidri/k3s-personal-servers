@@ -1,0 +1,9 @@
+# This file must be copy and placed in /etc/rancher/k3s/kubelet-config.yaml
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+
+# Garbage collection for images
+imageGCHighThresholdPercent: 70
+imageGCLowThresholdPercent: 60
+imageMinimumGCAge: 10m0s
+imageMaximumGCAge: 48h0m0s
