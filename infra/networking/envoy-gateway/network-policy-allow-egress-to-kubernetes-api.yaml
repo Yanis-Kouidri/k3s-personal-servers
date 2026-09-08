@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-egress-to-kubernetes-api
+  namespace: envoy-gateway-system
+spec:
+  podSelector:
+    matchLabels:
+      control-plane: envoy-gateway
+  policyTypes:
+    - Egress
+  egress:
+    # The Envoy Gateway control plane watches the Kubernetes API; without this it cannot
+    # start at all, the xDS server never comes up, and the running Envoy proxy keeps
+    # serving whatever configuration it had (stale backend pod IPs -> 503 upstream
+    # connect error as soon as an application pod is rescheduled).
+    #
+    # The address here is the node's real API endpoint (`kubectl get endpoints kubernetes`),
+    # NOT the 10.43.0.1:443 ClusterIP: k3s' network policy controller evaluates egress
+    # rules after the service DNAT, so a rule targeting the ClusterIP never matches.
+    - to:
+        - ipBlock:
+            cidr: 91.134.243.146/32
+      ports:
+        - protocol: TCP
+          port: 6443

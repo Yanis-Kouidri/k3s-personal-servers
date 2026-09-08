@@ -8,9 +8,14 @@ spec:
   policyTypes:
     - Egress
   egress:
+    # Must target the node's real API endpoint (`kubectl get endpoints kubernetes`) and
+    # not the 10.43.0.1:443 ClusterIP: k3s' network policy controller evaluates egress
+    # rules after the service DNAT, so a ClusterIP-based rule never matches and the
+    # controller/cainjector crash-loop on "dial tcp 10.43.0.1:443: connect: connection
+    # refused".
     - to:
         - ipBlock:
-            cidr: 10.43.0.1/32
+            cidr: 91.134.243.146/32
       ports:
         - protocol: TCP
-          port: 443
+          port: 6443
