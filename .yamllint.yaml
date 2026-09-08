@@ -1,0 +1,14 @@
+extends: default
+
+rules:
+  document-start: disable
+  line-length:
+    max: 220
+  truthy:
+    check-keys: false
+
+ignore: |
+  .sops.yaml
+  clusters/my-cluster/flux-system/gotk-components.yaml
+  clusters/my-cluster/flux-system/kustomization.yaml
+  **/*.enc.yaml

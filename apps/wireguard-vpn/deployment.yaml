@@ -20,7 +20,7 @@ spec:
         - name: wireguard
           image: linuxserver/wireguard:1.0.20260223
           securityContext:
-            capabilities: # Add "SYS_MODULE" if necessary
+            capabilities:  # Add "SYS_MODULE" if necessary
               add: ["NET_ADMIN"]
           envFrom:
             - configMapRef:

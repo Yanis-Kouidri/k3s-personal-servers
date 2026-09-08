@@ -8,7 +8,7 @@ jdbcOverwrite:
   jdbcUrl: "jdbc:postgresql://postgres-sonarqube-postgresql.sonarqube.svc.cluster.local:5432/sonar"
   jdbcUsername: "sonar"
   jdbcSecretName: "sonarqube-postgres-secret"
-  jdbcSecretPasswordKey: "password" # Key on secret sonarqube-postgres-secret
+  jdbcSecretPasswordKey: "password"  # Key on secret sonarqube-postgres-secret
 
 monitoringPasscode: "admin"
 

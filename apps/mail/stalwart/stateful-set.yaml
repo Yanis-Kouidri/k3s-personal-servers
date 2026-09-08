@@ -22,8 +22,8 @@ spec:
           image: stalwartlabs/stalwart:v0.16.20
           imagePullPolicy: IfNotPresent
           args:
-          - "--config"
-          - "/etc/stalwart/config.json"
+            - "--config"
+            - "/etc/stalwart/config.json"
 
           ports:
             - name: smtp

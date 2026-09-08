@@ -32,8 +32,8 @@ spec:
         - name: X-Frame-Options
           value: DENY
       remove:
-        - server # Do not reveal server information (nginx, envoy, etc.)
-        - x-powered-by # Do not reveal server information (Express, PHP, etc.)
+        - server  # Do not reveal server information (nginx, envoy, etc.)
+        - x-powered-by  # Do not reveal server information (Express, PHP, etc.)
   tls:
     minVersion: "1.2"
     maxVersion: "1.3"
