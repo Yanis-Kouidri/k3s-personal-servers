@@ -1,0 +1,269 @@
+#!/usr/bin/env bash
+# Pre-commit hook: runs the CI checks of .github/workflows/build.yml locally, against the
+# STAGED tree, so a commit cannot land YAML that fails lint, breaks a kustomization,
+# leaks a secret or ships a decrypted one.
+#
+# Install once per clone:  config-install/install-git-hooks.sh
+#
+# Checks (in order, all of them run — you get the full report, not just the first error):
+#   1. yamllint            (same .yamllint.yaml as CI)
+#   2. kustomize build     (only the roots touched by the commit)
+#   3. kubeconform         (schema validation, Secrets skipped like in CI)   [optional tool]
+#   4. SOPS encryption     (scripts/check-sops-encryption.sh, shared with CI)
+#   5. plaintext Secret    (a `kind: Secret` outside a *.enc.yaml file)
+#   6. actionlint          (staged GitHub workflows)                        [optional tool]
+#   7. gitleaks            (same .gitleaks.toml as CI)                      [optional tool]
+#   8. shellcheck          (staged shell scripts, errors only)               [optional tool]
+#
+# Escape hatches: `git commit --no-verify`, or `SKIP_HOOKS=1 git commit ...`
+set -uo pipefail
+
+if [[ ${SKIP_HOOKS:-0} == 1 ]]; then
+  echo "pre-commit: skipped (SKIP_HOOKS=1)"
+  exit 0
+fi
+
+repo_root=$(git rev-parse --show-toplevel) || exit 1
+cd "$repo_root" || exit 1
+
+if [[ -t 1 ]]; then
+  BOLD=$'\033[1m'; RED=$'\033[31m'; GREEN=$'\033[32m'; YELLOW=$'\033[33m'; DIM=$'\033[2m'; OFF=$'\033[0m'
+else
+  BOLD=; RED=; GREEN=; YELLOW=; DIM=; OFF=
+fi
+
+pass()  { printf '%s  ok %s  %s\n' "$GREEN" "$OFF" "$1"; }
+skip()  { printf '%s skip%s  %s %s(%s)%s\n' "$YELLOW" "$OFF" "$1" "$DIM" "$2" "$OFF"; }
+start() { printf '%s ... %s  %s\n' "$DIM" "$OFF" "$1"; }
+
+failures=()
+report_fail() {
+  printf '%s fail%s  %s\n' "$RED" "$OFF" "$1"
+  failures+=("$1")
+}
+
+# --- staged files ---------------------------------------------------------------------
+staged=()
+while IFS= read -r -d '' f; do staged+=("$f"); done \
+  < <(git diff --cached --name-only --diff-filter=ACMR -z)
+
+if [[ ${#staged[@]} -eq 0 ]]; then
+  echo "pre-commit: nothing staged, skipping checks"
+  exit 0
+fi
+
+staged_yaml=()
+staged_enc=()
+staged_workflows=()
+staged_shell=()
+for f in "${staged[@]}"; do
+  case "$f" in
+    *.enc.yaml|*.enc.yml) staged_enc+=("$f") ;;
+  esac
+  case "$f" in
+    .github/workflows/*.yml|.github/workflows/*.yaml) staged_workflows+=("$f") ;;
+  esac
+  case "$f" in
+    *.yaml|*.yml) staged_yaml+=("$f") ;;
+  esac
+  # *.sh, plus the extensionless hooks, plus anything with a sh/bash shebang
+  case "$f" in
+    *.sh|.githooks/*) staged_shell+=("$f") ;;
+    *) [[ -f $f ]] && head -1 "$f" 2>/dev/null | grep -qE '^#!.*(bash|/sh)' && staged_shell+=("$f") ;;
+  esac
+done
+
+# --- snapshot of the index -----------------------------------------------------------
+# Checks must see exactly what is about to be committed, not the working tree (which may
+# hold unstaged edits). `git checkout-index` materialises the index into a temp dir.
+snapshot=$(mktemp -d "${TMPDIR:-/tmp}/k3s-precommit.XXXXXX") || exit 1
+cleanup() { rm -rf "$snapshot"; }
+trap cleanup EXIT
+if ! git checkout-index --all --force --prefix="$snapshot/"; then
+  echo "${RED}pre-commit: could not snapshot the index${OFF}" >&2
+  exit 1
+fi
+
+# --- tool resolution ------------------------------------------------------------------
+# Versions come from the CI workflow so there is a single source of truth (Renovate
+# bumps them there).
+YAMLLINT_VERSION=$(sed -nE 's/.*yamllint==([0-9][A-Za-z0-9._-]*).*/\1/p' .github/workflows/build.yml | head -1)
+: "${YAMLLINT_VERSION:=1.38.0}"
+
+run_yamllint() {
+  if command -v yamllint >/dev/null 2>&1; then
+    yamllint "$@"
+  elif command -v pipx >/dev/null 2>&1; then
+    pipx run "yamllint==${YAMLLINT_VERSION}" "$@"
+  elif command -v uvx >/dev/null 2>&1; then
+    uvx "yamllint@${YAMLLINT_VERSION}" "$@"
+  else
+    return 127
+  fi
+}
+
+echo "${BOLD}pre-commit: validating ${#staged[@]} staged file(s)${OFF}"
+
+# --- 1. yamllint ----------------------------------------------------------------------
+# Linting the whole snapshot (like CI) rather than only staged files: it takes ~1s and
+# catches files broken by an earlier --no-verify commit.
+if [[ ${#staged_yaml[@]} -gt 0 ]]; then
+  start "yamllint"
+  out=$( (cd "$snapshot" && run_yamllint -s -c .yamllint.yaml .) 2>&1 ); rc=$?
+  if [[ $rc -eq 0 ]]; then
+    pass "yamllint"
+  elif [[ $rc -eq 127 ]]; then
+    report_fail "yamllint: no yamllint, pipx or uvx found — run config-install/install-git-hooks.sh --install-tools"
+  else
+    report_fail "yamllint"
+    printf '%s\n' "$out" | sed 's/^/       /'
+  fi
+else
+  skip "yamllint" "no YAML staged"
+fi
+
+# --- 2 & 3. kustomize build + kubeconform ---------------------------------------------
+roots=()
+for f in "${staged_yaml[@]}"; do
+  case "$f" in
+    apps/*)     roots+=("apps") ;;
+    infra/*)    roots+=("infra") ;;
+    clusters/*) roots+=("clusters/my-cluster") ;;
+  esac
+done
+# de-duplicate
+if [[ ${#roots[@]} -gt 0 ]]; then
+  mapfile -t roots < <(printf '%s\n' "${roots[@]}" | sort -u)
+fi
+
+have_kubeconform=0
+command -v kubeconform >/dev/null 2>&1 && have_kubeconform=1
+
+if [[ ${#roots[@]} -eq 0 ]]; then
+  skip "kustomize build" "no manifest staged"
+else
+  for root in "${roots[@]}"; do
+    start "kustomize build $root"
+    if ! build=$( (cd "$snapshot" && kustomize build "$root") 2>&1 ); then
+      if ! command -v kustomize >/dev/null 2>&1; then
+        report_fail "kustomize build $root: kustomize not installed"
+      else
+        report_fail "kustomize build $root"
+        printf '%s\n' "$build" | sed 's/^/       /'
+      fi
+      continue
+    fi
+    pass "kustomize build $root"
+
+    # Secrets are SOPS-encrypted and never decrypted here, so their rendered ciphertext
+    # cannot pass schema validation — skipped, exactly like in CI, and covered by check 4.
+    if [[ $have_kubeconform -eq 1 ]]; then
+      start "kubeconform $root"
+      if out=$(printf '%s\n' "$build" | kubeconform \
+        -summary -strict -skip Secret -ignore-missing-schemas \
+        -schema-location default \
+        -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' 2>&1); then
+        pass "kubeconform $root"
+      else
+        report_fail "kubeconform $root"
+        printf '%s\n' "$out" | sed 's/^/       /'
+      fi
+    fi
+  done
+  [[ $have_kubeconform -eq 0 ]] && skip "kubeconform" "not installed — config-install/install-git-hooks.sh --install-tools"
+fi
+
+# --- 4. SOPS encryption ---------------------------------------------------------------
+if [[ ${#staged_enc[@]} -gt 0 ]]; then
+  start "sops encryption"
+  if out=$( (cd "$snapshot" && ./scripts/check-sops-encryption.sh "${staged_enc[@]}") 2>&1 ); then
+    pass "sops encryption (${#staged_enc[@]} file(s))"
+  else
+    report_fail "sops encryption"
+    printf '%s\n' "$out" | grep '✗' | sed 's/^/     /'
+  fi
+else
+  skip "sops encryption" "no *.enc.yaml staged"
+fi
+
+# --- 5. plaintext Secret guard --------------------------------------------------------
+# AGENTS.md: never commit a decrypted secret. Every `kind: Secret` must live in a
+# *.enc.yaml file (whose ciphertext is then verified by check 4).
+if [[ ${#staged_yaml[@]} -gt 0 ]]; then
+  start "plaintext Secret guard"
+  offenders=()
+  for f in "${staged_yaml[@]}"; do
+    case "$f" in *.enc.yaml|*.enc.yml) continue ;; esac
+    [[ -f "$snapshot/$f" ]] || continue
+    if grep -qE '^[[:space:]]*kind:[[:space:]]*Secret[[:space:]]*$' "$snapshot/$f"; then
+      offenders+=("$f")
+    fi
+  done
+  if [[ ${#offenders[@]} -eq 0 ]]; then
+    pass "plaintext Secret guard"
+  else
+    report_fail "plaintext Secret guard"
+    for f in "${offenders[@]}"; do
+      echo "       ✗ $f declares a Secret outside a *.enc.yaml file — encrypt it: sops -e $f"
+    done
+  fi
+fi
+
+# --- 6. actionlint --------------------------------------------------------------------
+if [[ ${#staged_workflows[@]} -gt 0 ]]; then
+  if command -v actionlint >/dev/null 2>&1; then
+    start "actionlint"
+    # Explicit paths: actionlint refuses to auto-discover workflows outside a git
+    # repository, and the snapshot is a plain directory.
+    if out=$( (cd "$snapshot" && actionlint "${staged_workflows[@]}") 2>&1 ); then
+      pass "actionlint"
+    else
+      report_fail "actionlint"
+      printf '%s\n' "$out" | sed 's/^/       /'
+    fi
+  else
+    skip "actionlint" "not installed — config-install/install-git-hooks.sh --install-tools"
+  fi
+fi
+
+# --- 7. gitleaks ----------------------------------------------------------------------
+if command -v gitleaks >/dev/null 2>&1; then
+  start "gitleaks"
+  if out=$( (cd "$snapshot" && gitleaks detect --no-git --source . --config .gitleaks.toml --redact -v) 2>&1 ); then
+    pass "gitleaks"
+  else
+    report_fail "gitleaks"
+    printf '%s\n' "$out" | sed 's/^/       /'
+  fi
+else
+  skip "gitleaks" "not installed — config-install/install-git-hooks.sh --install-tools"
+fi
+
+# --- 8. shellcheck --------------------------------------------------------------------
+# Errors only: the pre-existing scripts under backups/ and apps/ carry style warnings
+# (SC2086 & friends) that are not worth blocking a commit on, while an error is real
+# breakage — bad syntax, a misused construct.
+if [[ ${#staged_shell[@]} -gt 0 ]]; then
+  if command -v shellcheck >/dev/null 2>&1; then
+    start "shellcheck"
+    if out=$( (cd "$snapshot" && shellcheck --severity=error --external-sources "${staged_shell[@]}") 2>&1 ); then
+      pass "shellcheck (${#staged_shell[@]} file(s))"
+    else
+      report_fail "shellcheck"
+      printf '%s\n' "$out" | sed 's/^/       /'
+    fi
+  else
+    skip "shellcheck" "not installed — config-install/install-git-hooks.sh --install-tools"
+  fi
+fi
+
+# --- verdict --------------------------------------------------------------------------
+if [[ ${#failures[@]} -gt 0 ]]; then
+  echo
+  echo "${RED}${BOLD}pre-commit: commit aborted, ${#failures[@]} check(s) failed:${OFF}"
+  printf '  - %s\n' "${failures[@]}"
+  echo "${DIM}Fix them, or bypass with: git commit --no-verify${OFF}"
+  exit 1
+fi
+
+echo "${GREEN}${BOLD}pre-commit: all checks passed${OFF}"

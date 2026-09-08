@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# commit-msg hook: enforce the conventional-commit format required by AGENTS.md, so the
+# history stays consistent with Renovate's commits and stays machine-readable.
+#
+#   <type>[(scope)][!]: <subject>
+#   e.g. feat(n8n): add worker deployment / fix(ci): use pipx for yamllint
+#
+# Merge, revert, fixup and squash messages are left alone.
+# Escape hatches: `git commit --no-verify`, or `SKIP_HOOKS=1 git commit ...`
+set -uo pipefail
+
+[[ ${SKIP_HOOKS:-0} == 1 ]] && exit 0
+
+msg_file=$1
+# First non-comment, non-empty line = the subject.
+subject=$(grep -vE '^\s*#' "$msg_file" | grep -vE '^\s*$' | head -1)
+
+[[ -z $subject ]] && exit 0
+
+case "$subject" in
+  "Merge "*|"Revert "*|"fixup!"*|"squash!"*|"amend!"*) exit 0 ;;
+esac
+
+types='build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test'
+
+if [[ ! $subject =~ ^($types)(\([a-z0-9._/-]+\))?!?:\ .+ ]]; then
+  cat >&2 <<MSG
+commit-msg: invalid commit message.
+
+  got:      ${subject}
+  expected: <type>[(scope)][!]: <subject>
+  types:    ${types//|/, }
+
+  examples: feat(n8n): add worker deployment
+            fix(envoy): correct listener port
+            chore(deps): update immich image tag
+
+Bypass with: git commit --no-verify
+MSG
+  exit 1
+fi
+
+if [[ ${#subject} -gt 100 ]]; then
+  echo "commit-msg: subject is ${#subject} chars, keep it under 100" >&2
+  exit 1
+fi

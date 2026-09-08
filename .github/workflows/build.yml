@@ -18,6 +18,7 @@ env:
   KUBECONFORM_VERSION: "0.8.0"
   KUSTOMIZE_VERSION: "5.8.1"
   GITLEAKS_VERSION: "8.30.1"
+  SHELLCHECK_VERSION: "0.11.0"
 
 jobs:
   actionlint:
@@ -102,31 +103,31 @@ jobs:
       # data:/stringData: key is ciphertext (ENC[...]) rather than plaintext that slipped
       # in without being (re-)encrypted.
       - name: Check secrets.enc.yaml files
+        run: ./scripts/check-sops-encryption.sh
+
+  shellcheck:
+    name: Lint shell scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      # Unlike the other tools pinned above, upstream publishes no checksum file for the
+      # shellcheck release assets, so there is nothing to verify against here.
+      - name: Install shellcheck
         run: |
           set -euo pipefail
-          status=0
-          while IFS= read -r -d '' f; do
-            echo "Checking $f"
-            if ! grep -qE '^sops:' "$f"; then
-              echo "::error file=$f::not SOPS-encrypted (no top-level 'sops:' block)"
-              status=1
-              continue
-            fi
-            if ! awk -v file="$f" '
-              /^(data|stringData):[[:space:]]*$/ { in_block=1; next }
-              /^[A-Za-z]/ { in_block=0 }
-              in_block && /^[[:space:]]+[A-Za-z0-9_.-]+:/ {
-                if ($0 !~ /:[[:space:]]*ENC\[/) {
-                  print "::error file=" file "::possible plaintext value -> " $0
-                  bad=1
-                }
-              }
-              END { exit bad }
-            ' "$f"; then
-              status=1
-            fi
-          done < <(find . -iname "*.enc.yaml" -not -path "./.git/*" -print0)
-          exit "$status"
+          curl -sSLO "https://github.com/koalaman/shellcheck/releases/download/v${SHELLCHECK_VERSION}/shellcheck-v${SHELLCHECK_VERSION}.linux.x86_64.tar.xz"
+          tar -xJf "shellcheck-v${SHELLCHECK_VERSION}.linux.x86_64.tar.xz" "shellcheck-v${SHELLCHECK_VERSION}/shellcheck"
+          mv "shellcheck-v${SHELLCHECK_VERSION}/shellcheck" shellcheck
+
+      # Errors only: the older scripts under backups/ and apps/ carry style warnings that
+      # are not worth failing the build on, while an error is genuine breakage. The same
+      # threshold is used by the pre-commit hook (.githooks/pre-commit).
+      - name: Run shellcheck
+        run: |
+          set -euo pipefail
+          mapfile -t scripts < <(git ls-files '*.sh' .githooks)
+          ./shellcheck --severity=error --external-sources --color=always "${scripts[@]}"
 
   secret-scan:
     name: Scan for leaked secrets

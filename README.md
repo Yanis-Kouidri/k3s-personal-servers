@@ -24,3 +24,20 @@ Accessible from https://www.kouidri.fr or http://kouidri6bhboadbevagrvs52nmyvfhg
 ## How to set up
 
 Look `SERVER_CONFIG.md`
+
+## Contributing
+
+After cloning, install the git hooks once (git hooks are not versioned by design, so
+`core.hooksPath` is pointed at the versioned `.githooks/` directory):
+
+```bash
+config-install/install-git-hooks.sh --install-tools
+```
+
+`--install-tools` also installs the linters (yamllint, kubeconform, gitleaks, actionlint,
+shellcheck), pinned to the same versions CI uses. Drop the flag if you already have them.
+
+The `pre-commit` hook then runs the CI checks on the staged tree before each commit:
+yamllint, `kustomize build` + kubeconform on the touched roots, SOPS encryption checks,
+a plaintext-`Secret` guard, actionlint, gitleaks and shellcheck. The `commit-msg` hook
+enforces conventional commits. Bypass with `git commit --no-verify` when you must.

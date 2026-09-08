@@ -19,6 +19,8 @@ Kubernetes secrets are encrypted with SOPS and age.
 - `config-install/`: Install or maintenance scripts
 - `docs/`: Docs
 - `infra/`: Contains yaml manifests for infra applications of the cluster such as cert-manager, envoy and reflector. One app per folder
+- `scripts/`: Check scripts shared by the CI and the git hooks
+- `.githooks/`: Versioned git hooks, installed with `config-install/install-git-hooks.sh`
 - `.sops.yaml`: Contains rules for secrets encryption. To encrypt a plaintext secret use `sops -e secret.enc.yaml`, it will output an encrypted version.
 
 ## Workflow
@@ -30,6 +32,12 @@ To fix a problem or create something new, follow this workflow:
 - Check that the new or modified files are still correct and followed by FluxCD with the command : `kustomize build <path> | kubectl apply --dry-run=server -f -`
 - If it's correct, commit with a conventional commit message, push on the branch main and run `config-install/flux-reconcile.sh` to apply the modification
 - Check that the change was applied correctly
+
+The `pre-commit` hook in `.githooks/` runs the CI checks (yamllint, `kustomize build` +
+kubeconform, SOPS/secret checks, actionlint, gitleaks, shellcheck) on the staged tree, and
+`commit-msg` enforces the conventional commit format. Install them once per clone with
+`config-install/install-git-hooks.sh --install-tools`. Never bypass them with
+`--no-verify` without saying so.
 
 ## Guardrails
 
