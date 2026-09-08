@@ -1,0 +1,13 @@
+title = "gitleaks config for k3s-personal-servers"
+
+# Extend gitleaks' default ruleset instead of replacing it.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Known false positives for this repo: container image tags/digests and Flux/Kustomize checksum annotations"
+regexTarget = "line"
+regexes = [
+  '''^\s*-?\s*image:\s*\S+$''',
+  '''checksum/[\w-]+:\s*"[a-f0-9]{64}"''',
+]

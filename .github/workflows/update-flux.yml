@@ -6,6 +6,9 @@ on:
     # Every monday at 4:00 AM
     - cron: "0 4 * * 1"
 
+concurrency:
+  group: ${{ github.workflow }}
+
 permissions:
   contents: write
   pull-requests: write
@@ -15,10 +18,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
       - name: Setup Flux CLI
-        uses: fluxcd/flux2/action@main
+        uses: fluxcd/flux2/action@dd233c4fadef306a62b7893204f8e3817fecc2b2  # v2.9.5
 
       - name: Check for updates
         id: update
@@ -30,7 +33,7 @@ jobs:
           echo "flux_version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v8
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1  # v8.1.1
         with:
           branch: update-flux
           commit-message: "chore(flux): update to ${{ steps.update.outputs.flux_version }}"

@@ -4,20 +4,163 @@ on:
   push:
     branches:
       - main
-  pull_request: 
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  ACTIONLINT_VERSION: "1.7.12"
+  KUBECONFORM_VERSION: "0.8.0"
+  KUSTOMIZE_VERSION: "5.8.1"
+  GITLEAKS_VERSION: "8.30.1"
 
 jobs:
-  checks:
-    name: Analyze
+  actionlint:
+    name: Lint workflows
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: Install actionlint
+        run: |
+          set -euo pipefail
+          curl -sSLO "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+          curl -sSLO "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_checksums.txt"
+          sha256sum -c <(grep "linux_amd64.tar.gz" "actionlint_${ACTIONLINT_VERSION}_checksums.txt")
+          tar -xzf "actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" actionlint
+
+      - name: Run actionlint
+        run: ./actionlint -color
+
+  yamllint:
+    name: Lint YAML
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: Run yamllint
+        run: uvx --from yamllint==1.38.0 yamllint -s -c .yamllint.yaml .
+
+  validate-manifests:
+    name: Validate Kubernetes manifests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: Install kustomize
+        run: |
+          set -euo pipefail
+          curl -sSLO "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${KUSTOMIZE_VERSION}/kustomize_v${KUSTOMIZE_VERSION}_linux_amd64.tar.gz"
+          curl -sSLO "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${KUSTOMIZE_VERSION}/checksums.txt"
+          sha256sum -c <(grep "kustomize_v${KUSTOMIZE_VERSION}_linux_amd64.tar.gz" checksums.txt)
+          tar -xzf "kustomize_v${KUSTOMIZE_VERSION}_linux_amd64.tar.gz" kustomize
+          sudo mv kustomize /usr/local/bin/kustomize
+
+      - name: Install kubeconform
+        run: |
+          set -euo pipefail
+          curl -sSLO "https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz"
+          curl -sSLO "https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/CHECKSUMS"
+          sha256sum -c <(grep "kubeconform-linux-amd64.tar.gz" CHECKSUMS)
+          tar -xzf kubeconform-linux-amd64.tar.gz kubeconform
+          sudo mv kubeconform /usr/local/bin/kubeconform
+
+      # Secrets are SOPS-encrypted (see AGENTS.md) and are never decrypted in CI, so their
+      # rendered content (ciphertext under data/stringData, plus SOPS' own metadata block)
+      # cannot and should not pass Kubernetes schema validation. Kustomize itself doesn't
+      # need decryption to build though: it just treats the encrypted Secret as an opaque
+      # resource, so `kustomize build` still validates the surrounding kustomization graph.
+      # Secret content is checked separately by the verify-sops-encryption job instead.
+      - name: kustomize build + kubeconform schema validation
+        run: |
+          set -euo pipefail
+          for root in apps infra clusters/my-cluster; do
+            echo "::group::$root"
+            kustomize build "$root" | kubeconform \
+              -summary \
+              -strict \
+              -skip Secret \
+              -ignore-missing-schemas \
+              -schema-location default \
+              -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json'
+            echo "::endgroup::"
+          done
+
+  verify-sops-encryption:
+    name: Verify secrets are SOPS-encrypted
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      # Never decrypts anything (no age key available here, by design). Just checks that
+      # every *.enc.yaml is actually a SOPS document, and that every value nested under a
+      # data:/stringData: key is ciphertext (ENC[...]) rather than plaintext that slipped
+      # in without being (re-)encrypted.
+      - name: Check secrets.enc.yaml files
+        run: |
+          set -euo pipefail
+          status=0
+          while IFS= read -r -d '' f; do
+            echo "Checking $f"
+            if ! grep -qE '^sops:' "$f"; then
+              echo "::error file=$f::not SOPS-encrypted (no top-level 'sops:' block)"
+              status=1
+              continue
+            fi
+            if ! awk -v file="$f" '
+              /^(data|stringData):[[:space:]]*$/ { in_block=1; next }
+              /^[A-Za-z]/ { in_block=0 }
+              in_block && /^[[:space:]]+[A-Za-z0-9_.-]+:/ {
+                if ($0 !~ /:[[:space:]]*ENC\[/) {
+                  print "::error file=" file "::possible plaintext value -> " $0
+                  bad=1
+                }
+              }
+              END { exit bad }
+            ' "$f"; then
+              status=1
+            fi
+          done < <(find . -iname "*.enc.yaml" -not -path "./.git/*" -print0)
+          exit "$status"
+
+  secret-scan:
+    name: Scan for leaked secrets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: Install gitleaks
+        run: |
+          set -euo pipefail
+          curl -sSLO "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          curl -sSLO "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_checksums.txt"
+          sha256sum -c <(grep "linux_x64.tar.gz" "gitleaks_${GITLEAKS_VERSION}_checksums.txt")
+          tar -xzf "gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" gitleaks
+
+      - name: Run gitleaks
+        run: ./gitleaks detect --no-git --source . --config .gitleaks.toml --redact -v
+
+  sonarqube:
+    name: SonarQube Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           fetch-depth: 0
 
       - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v8
+        uses: SonarSource/sonarqube-scan-action@22918119ff8e1ca75a623e15c8296b6ea4fbe28f  # v8.2.1
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+      - name: SonarQube Quality Gate check
+        uses: SonarSource/sonarqube-quality-gate-action@7a5fffe8e523c40e0c740b6bc2712ab503e52efa  # v1.2.1
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
