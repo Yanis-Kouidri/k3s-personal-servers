@@ -44,7 +44,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
       - name: Run yamllint
-        run: uvx --from yamllint==1.38.0 yamllint -s -c .yamllint.yaml .
+        run: pipx run yamllint==1.38.0 -s -c .yamllint.yaml .
 
   validate-manifests:
     name: Validate Kubernetes manifests
