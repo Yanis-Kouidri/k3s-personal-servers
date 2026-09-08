@@ -49,7 +49,7 @@ spec:
   parentRefs:
     - name: envoy-gateway
       namespace: envoy-gateway-system
-      sectionName: http # Stay in HTTP with TOR
+      sectionName: http  # Stay in HTTP with TOR
   hostnames:
     - "kouidri6bhboadbevagrvs52nmyvfhgafavqozvs6b756bzh3e4sd7qd.onion"
   rules:

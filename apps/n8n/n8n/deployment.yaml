@@ -71,7 +71,7 @@ spec:
               path: /healthz
               port: 5678
             failureThreshold: 30
-            periodSeconds: 10 # 5 minutes max to start (30 * 10s)
+            periodSeconds: 10  # 5 minutes max to start (30 * 10s)
 
           readinessProbe:
             httpGet:

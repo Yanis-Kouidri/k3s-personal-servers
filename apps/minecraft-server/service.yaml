@@ -6,8 +6,8 @@ metadata:
 spec:
   type: LoadBalancer
   ports:
-  - port: 25565
-    targetPort: 25565
-    protocol: TCP
+    - port: 25565
+      targetPort: 25565
+      protocol: TCP
   selector:
     app: minecraft-server

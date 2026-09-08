@@ -29,6 +29,6 @@ spec:
           livenessProbe:
             exec:
               command:
-                - valkey-cli 
+                - valkey-cli
                 - ping
       restartPolicy: Always

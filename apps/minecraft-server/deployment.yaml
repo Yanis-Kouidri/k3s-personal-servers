@@ -5,9 +5,9 @@ metadata:
   namespace: minecraft
 spec:
   replicas: 1
-  revisionHistoryLimit: 2 
+  revisionHistoryLimit: 2
   strategy:
-    type: Recreate # Use to avoid to have 2 minecraft server pods simutanniously
+    type: Recreate  # Use to avoid to have 2 minecraft server pods simutanniously
   selector:
     matchLabels:
       app: minecraft-server
@@ -44,7 +44,7 @@ spec:
                 - status
             initialDelaySeconds: 30
             periodSeconds: 10
-            failureThreshold: 30 #5 minutes max to start
+            failureThreshold: 30  # 5 minutes max to start
           readinessProbe:
             exec:
               command:
@@ -52,14 +52,14 @@ spec:
                 - status
             periodSeconds: 10
             successThreshold: 1
-            failureThreshold: 3 
+            failureThreshold: 3
           livenessProbe:
             exec:
               command:
                 - mc-monitor
                 - status
             periodSeconds: 30
-            failureThreshold: 3 
+            failureThreshold: 3
 
       volumes:
         - name: minecraft-data
