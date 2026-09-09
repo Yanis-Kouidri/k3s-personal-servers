@@ -62,9 +62,16 @@ sudoedit /etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml
 change :
 
 ```yaml
-api_url: http://<CROWDSEC_SERVICE_CLUSTER_IP>:8080/
+api_url: http://127.0.0.1:30800/
 api_key: <API_KEY>
 ```
+
+Port 30800 is the pinned NodePort of `crowdsec-lapi-nodeport`, the Service this
+repository owns for exactly this purpose (see `lapi-nodeport-service.yaml`). Do not
+point the bouncer at a ClusterIP or at the chart's `crowdsec-service`: neither
+address is pinned, both are reallocated if the object is recreated, and the bouncer
+fails silently when that happens -- systemd stays `active`, the pods stay green, and
+only the bans stop being applied.
 
 Restart:
 

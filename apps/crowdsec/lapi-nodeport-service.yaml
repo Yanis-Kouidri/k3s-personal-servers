@@ -1,0 +1,32 @@
+# Loopback entrypoint to LAPI for the host's crowdsec-firewall-bouncer, which runs
+# outside the cluster and therefore cannot resolve cluster DNS.
+#
+# This Service is owned by the repository rather than by the Helm chart on purpose:
+# the chart's lapi-service.yaml template hardcodes its ports and never renders a
+# `nodePort` field, so `lapi.service.nodePort` is silently dropped at render time
+# (values.schema.json sets no constraints either, so Helm accepts the key without
+# warning). Leaving the chart's Service as a NodePort would therefore hand out a
+# random port from the node range, and any recreation of that Service would move it
+# and cut the bouncer off from LAPI without any visible symptom -- the pods stay
+# green and the bouncer's systemd unit stays active, only the bans stop being
+# applied. Pinning the port here keeps the host side reproducible.
+#
+# The chart's own crowdsec-service stays a ClusterIP and is what the in-cluster
+# agent talks to, over DNS.
+apiVersion: v1
+kind: Service
+metadata:
+  name: crowdsec-lapi-nodeport
+  namespace: crowdsec
+spec:
+  type: NodePort
+  ports:
+    - name: lapi
+      port: 8080
+      targetPort: 8080
+      nodePort: 30800
+      protocol: TCP
+  selector:
+    k8s-app: crowdsec
+    type: lapi
+    version: v1
