@@ -22,3 +22,46 @@ spec:
   upgrade:
     remediation:
       retries: 3
+  # The chart's init container runs `cscli lapi register` unconditionally on every pod
+  # start, using the pod name as the machine name. LAPI stores its machines in a
+  # persistent volume, so as soon as the pod is restarted rather than recreated (a node
+  # reboot, a kubelet restart) the registration is rejected with
+  # "403 Forbidden: user '<pod-name>': user already exist", the init container
+  # crash-loops forever and the agent never starts again -- while the credentials it
+  # needs are still sitting in its emptyDir from the first registration.
+  #
+  # Upstream has no switch for this (identical in 0.24.2, and the only registration-free
+  # path is full mTLS, which would also require reconfiguring the host firewall bouncer),
+  # so the command is patched here to register only when there are no credentials yet.
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: DaemonSet
+              name: crowdsec-agent
+            patch: |
+              apiVersion: apps/v1
+              kind: DaemonSet
+              metadata:
+                name: crowdsec-agent
+              spec:
+                template:
+                  spec:
+                    initContainers:
+                      - name: wait-for-lapi-and-register
+                        command:
+                          - sh
+                          - -c
+                          - |
+                            set -e
+                            until nc "$LAPI_HOST" "$LAPI_PORT" -z; do
+                              echo waiting for lapi to start
+                              sleep 5
+                            done
+                            if [ -s /tmp_config/local_api_credentials.yaml ]; then
+                              echo "already registered with LAPI, keeping existing credentials"
+                              exit 0
+                            fi
+                            ln -s /staging/etc/crowdsec /etc/crowdsec
+                            cscli lapi register --machine "$USERNAME" -u "$LAPI_URL" --token "$REGISTRATION_TOKEN"
+                            cp /etc/crowdsec/local_api_credentials.yaml /tmp_config/local_api_credentials.yaml
