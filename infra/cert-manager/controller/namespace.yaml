@@ -2,3 +2,20 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: cert-manager
+  labels:
+    # Pod Security Admission. `enforce` is the highest level every pod in this
+    # namespace passes today, established with
+    #     kubectl label --dry-run=server --overwrite ns <ns> \
+    #       pod-security.kubernetes.io/enforce=<level>
+    # which makes the admission controller evaluate the pods already running.
+    #
+    # warn/audit sit at `restricted` on purpose: they block nothing and surface how
+    # far this namespace still is from the target, so the gap stays visible instead
+    # of being forgotten.
+    #
+    # enforce-version is pinned so upgrading k3s cannot silently tighten the rules
+    # and leave pods unable to start; bump it deliberately after a cluster upgrade.
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: v1.36
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/audit: restricted
