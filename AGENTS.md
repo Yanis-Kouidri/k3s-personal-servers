@@ -19,7 +19,7 @@ Kubernetes secrets are encrypted with SOPS and age.
 - `config-install/`: Install or maintenance scripts
 - `docs/`: Docs
 - `infra/`: Contains yaml manifests for infra applications of the cluster such as cert-manager, envoy and reflector. One app per folder
-- `scripts/`: Check scripts shared by the CI and the git hooks
+- `scripts/`: Check scripts shared by the CI and the git hooks. `validate-manifests.sh` validates rendered manifests, `check-sops-encryption.sh` verifies that secrets are encrypted
 - `.githooks/`: Versioned git hooks, installed with `config-install/install-git-hooks.sh`
 - `.sops.yaml`: Contains rules for secrets encryption. To encrypt a plaintext secret use `sops -e secret.enc.yaml`, it will output an encrypted version.
 
@@ -29,7 +29,8 @@ To fix a problem or create something new, follow this workflow:
 
 - Read the files, inspect the logs and the Kubernetes resources
 - Modify existing files and/or create new files to complete what I ask
-- Check that the new or modified files are still correct and followed by FluxCD with the command : `kustomize build <path> | kubectl apply --dry-run=server -f -`
+- Check that the new or modified files are still correct and followed by FluxCD with
+  `scripts/validate-manifests.sh <path>`. Add `--server` to also run `kubectl apply --dry-run=server` against the live cluster.
 - If it's correct, commit with a conventional commit message, push on the branch main and run `config-install/flux-reconcile.sh` to apply the modification
 - Check that the change was applied correctly
 
