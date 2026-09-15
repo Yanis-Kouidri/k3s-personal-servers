@@ -46,21 +46,36 @@ spec:
                 - |
                   set -eu
 
+                  # This image's kubectl does not pick up the in-cluster config on its
+                  # own: with no kubeconfig it falls back to http://localhost:8080 and
+                  # every call dies with "connection refused", even though the API is
+                  # perfectly reachable. Point it at the API explicitly, with the
+                  # credentials the kubelet mounts for the ServiceAccount.
+                  SA=/var/run/secrets/kubernetes.io/serviceaccount
+                  k() {
+                    kubectl --server="https://${KUBERNETES_SERVICE_HOST}:${KUBERNETES_SERVICE_PORT}" \
+                            --token="$(cat "$SA/token")" \
+                            --certificate-authority="$SA/ca.crt" "$@"
+                  }
+
                   # k3s programs a new pod's NetworkPolicy rules slightly after the pod
                   # gets its IP, so the first outbound connection is refused. Same wait
                   # as the backup CronJobs (apps/*/postgres/backup-cron-job.yaml).
                   i=0
-                  until kubectl get jobs -A -o name --request-timeout=5s >/dev/null 2>&1; do
+                  until k get jobs -A -o name --request-timeout=5s >/dev/null 2>&1; do
                     i=$((i + 1))
                     if [ "$i" -ge 30 ]; then
-                      echo "Kubernetes API unreachable after 60s, giving up" >&2
+                      # Surface the real error rather than just "unreachable": the cause
+                      # is as likely to be auth or client config as it is the network.
+                      echo "Kubernetes API still unreachable after 60s, last error:" >&2
+                      k get jobs -A -o name --request-timeout=5s >&2 || true
                       exit 1
                     fi
                     echo "waiting for the Kubernetes API..."
                     sleep 2
                   done
 
-                  failed=$(kubectl get jobs -A -o json | jq -r '
+                  failed=$(k get jobs -A -o json | jq -r '
                     .items[]
                     | select(any(.status.conditions[]?;
                         .type == "Failed" and .status == "True"))
@@ -76,7 +91,7 @@ spec:
                   for job in $failed; do
                     ns=${job%%/*}
                     name=${job##*/}
-                    reason=$(kubectl get job "$name" -n "$ns" \
+                    reason=$(k get job "$name" -n "$ns" \
                       -o jsonpath='{.status.conditions[?(@.type=="Failed")].message}')
 
                     text="🔴 Kubernetes Job failed
@@ -92,7 +107,7 @@ spec:
                       --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
                       --data-urlencode "text=${text}" >/dev/null
 
-                    kubectl annotate job "$name" -n "$ns" \
+                    k annotate job "$name" -n "$ns" \
                       alerting.kouidri.fr/notified=true --overwrite >/dev/null
                     echo "reported ${ns}/${name}"
                   done
