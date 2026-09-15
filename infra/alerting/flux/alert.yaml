@@ -1,0 +1,69 @@
+# Notify on Flux failures only (eventSeverity: error). `info` would fire on every
+# applied change, which on this cluster means several messages a day -- and an alert
+# stream that gets ignored is worse than none.
+#
+# Every (kind, namespace) pair has to be spelled out. The controller compares the
+# namespace verbatim:
+#     if event.InvolvedObject.Namespace != source.Namespace || ... { return false }
+# Only `name` accepts `*`, and an empty namespace falls back to this Alert's own
+# namespace (flux-system). So a new app in a NEW namespace is not covered until its
+# HelmRelease/HelmRepository is added below.
+#
+# HelmReleases need their own entries because a failing HelmRelease does not currently
+# fail its parent Kustomization -- `apps` and `infra` run without `wait: true`. Giving
+# them that would make the Kustomization entries catch these too.
+apiVersion: notification.toolkit.fluxcd.io/v1beta3
+kind: Alert
+metadata:
+  name: flux-errors
+  namespace: flux-system
+spec:
+  providerRef:
+    name: telegram
+  eventSeverity: error
+  eventSources:
+    # Reconciliation
+    - kind: Kustomization
+      name: "*"
+      namespace: flux-system
+    # Sources: a source that stops fetching silently freezes everything downstream
+    - kind: GitRepository
+      name: "*"
+      namespace: flux-system
+    - kind: OCIRepository
+      name: "*"
+      namespace: envoy-gateway-system
+    - kind: HelmRepository
+      name: "*"
+      namespace: flux-system
+    - kind: HelmRepository
+      name: "*"
+      namespace: authentik
+    - kind: HelmRepository
+      name: "*"
+      namespace: cert-manager
+    - kind: HelmRepository
+      name: "*"
+      namespace: crowdsec
+    - kind: HelmRepository
+      name: "*"
+      namespace: sonarqube
+    # Releases
+    - kind: HelmRelease
+      name: "*"
+      namespace: flux-system
+    - kind: HelmRelease
+      name: "*"
+      namespace: authentik
+    - kind: HelmRelease
+      name: "*"
+      namespace: cert-manager
+    - kind: HelmRelease
+      name: "*"
+      namespace: crowdsec
+    - kind: HelmRelease
+      name: "*"
+      namespace: envoy-gateway-system
+    - kind: HelmRelease
+      name: "*"
+      namespace: sonarqube

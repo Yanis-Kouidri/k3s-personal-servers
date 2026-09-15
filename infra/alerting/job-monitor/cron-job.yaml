@@ -1,0 +1,130 @@
+# Flux's notification-controller only ever sees events emitted by Flux controllers, so
+# a failing Job is invisible to it. This closes that gap: it polls the API for Jobs in
+# a Failed state and pushes them to the same Telegram channel.
+#
+# Deduplication is an annotation on the Job itself rather than a time window, so a
+# failure is reported exactly once regardless of how the schedules line up. The limit
+# is retention: a CronJob with failedJobsHistoryLimit: 1 drops its previous failed Job,
+# so two failures of the SAME CronJob inside one 15-minute window report only the last.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: job-monitor
+  namespace: monitoring
+spec:
+  schedule: "*/15 * * * *"
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 600
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: job-monitor
+        spec:
+          serviceAccountName: job-monitor
+          restartPolicy: OnFailure
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: job-monitor
+              image: alpine/k8s:1.36.4
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop:
+                    - ALL
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -eu
+
+                  # k3s programs a new pod's NetworkPolicy rules slightly after the pod
+                  # gets its IP, so the first outbound connection is refused. Same wait
+                  # as the backup CronJobs (apps/*/postgres/backup-cron-job.yaml).
+                  i=0
+                  until kubectl get jobs -A -o name --request-timeout=5s >/dev/null 2>&1; do
+                    i=$((i + 1))
+                    if [ "$i" -ge 30 ]; then
+                      echo "Kubernetes API unreachable after 60s, giving up" >&2
+                      exit 1
+                    fi
+                    echo "waiting for the Kubernetes API..."
+                    sleep 2
+                  done
+
+                  failed=$(kubectl get jobs -A -o json | jq -r '
+                    .items[]
+                    | select(any(.status.conditions[]?;
+                        .type == "Failed" and .status == "True"))
+                    | select(.metadata.annotations["alerting.kouidri.fr/notified"] != "true")
+                    | "\(.metadata.namespace)/\(.metadata.name)"
+                  ')
+
+                  if [ -z "$failed" ]; then
+                    echo "no unreported failed job"
+                    exit 0
+                  fi
+
+                  for job in $failed; do
+                    ns=${job%%/*}
+                    name=${job##*/}
+                    reason=$(kubectl get job "$name" -n "$ns" \
+                      -o jsonpath='{.status.conditions[?(@.type=="Failed")].message}')
+
+                    text="🔴 Kubernetes Job failed
+                  namespace: ${ns}
+                  job: ${name}
+                  reason: ${reason:-unknown}"
+
+                    # --fail-with-body: a Telegram API error must fail the Job rather
+                    # than be swallowed, otherwise the annotation below would mark the
+                    # failure as reported when nothing was ever delivered.
+                    curl -sS --fail-with-body --max-time 20 \
+                      -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
+                      --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+                      --data-urlencode "text=${text}" >/dev/null
+
+                    kubectl annotate job "$name" -n "$ns" \
+                      alerting.kouidri.fr/notified=true --overwrite >/dev/null
+                    echo "reported ${ns}/${name}"
+                  done
+              env:
+                # readOnlyRootFilesystem is on and the pod runs as 65534, so kubectl
+                # needs a writable HOME for its discovery cache -- point it at the
+                # emptyDir mounted below.
+                - name: HOME
+                  value: /tmp
+                - name: TELEGRAM_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: telegram-token
+                      key: token
+                # Same chat as infra/alerting/flux/provider.yaml -- keep the two in sync.
+                # Not read from the Secret on purpose: the Flux Provider is forced to
+                # carry it in clear anyway, so a second encrypted copy would only create
+                # a way for the two to drift apart.
+                - name: TELEGRAM_CHAT_ID
+                  value: "-5011079279"
+              resources:
+                requests:
+                  cpu: "50m"
+                  memory: "64Mi"
+                limits:
+                  cpu: "500m"
+                  memory: "256Mi"
+              volumeMounts:
+                - name: tmp
+                  mountPath: /tmp
+          volumes:
+            # readOnlyRootFilesystem is on, and kubectl writes its cache under $HOME/.kube
+            # and /tmp.
+            - name: tmp
+              emptyDir: {}

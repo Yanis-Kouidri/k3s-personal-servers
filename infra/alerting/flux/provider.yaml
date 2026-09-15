@@ -1,0 +1,17 @@
+# Telegram destination for Flux's own failure events.
+#
+# `channel` holds the chat ID in clear, and there is no way around it: the telegram
+# provider reads only the `token` key from secretRef, and the controller compares
+# `channel` verbatim. It is not a credential -- posting to it requires the bot token,
+# which is SOPS-encrypted next to this file -- but it is public, hence the dedicated
+# private channel rather than a personal chat.
+apiVersion: notification.toolkit.fluxcd.io/v1beta3
+kind: Provider
+metadata:
+  name: telegram
+  namespace: flux-system
+spec:
+  type: telegram
+  channel: "-5011079279"
+  secretRef:
+    name: telegram-token

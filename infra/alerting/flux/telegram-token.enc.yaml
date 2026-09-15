@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: telegram-token
+    namespace: flux-system
+    annotations:
+        # Reflector copies this into `monitoring`, where the job-monitor CronJob needs
+        # the same bot token. Created once here, propagated automatically.
+        reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
+        reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces: monitoring
+        reflector.v1.k8s.emberstack.com/reflection-auto-enabled: "true"
+        reflector.v1.k8s.emberstack.com/reflection-auto-namespaces: monitoring
+type: Opaque
+stringData:
+    token: ENC[AES256_GCM,data:bLIG8RDJb4KAJ3yQO2M/TEng9DL42FNItMXTnsZeiDKE+8e2T7oDmfMyGHWYhA==,iv:qQfiANlmLS+HirzgO+Z/VGtsTMvA+wL1juUPfRjEm24=,tag:e9koTnL7QjZWIndPbr100w==,type:str]
+sops:
+    age:
+        - enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBrY1Y1UzZCdlB0Y0FXU1VN
+            bUVVRURTQ1orOWcySlZuc1dXdEk5STZXOVdFCldnbE9LVStJWXE5UlBXbDk4R3U2
+            T2FYSHVPdkVyZUIzaGI2TU4yQ3N1aXcKLS0tIFNFVWlTNjFvbi9JdUczOVpDamxN
+            bW41VkRKbXNpaHFRTWFTRW1BQ296VWMK/34Hmea48Apj3iRIO8b0EM2q+mp6Ouln
+            8LUQCGC4qKPa3txZmsmDodyIiItJFnNKcpA6ZjEa6U/LgWOQPJMzVA==
+            -----END AGE ENCRYPTED FILE-----
+          recipient: age1kyhazfmr49eddkxfws9apdlauaevqsktfhfhyxdhkxhwdg03qszs7c337j
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-09-15T13:49:09Z"
+    mac: ENC[AES256_GCM,data:lcuxU9rAHoF2aVG8LLRJj5skXeiijfVwp/D5TE3//fmkfjKDPBRwlfDLjqJVD4+5JUYRsH+wJUTVBERPG3eGZle/YWxzCDWNfQLbVFXXPCvNvGKKWOcGx21nMXZUR71djpG6zn0N1+loiip2JFgEmoDho8Rc9C296PwgapeoLPM=,iv:jOUsNmi55FpdHPMFGLsP6Hr3MyLI1/ChOtkLtSF0BHc=,tag:XFzrXSPifK8LivxGKr/7YQ==,type:str]
+    version: 3.13.2

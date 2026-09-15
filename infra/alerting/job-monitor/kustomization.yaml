@@ -1,0 +1,9 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - namespace.yaml
+  - rbac.yaml
+  - cron-job.yaml
+  - network-policy-default-deny.yaml
+  - network-policy-allow-dns.yaml
+  - network-policy-job-monitor.yaml
