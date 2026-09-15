@@ -13,6 +13,7 @@ resources:
   - postgres-helm-release.yaml
   - backup-pvc.yaml
   - backup-cron-job.yaml
+  - restore-verify-cron-job.yaml
   # Network policies
   - network-policies/network-policy-default-deny.yaml
   - network-policies/network-policy-allow-dns.yaml

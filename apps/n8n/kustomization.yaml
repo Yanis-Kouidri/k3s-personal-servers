@@ -14,6 +14,7 @@ resources:
   - postgres/pvc.yaml
   - postgres/backup-pvc.yaml
   - postgres/backup-cron-job.yaml
+  - postgres/restore-verify-cron-job.yaml
   # Network policies
   - network-policy-default-deny.yaml
   - network-policy-allow-dns.yaml

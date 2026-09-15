@@ -44,6 +44,26 @@ Only a **higher** count is reported as a failure.
 Last run, 2026-09-15: Immich 67 tables / 5855 assets, n8n 139 tables / 5
 workflows, SonarQube 164 tables / 13717 rules — all matching production.
 
+### Automatically, every week
+
+Three CronJobs do a narrower version of the same thing on Sunday mornings —
+`immich-restore-verify` at 04:00, `n8n-restore-verify` at 04:30,
+`sonarqube-restore-verify` at 05:00, staggered because they compete for the same
+disk.
+
+Each one starts a PostgreSQL inside its own container against an emptyDir,
+restores this namespace's newest dump into it, and fails the Job if the dump is
+missing or empty, if the restore errors, if fewer tables come back than expected,
+or if the key table restores empty. A failed Job is picked up by the
+`job-monitor` CronJob and reported to Telegram.
+
+They deliberately have **no Kubernetes API access and no network**. Running
+`verify-restore.sh` itself in-cluster would have meant granting a ServiceAccount
+the right to create pods and exec into the production databases, which is read
+access to all their data — a poor trade for a check. The price is that they
+compare against fixed thresholds rather than against production; use
+`verify-restore.sh` by hand when you want the exact comparison.
+
 ## Restoring a database for real
 
 The scratch restore above is the rehearsal. The real thing differs in one way
@@ -82,10 +102,17 @@ Restoring into the production database is fine — the role is already there. In
 a bare PostgreSQL, run `createuser -U postgres sonar` first. This is what
 `verify-restore.sh` does.
 
-**Immich must be restored into an image that has its extensions.** The dump
-recreates `vchord` and `vector`; a stock `postgres:18` has neither and the
-restore fails. Use `ghcr.io/immich-app/postgres:18-vectorchord...`, the same
-image the StatefulSet runs.
+**Immich must be restored into an image that has its extensions, and vchord has
+to be preloaded.** The dump recreates `vchord` and `vector`; a stock
+`postgres:18` has neither and the restore fails. Use
+`ghcr.io/immich-app/postgres:18-vectorchord...`, the same image the StatefulSet
+runs — and if you start PostgreSQL yourself rather than through the image's
+entrypoint, add `-c shared_preload_libraries=vchord`, or `CREATE EXTENSION
+vchord` fails in the middle of the dump:
+
+```
+extension script file "vchord--0.5.3.sql", near line 23
+```
 
 **The database is only half of Immich.** The dump holds metadata; the photos
 live on `server-immich-pvc`. Restoring one without the other gives a library

@@ -1,0 +1,110 @@
+# Weekly proof that the backup this namespace produces can actually be restored.
+# A dump nobody has restored is a hypothesis, and the failure mode is silent: the
+# job that writes it can succeed while writing nothing usable.
+#
+# It needs no Kubernetes API access and no network. Running
+# scripts/verify-restore.sh in-cluster would have meant granting a ServiceAccount
+# the right to create pods and exec into the production databases -- effectively
+# read access to all their data. Instead this starts a PostgreSQL inside its own
+# container, against an emptyDir, and mounts only this namespace's backup volume
+# READ-ONLY. Nothing it can reach is production.
+#
+# When it fails the Job fails, and the job-monitor CronJob in `monitoring` reports
+# it to Telegram like any other failed Job.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: immich-restore-verify
+  namespace: immich
+spec:
+  # Weekly, staggered across the three so they never restore at the same time --
+  # they compete for the same disk.
+  schedule: "0 4 * * 0"
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 3600
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        metadata:
+          labels:
+            app: immich-restore-verify
+        spec:
+          restartPolicy: Never
+          automountServiceAccountToken: false
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 999
+            runAsGroup: 999
+            fsGroup: 999
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: verify
+              # Same image as the database itself, which matters here: a stock
+              # postgres cannot load a dump that recreates extensions it lacks.
+              image: ghcr.io/immich-app/postgres:18-vectorchord0.5.3-pgvector0.8.1
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -eu
+
+                  DUMP=$(ls -t /backups/*.sql 2>/dev/null | head -1)
+                  if [ -z "$DUMP" ] || [ ! -s "$DUMP" ]; then
+                    echo "no usable dump in /backups -- backups are not being produced" >&2
+                    exit 1
+                  fi
+                  echo "verifying $DUMP ($(du -h "$DUMP" | cut -f1))"
+
+                  # A throwaway cluster in this container's own emptyDir. initdb
+                  # refuses to run as root, hence runAsUser 999 above.
+                  export PGDATA=/scratch/pgdata
+                  initdb -U postgres --auth=trust -D "$PGDATA" >/dev/null
+                  pg_ctl -D "$PGDATA" \
+                    -o "-k /scratch -c listen_addresses='' -c shared_preload_libraries=vchord" -w start >/dev/null
+                  createdb -h /scratch -U postgres verify
+                  psql -h /scratch -U postgres -d verify -v ON_ERROR_STOP=1 -q -f "$DUMP" >/dev/null
+
+                  TABLES=$(psql -h /scratch -U postgres -d verify -tAc \
+                    "SELECT count(*) FROM information_schema.tables WHERE table_schema='public';")
+                  ROWS=$(psql -h /scratch -U postgres -d verify -tAc \
+                    "SELECT count(*) FROM asset;")
+                  echo "restored $TABLES tables, $ROWS rows in asset"
+
+                  # Thresholds rather than an exact match against production: the
+                  # live database keeps moving, while a dump that restored to
+                  # nothing does not reach these by accident. Production had
+                  # 67 tables when this was written.
+                  [ "$TABLES" -ge 50 ] || {
+                    echo "only $TABLES tables, expected at least 50" >&2; exit 1; }
+                  [ "$ROWS" -gt 0 ] || { echo "asset restored empty" >&2; exit 1; }
+                  echo "backup verified"
+              resources:
+                requests:
+                  cpu: "200m"
+                  memory: "256Mi"
+                limits:
+                  cpu: "1"
+                  memory: "1Gi"
+              volumeMounts:
+                - name: scratch
+                  mountPath: /scratch
+                - name: backups
+                  mountPath: /backups
+                  readOnly: true
+          volumes:
+            - name: scratch
+              emptyDir:
+                sizeLimit: 4Gi
+            - name: backups
+              persistentVolumeClaim:
+                claimName: backup-immich-pvc
+                readOnly: true

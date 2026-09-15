@@ -12,6 +12,7 @@ resources:
   - postgres/headless-service.yaml
   - postgres/backup-pvc.yaml
   - postgres/backup-cron-job.yaml
+  - postgres/restore-verify-cron-job.yaml
 
   # Redis
   - redis/deployment.yaml
