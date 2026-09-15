@@ -7,6 +7,18 @@ spec:
   interval: 10m0s
   path: ./infra/networking/envoy-gateway
   prune: true
+  # wait: true makes this Kustomization report Ready only once every resource it
+  # applied is actually Ready, not merely applied. Two things follow from that:
+  # dependsOn below becomes a real ordering guarantee instead of "the manifests
+  # landed", and a HelmRelease or Deployment that never comes up now fails its
+  # parent Kustomization -- which is what reaches Telegram.
+  #
+  # retryInterval is 5m rather than the default (= interval): fast enough to
+  # recover from a transient failure, slow enough not to re-alert every couple of
+  # minutes, since the notification-controller only de-duplicates over 5 minutes.
+  wait: true
+  timeout: 10m
+  retryInterval: 5m
   sourceRef:
     kind: GitRepository
     name: flux-system

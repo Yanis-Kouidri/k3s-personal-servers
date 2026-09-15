@@ -6,12 +6,17 @@
 # namespace verbatim:
 #     if event.InvolvedObject.Namespace != source.Namespace || ... { return false }
 # Only `name` accepts `*`, and an empty namespace falls back to this Alert's own
-# namespace (flux-system). So a new app in a NEW namespace is not covered until its
-# HelmRelease/HelmRepository is added below.
+# namespace (flux-system).
 #
-# HelmReleases need their own entries because a failing HelmRelease does not currently
-# fail its parent Kustomization -- `apps` and `infra` run without `wait: true`. Giving
-# them that would make the Kustomization entries catch these too.
+# That used to mean an app in a NEW namespace went unwatched until someone added it
+# below. It no longer does: `apps`, `infra`, `envoy` and `cert-manager` all run with
+# `wait: true`, so a HelmRelease or Deployment that never becomes Ready now fails its
+# parent Kustomization, and the Kustomization entry above catches it whatever
+# namespace it lives in.
+#
+# The per-namespace HelmRelease entries are kept all the same: they name the failing
+# release directly, where the Kustomization event only says that `apps` did not
+# become Ready. Specific message first, safety net behind it.
 apiVersion: notification.toolkit.fluxcd.io/v1beta3
 kind: Alert
 metadata:
