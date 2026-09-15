@@ -25,6 +25,11 @@ Accessible from https://www.kouidri.fr or http://kouidri6bhboadbevagrvs52nmyvfhg
 
 Look `SERVER_CONFIG.md`
 
+## Backups
+
+`docs/backups/README.md` covers what is backed up, how to verify a backup
+restores (`scripts/verify-restore.sh`), and how to restore for real.
+
 ## Contributing
 
 After cloning, install the git hooks once (git hooks are not versioned by design, so

@@ -235,6 +235,10 @@ sops --input-type yaml --output-type yaml -d secrets.enc.yaml
 
 ## Back up
 
+See `docs/backups/README.md` for what is backed up, how to check a backup is
+actually restorable (`scripts/verify-restore.sh`), and the restore procedure --
+including the traps that only show up when you try it.
+
 Look on `./backups/` folder to save all local data on a remote computer.
 
 Look for `backup.sh` files over differents servicies to locally save data
