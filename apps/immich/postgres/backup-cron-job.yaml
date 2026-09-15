@@ -5,6 +5,11 @@ metadata:
   namespace: immich
 spec:
   schedule: "0 2 * * *"
+  concurrencyPolicy: Forbid
+  # A CronJob that misses more than 100 schedules (node down, cluster off for a few
+  # days) stops scheduling altogether and never recovers on its own. This bounds how
+  # far behind a missed run may start, so the counter never reaches that limit.
+  startingDeadlineSeconds: 3600
   successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 1
   jobTemplate:
@@ -12,8 +17,11 @@ spec:
       template:
         metadata:
           labels:
+            # Selected by network-policies/network-policy-backup.yaml (egress to the DB)
+            # and allowed as a source by network-policy-postgres.yaml -- keep both in sync.
             app: postgres-backup
         spec:
+          restartPolicy: OnFailure
           containers:
             - name: postgres-backup
               image: postgres:18-alpine
@@ -21,27 +29,61 @@ spec:
                 - /bin/sh
                 - -c
                 - |
-                  echo "Début du backup..."
-                  # La date pour nommer le fichier
-                  DATE=$(date +%Y-%m-%d_%H-%M-%S)
-                  # La commande pg_dump
-                  # PGPASSWORD est utilisé pour éviter le prompt interactif
-                  PGPASSWORD=$POSTGRES_PASSWORD pg_dump -h postgres -U postgres -d immich > /backups/immich_db_$DATE.sql
+                  set -eu
 
-                  # Nettoyage optionnel : supprimer les fichiers de plus de 7 jours
+                  DATE="$(date +%Y-%m-%d_%H-%M-%S)"
+                  BACKUP_FILE="/backups/immich_db_${DATE}.sql"
+
+                  # A dump that dies midway (DB restarting, disk full) still leaves a
+                  # truncated file behind, which the rotation below would happily count
+                  # as a valid backup. Drop it unless the script reaches the end.
+                  trap 'rm -f "$BACKUP_FILE"' EXIT
+
+                  echo "Starting Immich PostgreSQL backup..."
+                  # --file= rather than a shell redirection: `> file` is opened by the
+                  # shell *before* pg_dump runs, so a failing dump left an empty .sql
+                  # behind while the job still exited 0.
+                  PGPASSWORD="$POSTGRES_PASSWORD" pg_dump \
+                    -h postgres \
+                    -U "$POSTGRES_USER" \
+                    -d "$POSTGRES_DB" \
+                    --file="$BACKUP_FILE"
+
+                  trap - EXIT
+
+                  # Only reached once the dump above succeeded: with `set -e` a failed
+                  # pg_dump exits here and fails the Job, so the retention below can no
+                  # longer delete good backups in the wake of a broken run.
                   find /backups -type f -mtime +7 -name "*.sql" -delete
-                  echo "Backup terminé : /backups/immich_db_$DATE.sql"
+                  echo "Backup completed: $BACKUP_FILE"
               env:
-                # Récupère les secrets de ta base de données existante
+                # User and database come from the same ConfigMap the server itself reads,
+                # so they cannot drift away from the running instance.
+                - name: POSTGRES_USER
+                  valueFrom:
+                    configMapKeyRef:
+                      name: immich-db-config
+                      key: POSTGRES_USER
+                - name: POSTGRES_DB
+                  valueFrom:
+                    configMapKeyRef:
+                      name: immich-db-config
+                      key: POSTGRES_DB
                 - name: POSTGRES_PASSWORD
                   valueFrom:
                     secretKeyRef:
                       name: immich-db-secret
                       key: POSTGRES_PASSWORD
+              resources:
+                requests:
+                  cpu: "100m"
+                  memory: "128Mi"
+                limits:
+                  cpu: "500m"
+                  memory: "512Mi"
               volumeMounts:
                 - name: backup-storage
                   mountPath: /backups
-          restartPolicy: OnFailure
           volumes:
             - name: backup-storage
               persistentVolumeClaim:

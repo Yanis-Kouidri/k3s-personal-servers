@@ -6,6 +6,10 @@ metadata:
 spec:
   schedule: "0 2 * * *"
   concurrencyPolicy: Forbid
+  # A CronJob that misses more than 100 schedules (node down, cluster off for a few
+  # days) stops scheduling altogether and never recovers on its own. This bounds how
+  # far behind a missed run may start, so the counter never reaches that limit.
+  startingDeadlineSeconds: 3600
   successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 1
   jobTemplate:
