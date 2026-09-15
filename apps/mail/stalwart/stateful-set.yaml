@@ -65,24 +65,32 @@ spec:
               containerPort: 8080
               protocol: TCP
 
-          # Endpoints confirmed against the running pod: /healthz/ready and
-          # /healthz/live both answer 200 on 8080 (/healthz alone is a 404).
+          # exec rather than httpGet, and that is not a style choice. The 8080
+          # listener expects PROXY protocol v2 -- see the BackendTrafficPolicy in
+          # infra/networking/gateway-config -- so Envoy prefixes every request with a
+          # proxy header. The kubelet does not, and Stalwart drops the connection:
+          #     Proxy protocol error ... listenerId = "http", reason = "invalid proxy header"
+          # which reaches the kubelet as `Get "http://10.42.0.63:8080/healthz/ready":
+          # EOF` and restarts the pod. Stalwart exempts localhost from the proxy
+          # requirement, so curl from inside the container is the one path that works.
+          #
+          # /healthz/ready and /healthz/live both answer 200 (/healthz alone is a 404).
           startupProbe:
-            httpGet:
-              path: /healthz/ready
-              port: http
+            exec:
+              command: ["curl", "-fsS", "-o", "/dev/null", "--max-time", "5",
+                        "http://localhost:8080/healthz/ready"]
             failureThreshold: 30
             periodSeconds: 5
           readinessProbe:
-            httpGet:
-              path: /healthz/ready
-              port: http
+            exec:
+              command: ["curl", "-fsS", "-o", "/dev/null", "--max-time", "5",
+                        "http://localhost:8080/healthz/ready"]
             periodSeconds: 10
             failureThreshold: 3
           livenessProbe:
-            httpGet:
-              path: /healthz/live
-              port: http
+            exec:
+              command: ["curl", "-fsS", "-o", "/dev/null", "--max-time", "5",
+                        "http://localhost:8080/healthz/live"]
             periodSeconds: 20
             failureThreshold: 5
 
