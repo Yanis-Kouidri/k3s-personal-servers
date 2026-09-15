@@ -30,6 +30,10 @@ spec:
             requests:
               cpu: "500m"
               memory: 752Mi
+          # Same as the Immich database: the entrypoint needs its capabilities to
+          # drop to the postgres user, so only privilege escalation is blocked here.
+          securityContext:
+            allowPrivilegeEscalation: false
           ports:
             - name: postgres
               containerPort: 5432

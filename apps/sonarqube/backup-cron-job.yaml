@@ -22,9 +22,20 @@ spec:
             app: sonarqube-db-backup
         spec:
           restartPolicy: OnFailure
+          securityContext:
+            seccompProfile:
+              type: RuntimeDefault
           containers:
             - name: postgres-backup
               image: postgres:18-alpine
+              # Stays root: the backup PVC is root-owned, so dropping to another uid
+              # would make the existing dumps unwritable. pg_dump needs no capability
+              # at all, so the whole set goes.
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
               command:
                 - /bin/sh
                 - -c

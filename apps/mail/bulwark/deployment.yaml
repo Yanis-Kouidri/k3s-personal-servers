@@ -27,6 +27,8 @@ spec:
           image: ghcr.io/bulwarkmail/webmail:1.9.2
           imagePullPolicy: IfNotPresent
           securityContext:
+            runAsNonRoot: true
+            runAsUser: 1001
             allowPrivilegeEscalation: false
             capabilities:
               drop:

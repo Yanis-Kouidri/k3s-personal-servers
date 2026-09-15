@@ -22,6 +22,10 @@ spec:
       containers:
         - name: minecraft-server
           image: itzg/minecraft-server:2026.9.0-java25
+          # No `drop: ALL`: the image starts as root and uses su-exec to run the
+          # server as 1000, which needs SETUID/SETGID.
+          securityContext:
+            allowPrivilegeEscalation: false
           ports:
             - containerPort: 25565
           envFrom:

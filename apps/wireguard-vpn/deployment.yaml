@@ -20,8 +20,33 @@ spec:
         - name: wireguard
           image: linuxserver/wireguard:1.0.20260223
           securityContext:
+            # NET_ADMIN used to be added on top of the default capability set, so the
+            # container kept everything it was given plus NET_ADMIN. Drop the lot
+            # first, then add back only what is actually needed -- four instead of
+            # the ~14 a container gets by default.
+            #
+            # DAC_OVERRIDE is not optional here, however tempting it looks: the
+            # container runs as root, but every file on the config volume is owned by
+            # uid 1000 with mode 0600 (wg0.conf) or 0700 (the peer directories).
+            # Without DAC_OVERRIDE root cannot read its own configuration and the
+            # tunnel never comes up. Verified both ways in a throwaway pod: with the
+            # four capabilities below the files are readable, with NET_ADMIN alone
+            # every read is refused.
+            #
+            # CHOWN and FOWNER are what the image's init uses to chown /config to
+            # PUID; without them it starts anyway but logs a permission failure on
+            # every boot.
+            #
+            # allowPrivilegeEscalation is deliberately left alone: this image's
+            # s6-overlay init has not been tested under no_new_privs.
             capabilities:  # Add "SYS_MODULE" if necessary
-              add: ["NET_ADMIN"]
+              drop:
+                - ALL
+              add:
+                - NET_ADMIN
+                - DAC_OVERRIDE
+                - CHOWN
+                - FOWNER
           envFrom:
             - configMapRef:
                 name: wireguard-config

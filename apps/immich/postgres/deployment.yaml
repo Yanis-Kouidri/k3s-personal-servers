@@ -26,6 +26,13 @@ spec:
                 name: immich-db-secret
             - configMapRef:
                 name: immich-db-config
+          # No `drop: ALL` here: the postgres entrypoint starts as root, chowns
+          # PGDATA and re-execs as the postgres user, which needs CHOWN/FOWNER/SETUID/
+          # SETGID. Dropping them stops the container starting. Moving to
+          # runAsUser: 999 would fix that, but the data on this PVC is root-owned, so
+          # it is a data migration rather than a manifest change.
+          securityContext:
+            allowPrivilegeEscalation: false
           ports:
             - name: postgres
               containerPort: 5432

@@ -20,6 +20,13 @@ spec:
       containers:
         - name: tor
           image: dockurr/tor:0.4.9.12
+          # Binds only unprivileged ports (SocksPort 9050, HTTPTunnelPort 8118), so it
+          # needs no capability at all.
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
           volumeMounts:
             - name: tor-config
               mountPath: /etc/tor
