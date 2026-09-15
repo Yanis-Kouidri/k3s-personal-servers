@@ -1,4 +1,31 @@
-# SonarQube
-sonarqube/secrets.yaml
-sonarqube/age-key.txt
+# Decrypted secrets.
+#
+# The SOPS round-trip documented in SERVER_CONFIG.md writes the plaintext right next
+# to the encrypted file (`sops -d secrets.enc.yaml > secrets.yaml`), so the plaintext
+# form has to be unstageable from anywhere in the tree -- not just from one app.
+#
+# A pattern that contains a slash is anchored to the directory holding this file,
+# which is why the previous `sonarqube/secrets.yaml` rule matched nothing at all:
+# the app lives in apps/sonarqube/, so only a top-level sonarqube/ was ever covered.
+# The rules below carry no slash, so git applies them at every level.
+secrets.yaml
+secrets.yml
+*.dec.yaml
+*.decrypted.yaml
 
+# ...but never the encrypted form: those are committed on purpose, and Flux decrypts
+# them at apply time. Kept explicit so a broader rule added above cannot swallow them.
+!*.enc.yaml
+
+# age / SOPS private keys
+*.agekey
+age-key.txt
+age.agekey
+keys.txt
+
+# Cluster credentials and private key material
+kubeconfig
+*.kubeconfig
+k3s.yaml
+*.pem
+*.key
