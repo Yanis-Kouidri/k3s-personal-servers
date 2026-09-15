@@ -62,6 +62,20 @@ spec:
                 secretKeyRef:
                   name: postgres-secret
                   key: POSTGRES_NON_ROOT_PASSWORD
+            # n8n encrypts stored credentials with this key. Left unset, it
+            # generates one on first start and writes it to /home/node/.n8n/config
+            # on the PVC -- so the key existed in exactly one place, inside the
+            # volume it protects. Losing or restoring that PVC elsewhere made every
+            # credential undecryptable, which the database dump could not help with.
+            #
+            # The value here IS the key n8n already generated, lifted out of that
+            # config file, not a new one: a fresh key would have locked the existing
+            # credentials out.
+            - name: N8N_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: n8n-secret
+                  key: N8N_ENCRYPTION_KEY
             - name: N8N_PROTOCOL
               value: http
             - name: N8N_PORT
@@ -120,9 +134,3 @@ spec:
         - name: n8n-claim0
           persistentVolumeClaim:
             claimName: n8n-claim0
-        - name: n8n-secret
-          secret:
-            secretName: n8n-secret
-        - name: postgres-secret
-          secret:
-            secretName: postgres-secret
