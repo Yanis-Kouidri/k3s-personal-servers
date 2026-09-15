@@ -28,20 +28,47 @@ spec:
                 - -c
                 - |
                   set -eu
+
+                  DB_HOST=postgres-service
                   DATE="$(date +%Y-%m-%d_%H-%M-%S)"
                   BACKUP_FILE="/backups/n8n_db_${DATE}.dump"
 
+                  # A dump that dies midway (DB restarting, disk full) still leaves a
+                  # truncated file behind, which the rotation below would happily count
+                  # as a valid backup. Drop it unless the script reaches the end.
+                  trap 'rm -f "$BACKUP_FILE"' EXIT
+
+                  # k3s programs a new pod's NetworkPolicy rules slightly after the pod
+                  # gets its IP, so the very first connection out of a freshly created
+                  # backup pod is refused ("connection to server at ... failed:
+                  # Connection refused"). Without this wait the first attempt always
+                  # fails and only the OnFailure restart succeeds.
+                  i=0
+                  until pg_isready -h "$DB_HOST" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -q; do
+                    i=$((i + 1))
+                    if [ "$i" -ge 30 ]; then
+                      echo "PostgreSQL unreachable at $DB_HOST after 60s, giving up" >&2
+                      exit 1
+                    fi
+                    echo "waiting for PostgreSQL at $DB_HOST..."
+                    sleep 2
+                  done
+
                   echo "Starting n8n PostgreSQL backup..."
                   PGPASSWORD="$POSTGRES_PASSWORD" pg_dump \
-                    -h postgres-service \
+                    -h "$DB_HOST" \
                     -U "$POSTGRES_USER" \
-                    -d n8n \
+                    -d "$POSTGRES_DB" \
                     --format=custom \
                     --file="$BACKUP_FILE"
+
+                  trap - EXIT
 
                   find /backups -type f -mtime +7 -name "*.dump" -delete
                   echo "Backup completed: $BACKUP_FILE"
               env:
+                - name: POSTGRES_DB
+                  value: n8n
                 - name: POSTGRES_USER
                   valueFrom:
                     secretKeyRef:
