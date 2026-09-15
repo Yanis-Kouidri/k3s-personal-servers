@@ -10,7 +10,13 @@ jdbcOverwrite:
   jdbcSecretName: "sonarqube-postgres-secret"
   jdbcSecretPasswordKey: "password"  # Key on secret sonarqube-postgres-secret
 
-monitoringPasscode: "admin"
+# Passcode protecting /api/monitoring/metrics. Read from a SOPS-encrypted Secret
+# rather than inlined here: this file is rendered into a ConfigMap, so any value
+# set directly would sit in clear both in git and in the cluster.
+# The chart requires BOTH keys, and stops generating its own passcode Secret as
+# soon as they are set (see templates/secret.yaml and templates/validation.yaml).
+monitoringPasscodeSecretName: "sonarqube-monitoring-passcode"
+monitoringPasscodeSecretKey: "SONAR_WEB_SYSTEMPASSCODE"
 
 community:
   enabled: true

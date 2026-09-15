@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: sonarqube-monitoring-passcode
+    namespace: sonarqube
+type: Opaque
+stringData:
+    SONAR_WEB_SYSTEMPASSCODE: ENC[AES256_GCM,data:VrE0/C8MfVjIo/ySlKTo8cjfxmbwlILFu16cj3NFtJetqCwHUumWng==,iv:x6QnN6OC7U0632/tvfpKgQoFeuVENtlPYBYVBdy+6OM=,tag:UUxsaSlBBo1PBupIVuTbdQ==,type:str]
+sops:
+    age:
+        - enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBkR0QvTXRNT05LNlIrVWt0
+            VndLTjZIWFljUDVmTUFWa3dLSnRJQy9ucDA4Ck5DcVV6ekJFMVlFQW1RK2tHUkJQ
+            bHJ0dkU3Wm1kdkN3aWhsS241T2thU0kKLS0tIGJmdDg0d25wV1FFQUxWeUlnelFW
+            OHpRRlBiaHpGZU5HVUp1MnpJRTNsQ3cKVxj3SxxpoJoPNG+CxGYLsdWhPXPqE+2+
+            Mb20oWsXWx91i5L5vTaVf6Ns99vzEJcusONfd1SJk6FGxzOmXkCO7w==
+            -----END AGE ENCRYPTED FILE-----
+          recipient: age1kyhazfmr49eddkxfws9apdlauaevqsktfhfhyxdhkxhwdg03qszs7c337j
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-09-15T12:33:20Z"
+    mac: ENC[AES256_GCM,data:8OFq/dc7JWU/pnfx9PCODeMbF5eqwYsUi4m3lvYE2dbqJcpFXUswjKjEXJh3/fVeHfLsHHT3vD3Uju93u8x3Z4MRcjHNChQrpAd6piveTWnJdnhHE3BObzPz9hKbyEM6S2benaOV4zarp1sbHjIMUJ7Pzv33av+ACDMdRSTdD7k=,iv:HiBWr2CbWNz1v22jYij7N3kD0YwMZ3FcmuPm64HT7Tc=,tag:k2munlNbiJhs3LWd+AtCgQ==,type:str]
+    version: 3.13.2

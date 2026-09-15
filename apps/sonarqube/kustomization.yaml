@@ -6,6 +6,7 @@ namespace: sonarqube
 resources:
   - namespace.yaml
   - secrets.enc.yaml
+  - monitoring-passcode.enc.yaml
   - helm-repository.yaml
   - helm-release.yaml
   - postgres-helm-repository.yaml
