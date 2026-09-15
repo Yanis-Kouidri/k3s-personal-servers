@@ -19,6 +19,22 @@ spec:
         - name: personal-website-v2
           image: ghcr.io/yanis-kouidri/personal-website-v2:0.0.4
           imagePullPolicy: Always
+          # Already runs as 1000. runAsGroup is left alone: the image runs with gid 0.
+          #
+          # NET_BIND_SERVICE is needed even though Caddy only listens on 8080 here: the
+          # binary carries `cap_net_bind_service=ep` as a file capability, and the
+          # kernel refuses to execve such a binary when the capability is missing from
+          # the bounding set. Verified: with `drop: ALL` alone the container dies on
+          # "exec /usr/bin/caddy: operation not permitted".
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+              add:
+                - NET_BIND_SERVICE
           resources:
             limits:
               memory: "728Mi"

@@ -20,6 +20,26 @@ spec:
       containers:
         - name: tor
           image: dockurr/tor:0.4.9.12
+          # Five capabilities instead of the ~14 a container gets by default, each one
+          # established by testing the image rather than guessed:
+          #   CHOWN, FOWNER  the entrypoint runs `install` on /var/lib/tor
+          #   SETUID, SETGID it then uses su-exec; without them the container dies on
+          #                  "su-exec: setgroups: Operation not permitted"
+          #   DAC_OVERRIDE   the process runs as root but every file on the volume is
+          #                  owned by syslog with mode 0600/0700 -- including
+          #                  hs_ed25519_secret_key and hostname, which ARE the onion
+          #                  identity. Without it root cannot read them.
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+              add:
+                - CHOWN
+                - FOWNER
+                - DAC_OVERRIDE
+                - SETUID
+                - SETGID
           volumeMounts:
             - name: tor-config
               mountPath: /etc/tor

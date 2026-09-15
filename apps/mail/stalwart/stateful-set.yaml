@@ -21,6 +21,25 @@ spec:
         - name: stalwart
           image: stalwartlabs/stalwart:v0.16.21
           imagePullPolicy: IfNotPresent
+          # The image already runs as 2000 (checked with `id` in the pod); pinning it
+          # here makes that a guarantee rather than a coincidence.
+          #
+          # NET_BIND_SERVICE is not negotiable: the binary carries
+          # `cap_net_bind_service=ep` as a FILE capability, so the kernel refuses to
+          # execve it at all unless that capability is in the bounding set --
+          # "exec /usr/local/bin/stalwart: operation not permitted", before a single
+          # line of the program runs. It also genuinely needs it, to bind 25/465/587/993
+          # as uid 2000.
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 2000
+            runAsGroup: 2000
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+              add:
+                - NET_BIND_SERVICE
           args:
             - "--config"
             - "/etc/stalwart/config.json"

@@ -19,6 +19,17 @@ spec:
       containers:
         - name: immich-redis
           image: docker.io/valkey/valkey:9.1.0-alpine3.23
+          # Stays root: the entrypoint uses setpriv to drop to the valkey user, which
+          # needs SETUID/SETGID. A plain `drop: ALL` gets
+          # "setpriv: setresuid failed: Operation not permitted" and a crash loop.
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+              add:
+                - SETUID
+                - SETGID
           resources:
             requests:
               memory: "64Mi"
