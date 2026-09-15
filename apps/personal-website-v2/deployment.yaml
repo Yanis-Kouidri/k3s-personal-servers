@@ -4,6 +4,7 @@ metadata:
   name: personal-website-v2
   namespace: personal-website-v2
 spec:
+  progressDeadlineSeconds: 60
   selector:
     matchLabels:
       app: personal-website-v2
@@ -21,7 +22,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: personal-website-v2
-          image: ghcr.io/yanis-kouidri/personal-website-v2:0.0.4
+          image: ghcr.io/yanis-kouidri/personal-website-v2:THIS-TAG-DOES-NOT-EXIST
           # Pinned tag, so Always only meant a registry round-trip on every restart
           # -- and no restart at all whenever ghcr.io was unreachable.
           imagePullPolicy: IfNotPresent
