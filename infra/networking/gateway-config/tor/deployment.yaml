@@ -44,6 +44,24 @@ spec:
                 - DAC_OVERRIDE
                 - SETUID
                 - SETGID
+          # No HTTP endpoint, and SocksPort is bound to 127.0.0.1, so a tcpSocket
+          # probe from the kubelet could never reach it -- hence exec. `nc` is present
+          # in this image (checked).
+          startupProbe:
+            exec:
+              command: ["nc", "-z", "127.0.0.1", "9050"]
+            failureThreshold: 30
+            periodSeconds: 5
+          readinessProbe:
+            exec:
+              command: ["nc", "-z", "127.0.0.1", "9050"]
+            periodSeconds: 20
+            failureThreshold: 3
+          livenessProbe:
+            exec:
+              command: ["nc", "-z", "127.0.0.1", "9050"]
+            periodSeconds: 30
+            failureThreshold: 5
           volumeMounts:
             - name: tor-config
               mountPath: /etc/tor

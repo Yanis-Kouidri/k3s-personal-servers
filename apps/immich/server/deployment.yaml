@@ -57,6 +57,28 @@ spec:
           ports:
             - containerPort: 2283
               protocol: TCP
+          # /api/server/ping answers 200 (checked in the pod; /api/health is a 404).
+          # The startup budget is deliberately long: Immich runs its database
+          # migrations before serving, and a liveness probe firing during that would
+          # restart it into the same migration forever.
+          startupProbe:
+            httpGet:
+              path: /api/server/ping
+              port: 2283
+            failureThreshold: 60
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /api/server/ping
+              port: 2283
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /api/server/ping
+              port: 2283
+            periodSeconds: 30
+            failureThreshold: 6
           volumeMounts:
             - name: server-storage
               mountPath: /data

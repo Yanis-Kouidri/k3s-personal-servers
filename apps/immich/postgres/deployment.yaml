@@ -41,6 +41,26 @@ spec:
             - name: postgres
               containerPort: 5432
               protocol: TCP
+          # pg_isready is in the image and returns 0 here without arguments or
+          # credentials (checked in the pod). The liveness thresholds are deliberately
+          # slack -- 6 failures 30s apart -- because restarting a database that is
+          # merely busy or replaying WAL makes things worse, not better.
+          startupProbe:
+            exec:
+              command: ["pg_isready", "-q"]
+            failureThreshold: 30
+            periodSeconds: 5
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-q"]
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-q"]
+            periodSeconds: 30
+            failureThreshold: 6
+            timeoutSeconds: 5
           volumeMounts:
             - name: postgres-storage
               mountPath: /var/lib/postgresql

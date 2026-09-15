@@ -65,6 +65,39 @@ spec:
               containerPort: 8080
               protocol: TCP
 
+          # Endpoints confirmed against the running pod: /healthz/ready and
+          # /healthz/live both answer 200 on 8080 (/healthz alone is a 404).
+          startupProbe:
+            httpGet:
+              path: /healthz/ready
+              port: http
+            failureThreshold: 30
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /healthz/ready
+              port: http
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /healthz/live
+              port: http
+            periodSeconds: 20
+            failureThreshold: 5
+
+          # Sized on what it actually uses: 53m CPU and 143Mi for a 37MB store.
+          # Until now this pod had no limit at all, on a node whose memory is
+          # already overcommitted -- an internet-facing mail server was the one
+          # process able to take the whole node down.
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+
           volumeMounts:
             - name: data
               mountPath: /var/lib/stalwart

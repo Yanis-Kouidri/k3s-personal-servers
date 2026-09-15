@@ -35,6 +35,27 @@ spec:
           envFrom:
             - configMapRef:
                 name: immich-server-config
+          # /ping answers 200 with "pong" (checked in the pod). The image carries no
+          # curl or wget, which is why these are httpGet: the kubelet performs the
+          # request itself, so nothing has to exist inside the container.
+          startupProbe:
+            httpGet:
+              path: /ping
+              port: 3003
+            failureThreshold: 30
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /ping
+              port: 3003
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /ping
+              port: 3003
+            periodSeconds: 30
+            failureThreshold: 6
           volumeMounts:
             - name: modele-cache
               mountPath: /cache

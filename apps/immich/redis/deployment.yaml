@@ -41,9 +41,22 @@ spec:
             limits:
               memory: "128Mi"
               cpu: "500m"
+          # A readinessProbe matters here even though the liveness one existed: without
+          # it the Service sends Immich to a valkey that is up but not yet answering,
+          # which shows up as errors in the app rather than as a not-ready pod.
+          startupProbe:
+            exec:
+              command: ["valkey-cli", "ping"]
+            failureThreshold: 30
+            periodSeconds: 2
+          readinessProbe:
+            exec:
+              command: ["valkey-cli", "ping"]
+            periodSeconds: 10
+            failureThreshold: 3
           livenessProbe:
             exec:
-              command:
-                - valkey-cli
-                - ping
+              command: ["valkey-cli", "ping"]
+            periodSeconds: 20
+            failureThreshold: 5
       restartPolicy: Always
