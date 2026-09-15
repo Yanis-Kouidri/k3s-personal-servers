@@ -2,8 +2,13 @@
 apiVersion: kubelet.config.k8s.io/v1beta1
 kind: KubeletConfiguration
 
-# Garbage collection for images
-imageGCHighThresholdPercent: 70
-imageGCLowThresholdPercent: 60
+# Garbage collection for images.
+#
+# 70/60 was aggressive for this node: SonarQube, Immich, Minecraft and alpine/k8s
+# are large images, so the kubelet kept evicting images it was about to need
+# again, turning every restart into a fresh pull. 80/70 leaves the same headroom
+# in absolute terms while keeping more of the working set on disk.
+imageGCHighThresholdPercent: 80
+imageGCLowThresholdPercent: 70
 imageMinimumGCAge: 10m0s
 imageMaximumGCAge: 48h0m0s

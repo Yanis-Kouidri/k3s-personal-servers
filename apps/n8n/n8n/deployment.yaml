@@ -22,33 +22,25 @@ spec:
       # hands a foothold to anything that manages to run code in here.
       automountServiceAccountToken: false
       securityContext:
+        # Replaces a busybox initContainer that ran as root purely to
+        # `chown 1000:1000 /data`. The kubelet does the same job without a
+        # privileged container, and OnRootMismatch means it only acts when the
+        # volume's group is actually wrong -- here it already is 1000, so this is a
+        # no-op at every start rather than a recursive chown. Same pattern as
+        # bulwark.
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
         seccompProfile:
           type: RuntimeDefault
-      initContainers:
-        - name: volume-permissions
-          image: busybox:1.38
-          command: ["sh", "-c", "chown 1000:1000 /data"]
-          # Has to stay root to chown the volume, but chown only needs CHOWN and
-          # FOWNER -- everything else goes. (A pod-level fsGroup would remove this
-          # container entirely; that is a separate change.)
-          securityContext:
-            runAsUser: 0
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-              add:
-                - CHOWN
-                - FOWNER
-          volumeMounts:
-            - name: n8n-claim0
-              mountPath: /data
       containers:
         - command:
             - /bin/sh
           args:
             - -c
-            - sleep 5; n8n start
+            # The `sleep 5` that used to be here predates the startupProbe below,
+            # which already gives n8n 5 minutes to come up. It cost 5 seconds on
+            # every single restart for nothing.
+            - n8n start
           env:
             - name: DB_TYPE
               value: postgresdb
@@ -75,7 +67,10 @@ spec:
             - name: N8N_PORT
               value: "5678"
           image: n8nio/n8n:2.39.4
-          imagePullPolicy: Always
+          # The tag is pinned and Renovate bumps it, so there is nothing to re-pull:
+          # Always just meant a registry round-trip on every restart, and no restart
+          # at all whenever Docker Hub was unreachable.
+          imagePullPolicy: IfNotPresent
           name: n8n
           securityContext:
             allowPrivilegeEscalation: false
