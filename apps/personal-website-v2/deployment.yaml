@@ -19,14 +19,6 @@ spec:
         - name: personal-website-v2
           image: ghcr.io/yanis-kouidri/personal-website-v2:0.0.4
           imagePullPolicy: Always
-          # Already runs as 1000. runAsGroup is left alone: the image runs with gid 0.
-          securityContext:
-            runAsNonRoot: true
-            runAsUser: 1000
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
           resources:
             limits:
               memory: "728Mi"
