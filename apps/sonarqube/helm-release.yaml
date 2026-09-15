@@ -8,12 +8,11 @@ spec:
   chart:
     spec:
       chart: sonarqube
-      version: "^2026.x.x"
+      version: "2026.4.1"
       sourceRef:
         kind: HelmRepository
         name: sonarqube
         namespace: sonarqube
-  # No version pinned: Flux always installs/upgrades to the latest chart version
   valuesFrom:
     - kind: ConfigMap
       name: sonarqube-values

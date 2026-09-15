@@ -11,6 +11,11 @@
       "/^(apps|clusters|infra)/.*\\.yaml$/"
     ]
   },
+  "flux": {
+    "managerFilePatterns": [
+      "/^(apps|infra)/.*\\.yaml$/"
+    ]
+  },
   "ignorePaths": [
     "**/*.enc.yaml",
     "backups/**"
