@@ -10,6 +10,16 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# Every checkout below passes persist-credentials: false. Without it
+# actions/checkout leaves its GitHub token in .git/config for the rest of the job,
+# where anything running afterwards can read it: each job downloads a binary from
+# a release page and executes it, and third-party actions run in the same job.
+# Write access to this repository is a deployment on the cluster within the
+# minute, since Flux applies main on its own. No job here pushes anything, so the
+# token is pure liability once the clone is done.
+#
+# update-flux.yml deliberately does NOT set it: create-pull-request needs the
+# credentials to push its branch.
 permissions:
   contents: read
 
@@ -27,6 +37,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Install actionlint
         run: |
@@ -44,6 +56,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Run yamllint
         run: pipx run yamllint==1.38.0 -s -c .yamllint.yaml .
@@ -53,6 +67,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Install kustomize
         run: |
@@ -98,6 +114,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
 
       # Never decrypts anything (no age key available here, by design). Just checks that
       # every *.enc.yaml is actually a SOPS document, and that every value nested under a
@@ -111,6 +129,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
 
       # Unlike the other tools pinned above, upstream publishes no checksum file for the
       # shellcheck release assets, so there is nothing to verify against here.
@@ -136,6 +156,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
+          persist-credentials: false
           # The scan below walks every commit rather than the working tree, so it
           # needs the whole history. The default shallow clone would leave
           # --log-opts="--all" with almost nothing to look at.
@@ -168,6 +189,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
+          persist-credentials: false
           fetch-depth: 0
 
       - name: SonarQube Scan
