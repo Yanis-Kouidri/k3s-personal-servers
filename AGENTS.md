@@ -31,8 +31,24 @@ To fix a problem or create something new, follow this workflow:
 - Modify existing files and/or create new files to complete what I ask
 - Check that the new or modified files are still correct and followed by FluxCD with
   `scripts/validate-manifests.sh <path>`. Add `--server` to also run `kubectl apply --dry-run=server` against the live cluster.
-- If it's correct, commit with a conventional commit message, push on the branch main and run `config-install/flux-reconcile.sh` to apply the modification
-- Check that the change was applied correctly
+- If it's correct, commit with a conventional commit message **on a branch**, then open a
+  pull request and let it merge itself once CI is green:
+
+  ```bash
+  git switch -c <type>/<subject>
+  git push -u origin HEAD
+  gh pr create --fill
+  gh pr merge --auto --squash
+  ```
+
+- Once the pull request has merged, run `config-install/flux-reconcile.sh` to apply the
+  change without waiting for the next sync, then check that it was applied correctly
+
+**Never push to `main` directly.** Flux syncs `main` every minute while CI takes about
+fifty seconds, so a direct push reaches the cluster at roughly the same moment CI decides
+whether it should have. Going through a pull request is what makes CI preventive instead
+of merely informative: the seven required checks have to pass before the merge, so nothing
+reaches the cluster that has not been validated. The `main` ruleset enforces this.
 
 The `pre-commit` hook in `.githooks/` runs the CI checks (yamllint, `kustomize build` +
 kubeconform, SOPS/secret checks, actionlint, gitleaks, shellcheck) on the staged tree, and
