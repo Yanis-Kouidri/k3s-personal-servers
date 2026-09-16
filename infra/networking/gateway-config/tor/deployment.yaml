@@ -74,7 +74,10 @@ spec:
               memory: "160Mi"
             limits:
               cpu: "200m"
-              memory: "128Mi"
+              # Raised along with the request above it: tor holds ~112Mi, so a
+              # 128Mi ceiling left it no room at all -- and a request may not
+              # exceed its own limit, which is what the API server rejected.
+              memory: "320Mi"
 
       volumes:
         - name: tor-config
