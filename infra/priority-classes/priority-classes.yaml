@@ -1,0 +1,81 @@
+# Eviction and scheduling order for this node.
+#
+# Without these every pod sits at priority 0, so when the node runs short the
+# kubelet picks what to evict on secondary criteria alone and the outcome is
+# effectively arbitrary -- Minecraft and the Envoy control plane are equally
+# likely to go. These say out loud what should survive.
+#
+# What they actually govern: the kubelet's eviction order under node pressure,
+# and scheduling order including preemption. They do NOT drive the kernel's OOM
+# killer, which reads oom_score_adj and therefore follows the QoS class
+# (Guaranteed / Burstable / BestEffort), not priority. Making the databases
+# Guaranteed is a separate change.
+#
+# Nothing is globalDefault: a workload with no class stays at 0, which is exactly
+# the `application` tier. The class is set explicitly anyway, so the intent is
+# readable in the manifest rather than inferred from an absence.
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: platform-critical
+value: 1000000
+globalDefault: false
+description: >-
+  The gateway and its certificates: envoy-gateway and cert-manager, plus the
+  reflector that copies the TLS secret into the mail namespace. Nothing is
+  reachable from outside without these, and certificates stop renewing, so they
+  outrank everything they serve.
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: platform-auth
+value: 500000
+globalDefault: false
+description: >-
+  Authentik. Other services sit behind it, so losing it takes them with it --
+  above the applications it protects, below the gateway that carries it.
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: datastore
+value: 200000
+globalDefault: false
+description: >-
+  Databases and caches backing a running application. Evicting one takes its
+  application down regardless and interrupts writes, so it goes after the
+  application it serves, never before.
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: application
+value: 0
+globalDefault: false
+description: >-
+  Ordinary user-facing services. Same value a pod gets with no class at all; set
+  explicitly so the tier is stated rather than implied.
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: application-low
+value: -1000
+globalDefault: false
+description: >-
+  Applications to give up before the others. Mail sits here by an explicit
+  decision: a sender retries, whereas the services above are wanted first.
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: background
+value: -100000
+preemptionPolicy: Never
+globalDefault: false
+description: >-
+  Whatever can disappear without anyone minding: Minecraft, SonarQube, Immich's
+  machine-learning server, and the backup and verification jobs. Also the two
+  largest consumers on the node, which is what makes this tier worth having.
+  preemptionPolicy Never: these wait for room, they never take it from anything.
