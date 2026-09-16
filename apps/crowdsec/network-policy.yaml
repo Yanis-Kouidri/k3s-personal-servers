@@ -70,9 +70,26 @@ spec:
       k8s-app: crowdsec
       type: lapi
   ingress:
+    # Two things reach LAPI from outside the pod network, and both arrive SNAT'd to
+    # the node's pod-network gateway, 10.42.0.1 -- confirmed in LAPI's own access
+    # log:
+    #   10.42.0.1 GET /v1/decisions/stream   the host's firewall bouncer, which
+    #                                        talks to 127.0.0.1:30800 and cannot
+    #                                        resolve cluster DNS
+    #   10.42.0.1 GET /health "kube-probe"   the kubelet's probes
+    #
+    # This used to be 10.42.0.0/16, the whole pod CIDR, which let every pod in the
+    # cluster query LAPI and add or drop decisions. Neither caller needs that, and
+    # the CrowdSec agent does not go through here at all -- it is matched by the
+    # podSelector rule below, whatever its address family.
+    #
+    # No IPv6 counterpart on purpose: nothing reaches LAPI over IPv6. The bouncer
+    # uses an IPv4 loopback address by configuration and the kubelet probes the
+    # pod's IPv4 address. Adding ::/0-style rules here would widen the policy for
+    # traffic that does not exist.
     - from:
         - ipBlock:
-            cidr: 10.42.0.0/16
+            cidr: 10.42.0.1/32
       ports:
         - protocol: TCP
           port: 8080
