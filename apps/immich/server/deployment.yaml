@@ -85,8 +85,11 @@ spec:
               mountPath: /data
           resources:
             requests:
-              memory: "256Mi"
-              cpu: "500m"
+              # Sized on what it actually holds (~700Mi resident). At 256Mi it sat
+              # permanently above its own request, which is what makes a pod the
+              # first thing the kubelet evicts.
+              memory: "768Mi"
+              cpu: "100m"
             limits:
               memory: "2Gi"
               cpu: "1"

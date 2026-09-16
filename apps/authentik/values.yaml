@@ -10,12 +10,14 @@ authentik:
 
 server:
   replicas: 1
+  # 524Mi observed against a 512Mi request: it lived just above its own request,
+  # which is what marks a pod for eviction first.
   podAnnotations:
     checksum/authentik-config: "ab5008401c8012426db8f800e8457a5529d233f2d02f41286e71d5a5547a418a"
   resources:
     requests:
       cpu: 100m
-      memory: 512Mi
+      memory: 640Mi
     limits:
       memory: 1Gi
 
@@ -39,6 +41,16 @@ postgresql:
   primary:
     # The subchart does not inherit the global above.
     priorityClassName: platform-auth
+    # Was BestEffort: the chart's "nano" preset is not applied here, so the pod
+    # had no requests at all and sat at the top of the OOM list while holding the
+    # credentials database for every service behind the SSO.
+    resourcesPreset: ""
+    resources:
+      requests:
+        cpu: 100m
+        memory: 192Mi
+      limits:
+        memory: 512Mi
     persistence:
       enabled: true
       size: 10Gi

@@ -41,8 +41,10 @@ spec:
               name: minecraft-data
           resources:
             requests:
-              cpu: "500m"
-              memory: "1Gi"
+              # MEMORY=2G in the ConfigMap is the JVM heap; the process sits around
+              # 2.1Gi once overhead is counted, so 1Gi was never realistic.
+              cpu: "250m"
+              memory: "2560Mi"
             limits:
               cpu: "2"
               memory: "4Gi"

@@ -33,6 +33,33 @@ spec:
     # Covers the controller, webhook and cainjector.
     global:
       priorityClassName: platform-critical
+    # Without these the three cert-manager pods are BestEffort, which sets their
+    # oom_score_adj to 1000 -- the kernel kills them before anything else, while
+    # platform-critical above says they should outlive everything. Highest
+    # scheduling priority and lowest survival is a contradiction, not a policy.
+    # Sized from observed use: controller 25Mi, webhook 11Mi, cainjector 23Mi.
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi
+      limits:
+        memory: 256Mi
+    webhook:
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+        limits:
+          memory: 128Mi
+    cainjector:
+      resources:
+        requests:
+          cpu: 10m
+          memory: 128Mi
+        limits:
+          # The cainjector watches and caches CA material cluster-wide, so it has
+          # more room to grow than its 23Mi at rest suggests.
+          memory: 512Mi
     crds:
       enabled: true
     config:

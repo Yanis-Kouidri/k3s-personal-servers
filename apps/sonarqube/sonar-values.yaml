@@ -28,7 +28,9 @@ community:
 resources:
   requests:
     memory: "2Gi"
-    cpu: "500m"
+    # 36m observed. The 3 CPU limit below is what matters during an analysis; the
+    # request only reserved a core and a half of scheduling capacity.
+    cpu: "200m"
   limits:
     memory: "3Gi"
     cpu: "3"
