@@ -22,6 +22,17 @@
   ],
   "customManagers": [
     {
+      "description": "Tool versions pinned as env vars in CI workflows. The github-actions manager only looks at `uses:` lines, so these were updated by nobody -- five of them are still on whatever version they were written with. Annotate a variable with a `# renovate:` comment above it and it gets picked up here.",
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^\\.github/workflows/.*\\.ya?ml$/"
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>[a-z-]+) depName=(?<depName>\\S+)\\s+[A-Z_]+: \"(?<currentValue>[^\"]+)\""
+      ],
+      "extractVersionTemplate": "^v(?<version>.+)$"
+    },
+    {
       "customType": "regex",
       "managerFilePatterns": [
         "/(^|/)sonar-values\\.yaml$/"
