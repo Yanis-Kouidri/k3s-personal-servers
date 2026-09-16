@@ -5,6 +5,14 @@ agent:
   # Detection stops if this goes, but existing bans stay in the host firewall,
   # so nothing becomes reachable that was not already.
   priorityClassName: application
+  # The chart defaults to 500m/250Mi. Observed: 4m and 44Mi.
+  resources:
+    requests:
+      cpu: 50m
+      memory: 96Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
   acquisition:
     # The namespace where the pod is located
     - namespace: envoy-gateway-system
@@ -29,6 +37,14 @@ agent:
 
 lapi:
   priorityClassName: application
+  # The chart defaults to 500m/500Mi. Observed: 7m and 93Mi.
+  resources:
+    requests:
+      cpu: 50m
+      memory: 160Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
   envFrom:
     - secretRef:
         name: crowdsec-secret

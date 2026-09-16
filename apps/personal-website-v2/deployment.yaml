@@ -48,7 +48,7 @@ spec:
               cpu: "700m"
             requests:
               memory: "256Mi"
-              cpu: "200m"
+              cpu: "50m"
 
           startupProbe:
             httpGet:

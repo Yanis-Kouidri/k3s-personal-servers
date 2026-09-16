@@ -33,8 +33,8 @@ spec:
               cpu: "2"
               memory: 2Gi
             requests:
-              cpu: "500m"
-              memory: 752Mi
+              cpu: "100m"
+              memory: 384Mi
           # Same as the Immich database: the entrypoint needs its capabilities to
           # drop to the postgres user, so only privilege escalation is blocked here.
           securityContext:

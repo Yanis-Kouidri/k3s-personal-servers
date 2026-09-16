@@ -10,6 +10,8 @@ global:
 primary:
   # Follows SonarQube: on its own it serves nothing.
   priorityClassName: background
+  # 74Mi and 16m observed; the previous 1Gi/500m request reserved fourteen times
+  # the memory it uses.
   networkPolicy:
     enabled: false
   persistence:
@@ -21,8 +23,8 @@ primary:
       cpu: 1000m
       memory: 2Gi
     requests:
-      cpu: 500m
-      memory: 1Gi
+      cpu: 100m
+      memory: 384Mi
 
 readReplicas:
   resources:
@@ -30,5 +32,5 @@ readReplicas:
       cpu: 1000m
       memory: 2Gi
     requests:
-      cpu: 500m
-      memory: 1Gi
+      cpu: 100m
+      memory: 384Mi

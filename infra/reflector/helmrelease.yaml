@@ -17,3 +17,12 @@ spec:
     # Replicates the TLS secret into the mail namespace; without it Stalwart
     # eventually serves an expired certificate.
     priorityClassName: platform-critical
+    # Was BestEffort, so first in line for the OOM killer despite carrying the
+    # highest priority class. 188Mi resident is a lot for what it does, but that
+    # is what it uses.
+    resources:
+      requests:
+        cpu: 10m
+        memory: 192Mi
+      limits:
+        memory: 384Mi
