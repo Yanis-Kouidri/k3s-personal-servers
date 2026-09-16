@@ -13,3 +13,7 @@ spec:
         kind: HelmRepository
         name: emberstack
         namespace: flux-system
+  values:
+    # Replicates the TLS secret into the mail namespace; without it Stalwart
+    # eventually serves an expired certificate.
+    priorityClassName: platform-critical

@@ -6,6 +6,15 @@ metadata:
   namespace: envoy-gateway-system
 spec:
   ipFamily: DualStack
+  # The proxy pods carry every HTTP request into the cluster, so they sit in the
+  # same tier as the control plane. They are created by the Envoy Gateway
+  # controller rather than by its chart, which is why this is set here.
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyDeployment:
+        pod:
+          priorityClassName: platform-critical
 ---
 # GatewayClass
 apiVersion: gateway.networking.k8s.io/v1

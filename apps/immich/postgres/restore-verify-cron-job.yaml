@@ -32,6 +32,7 @@ spec:
           labels:
             app: immich-restore-verify
         spec:
+          priorityClassName: background
           restartPolicy: Never
           automountServiceAccountToken: false
           securityContext:
