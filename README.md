@@ -42,6 +42,20 @@ config-install/install-git-hooks.sh --install-tools
 `--install-tools` also installs the linters (yamllint, kubeconform, gitleaks, actionlint,
 shellcheck), pinned to the same versions CI uses. Drop the flag if you already have them.
 
+Changes go to `main` through a pull request, never by pushing to it directly:
+
+```bash
+git switch -c <type>/<subject>
+git push -u origin HEAD
+gh pr create --fill
+gh pr merge --auto --squash
+```
+
+GitHub merges it on its own once the seven required checks pass, and deletes the branch.
+Flux then picks `main` up within the minute. Because that minute is shorter than a CI run,
+a direct push would land in the cluster before CI could judge it -- which is why the
+ruleset on `main` requires the checks and the pull request.
+
 The `pre-commit` hook then runs the CI checks on the staged tree before each commit:
 yamllint, `kustomize build` + kubeconform on the touched roots, SOPS encryption checks,
 a plaintext-`Secret` guard, actionlint, gitleaks and shellcheck. The `commit-msg` hook
