@@ -16,6 +16,7 @@ spec:
       labels:
         app: minecraft-server
     spec:
+      priorityClassName: background
       # None of this container's processes talk to the Kubernetes API, so the
       # ServiceAccount token has no reason to be mounted. Leaving it in place
       # hands a foothold to anything that manages to run code in here.

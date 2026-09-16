@@ -30,6 +30,9 @@ spec:
       retries: 3
 
   values:
+    # Covers the controller, webhook and cainjector.
+    global:
+      priorityClassName: platform-critical
     crds:
       enabled: true
     config:

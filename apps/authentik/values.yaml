@@ -1,3 +1,7 @@
+global:
+  # Covers the server and worker deployments; both default to global.
+  priorityClassName: platform-auth
+
 authentik:
   existingSecret:
     secretName: authentik-config
@@ -33,6 +37,8 @@ postgresql:
     secretKeys:
       userPasswordKey: password
   primary:
+    # The subchart does not inherit the global above.
+    priorityClassName: platform-auth
     persistence:
       enabled: true
       size: 10Gi

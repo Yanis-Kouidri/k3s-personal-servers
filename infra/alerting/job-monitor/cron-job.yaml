@@ -24,6 +24,7 @@ spec:
           labels:
             app: job-monitor
         spec:
+          priorityClassName: background
           serviceAccountName: job-monitor
           restartPolicy: OnFailure
           securityContext:

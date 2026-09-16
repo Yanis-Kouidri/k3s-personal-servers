@@ -8,6 +8,8 @@ global:
       # NB name of the key on the secret "sonarqube-postgres-secret" must be password for user sonar and postgres-password
 
 primary:
+  # Follows SonarQube: on its own it serves nothing.
+  priorityClassName: background
   networkPolicy:
     enabled: false
   persistence:

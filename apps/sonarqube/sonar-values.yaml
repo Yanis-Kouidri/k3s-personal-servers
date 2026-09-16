@@ -1,3 +1,6 @@
+# 2.2Gi resident, and nothing depends on it. First to go.
+priorityClassName: background
+
 postgresql:
   enabled: false
 

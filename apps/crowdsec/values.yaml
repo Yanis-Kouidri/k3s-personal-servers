@@ -2,6 +2,9 @@
 container_runtime: containerd
 
 agent:
+  # Detection stops if this goes, but existing bans stay in the host firewall,
+  # so nothing becomes reachable that was not already.
+  priorityClassName: application
   acquisition:
     # The namespace where the pod is located
     - namespace: envoy-gateway-system
@@ -25,6 +28,7 @@ agent:
       value: "crowdsecurity/cri-logs"
 
 lapi:
+  priorityClassName: application
   envFrom:
     - secretRef:
         name: crowdsec-secret

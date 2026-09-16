@@ -20,3 +20,10 @@ spec:
     crds: CreateReplace
     remediation:
       retries: 3
+
+  # This only covers the control plane. The Envoy proxy pods are created by the
+  # controller from the EnvoyProxy resource, not by this chart, so their class is
+  # set there -- see infra/networking/gateway-config/gateway.yaml.
+  values:
+    deployment:
+      priorityClassName: platform-critical
