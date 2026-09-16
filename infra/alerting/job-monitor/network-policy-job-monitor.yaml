@@ -18,7 +18,7 @@ spec:
     # envoy-gateway policies -- a VPS IP change has to be applied to all three plus this.
     - to:
         - ipBlock:
-            cidr: 91.134.243.146/32
+            cidr: 91.134.243.146/32  # node-address, checked by scripts/check-node-ip.sh
       ports:
         - protocol: TCP
           port: 6443

@@ -94,6 +94,19 @@ for path in "${paths[@]}"; do
   fi
 done
 
+# The node addresses baked into a few NetworkPolicies are only checkable against a
+# live cluster, so this rides along with --server rather than running in CI.
+if [[ $server -eq 1 ]]; then
+  echo "${BOLD}==> node addresses${OFF}"
+  if out=$("$repo_root/scripts/check-node-ip.sh" 2>&1); then
+    echo "${GREEN}  ✓${OFF} hardcoded node addresses match the cluster"
+  else
+    echo "${RED}  ✗ node addresses${OFF}"
+    printf '%s\n' "$out" | sed 's/^/      /'
+    failures+=("node addresses")
+  fi
+fi
+
 if [[ ${#failures[@]} -gt 0 ]]; then
   echo
   echo "${RED}${BOLD}${#failures[@]} check(s) failed:${OFF}"
