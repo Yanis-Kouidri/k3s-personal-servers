@@ -26,7 +26,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: minecraft-server
-          image: itzg/minecraft-server:2026.9.0-java25
+          image: itzg/minecraft-server:2026.9.1-java25
           # No `drop: ALL`: the image starts as root and uses su-exec to run the
           # server as 1000, which needs SETUID/SETGID.
           securityContext:
