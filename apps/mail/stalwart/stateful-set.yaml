@@ -24,7 +24,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: stalwart
-          image: stalwartlabs/stalwart:v0.16.21
+          image: stalwartlabs/stalwart:v0.16.22
           imagePullPolicy: IfNotPresent
           # The image already runs as 2000 (checked with `id` in the pod); pinning it
           # here makes that a guarantee rather than a coincidence.
