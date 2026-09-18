@@ -34,7 +34,7 @@ spec:
               type: RuntimeDefault
           containers:
             - name: job-monitor
-              image: alpine/k8s:1.36.4
+              image: alpine/k8s:1.37.0
               securityContext:
                 allowPrivilegeEscalation: false
                 readOnlyRootFilesystem: true
