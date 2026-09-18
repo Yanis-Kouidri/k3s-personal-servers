@@ -9,4 +9,4 @@ spec:
   layerSelector:
     mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
   ref:
-    tag: v1.8.2
+    tag: 1.9.1
