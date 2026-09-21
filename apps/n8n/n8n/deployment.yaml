@@ -81,7 +81,7 @@ spec:
               value: http
             - name: N8N_PORT
               value: "5678"
-          image: n8nio/n8n:2.39.6
+          image: n8nio/n8n:2.40.1
           # The tag is pinned and Renovate bumps it, so there is nothing to re-pull:
           # Always just meant a registry round-trip on every restart, and no restart
           # at all whenever Docker Hub was unreachable.
