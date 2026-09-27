@@ -1,0 +1,27 @@
+# Redundant DNS resolvers for ens3.
+#
+# cloud-init provisions a single resolver (213.186.33.99, OVH). Its intermittent
+# failures broke pod sandbox creation -- 196 "lookup auth.docker.io: Try again"
+# errors in the week of 2026-09-20 -- and failed Flux reconciliation with
+# "lookup github.com ... server misbehaving" (Telegram alert, 2026-09-23).
+#
+# FallbackDNS= in resolved.conf does NOT fix this: systemd-resolved only consults
+# it when no DNS server is known at all, and netplan defines one on the link.
+# Failover requires several servers on the SAME link, hence this file.
+#
+# Numbered 99 so it wins over 50-cloud-init.yaml, which cloud-init may regenerate.
+# OVH stays primary; 1.1.1.1 and 9.9.9.9 are only used when it stops answering.
+#
+# Install to /etc/netplan/99-dns-resilience.yaml with mode 0600, then:
+#   sudo netplan generate && sudo networkctl reload
+# CoreDNS caches /etc/resolv.conf at startup, so it needs a restart to pick the
+# new list up: kubectl rollout restart deployment/coredns -n kube-system
+network:
+  version: 2
+  ethernets:
+    ens3:
+      nameservers:
+        addresses:
+          - 213.186.33.99
+          - 1.1.1.1
+          - 9.9.9.9

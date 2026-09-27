@@ -255,6 +255,41 @@ Exemple with this priority :
 3. Allow UDP source port 53 and 123 to get UDP response for DNS and NTP
 4. Refuse all
 
+## DNS
+
+cloud-init provisions a single resolver on `ens3` (OVH's `213.186.33.99`). When it
+gets flaky, pod sandbox creation fails (`lookup auth.docker.io: Try again`) and Flux
+loses its Git remote (`lookup github.com ... server misbehaving`).
+
+`FallbackDNS=` in `resolved.conf` does **not** help: systemd-resolved only consults it
+when no DNS server is known at all, and netplan defines one on the link. Failover needs
+several servers on the same link.
+
+Copy `config-install/99-dns-resilience.yaml` to `/etc/netplan/`, then:
+
+```bash
+sudo chmod 600 /etc/netplan/99-dns-resilience.yaml
+sudo netplan generate
+sudo networkctl reload
+```
+
+Prefer `networkctl reload` over `netplan apply` on a remote VPS: it reloads the config
+without tearing the interface down.
+
+CoreDNS reads `/etc/resolv.conf` once at startup, so it keeps forwarding to the old
+list until restarted:
+
+```bash
+kubectl rollout restart deployment/coredns -n kube-system
+```
+
+Check both paths:
+
+```bash
+resolvectl status ens3 | grep 'DNS Servers'   # host and containerd
+dig +short @10.43.0.10 github.com A           # cluster, through CoreDNS
+```
+
 ## IPv6
 
 IPv6 is handled by default by k3s with the `config.yaml` file
