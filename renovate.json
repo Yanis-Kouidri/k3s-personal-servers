@@ -66,6 +66,13 @@
       "automerge": false
     },
     {
+      "description": "A human gate for images this repo runs as stateful apps. Renovate can and does automerge these -- it shipped immich v3.2.2 straight to production on 2026-09-27, unreviewed -- and that is what this rule stops. Automerge stays on for Docker Hub images, whose blast radius is smaller here. minimumReleaseAge is dropped rather than kept: the soak exists to let other people hit a regression before a robot merges it, but once a human decides the timing the soak only delays the notification, and a PR nobody has seen yet is not a risk. Must stay AFTER the matchUpdateTypes rules above -- packageRules are applied in order, last match wins.",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["ghcr.io/**"],
+      "minimumReleaseAge": null,
+      "automerge": false
+    },
+    {
       "matchFileNames": [
         "**/gotk-components.yaml"
       ],
