@@ -24,7 +24,7 @@ spec:
 
       containers:
         - name: tor
-          image: dockurr/tor:0.4.9.12
+          image: dockurr/tor:0.4.9.13
           # Five capabilities instead of the ~14 a container gets by default, each one
           # established by testing the image rather than guessed:
           #   CHOWN, FOWNER  the entrypoint runs `install` on /var/lib/tor
