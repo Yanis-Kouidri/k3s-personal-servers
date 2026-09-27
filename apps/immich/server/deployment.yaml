@@ -91,8 +91,17 @@ spec:
               memory: "768Mi"
               cpu: "100m"
             limits:
-              memory: "2Gi"
-              cpu: "1"
+              # v3.2.2 OOMKilled in a loop at 2Gi (exit 137, 2026-09-27): after a
+              # version change Immich re-processes the library, and this container
+              # runs the API and the job workers together -- several exiftool
+              # (perl) plus ffprobe at once, which the kernel OOM log named as it
+              # killed the cgroup. 3.1.0 sat at ~700Mi resident; 3.2.2 needs more
+              # than twice that under that burst. CPU went with it: it sat pegged
+              # at its 1-core ceiling, which only made the jobs take longer to
+              # drain. The node has 8 cores and ~12Gi genuinely free, and the
+              # machine-learning pod already sits at 4Gi/2 cores.
+              memory: "4Gi"
+              cpu: "2"
       volumes:
         - name: server-storage
           persistentVolumeClaim:
