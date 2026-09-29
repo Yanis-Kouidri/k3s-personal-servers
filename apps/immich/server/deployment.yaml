@@ -26,7 +26,7 @@ spec:
         seccompProfile:
           type: RuntimeDefault
       containers:
-        - image: ghcr.io/immich-app/immich-server:v3.2.2
+        - image: ghcr.io/immich-app/immich-server:v3.2.4
           name: immich-server
           securityContext:
             allowPrivilegeEscalation: false
