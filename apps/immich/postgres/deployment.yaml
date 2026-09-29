@@ -42,23 +42,26 @@ spec:
             - name: postgres
               containerPort: 5432
               protocol: TCP
-          # pg_isready is in the image and returns 0 here without arguments or
-          # credentials (checked in the pod). The liveness thresholds are deliberately
-          # slack -- 6 failures 30s apart -- because restarting a database that is
-          # merely busy or replaying WAL makes things worse, not better.
+          # pg_isready needs -U/-d: without them it connects as the container user
+          # "root", which returns 0 but logs `FATAL: role "root" does not exist` on
+          # every probe (~8/min). Exec probes don't expand env vars, hence the
+          # literals, which match POSTGRES_USER/POSTGRES_DB.
+          # The liveness thresholds are deliberately slack -- 6 failures 30s apart --
+          # because restarting a database that is merely busy or replaying WAL makes
+          # things worse, not better.
           startupProbe:
             exec:
-              command: ["pg_isready", "-q"]
+              command: ["pg_isready", "-q", "-U", "postgres", "-d", "immich"]
             failureThreshold: 30
             periodSeconds: 5
           readinessProbe:
             exec:
-              command: ["pg_isready", "-q"]
+              command: ["pg_isready", "-q", "-U", "postgres", "-d", "immich"]
             periodSeconds: 10
             failureThreshold: 3
           livenessProbe:
             exec:
-              command: ["pg_isready", "-q"]
+              command: ["pg_isready", "-q", "-U", "postgres", "-d", "immich"]
             periodSeconds: 30
             failureThreshold: 6
             timeoutSeconds: 5
