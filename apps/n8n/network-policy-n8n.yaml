@@ -51,3 +51,20 @@ spec:
           port: 465   # SMTPS
         - protocol: TCP
           port: 587   # SMTP Submission
+    # The Health checker workflow calls our own sites (*.kouidri.fr). Those
+    # resolve to the node's public IPs, which kube-proxy DNATs straight to the
+    # Envoy proxy pod before the policy is evaluated, so the ipBlock rule above
+    # (which excludes the pod CIDRs) refuses them. Allow the post-DNAT target.
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: envoy-gateway-system
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/component: proxy
+              app.kubernetes.io/name: envoy
+      ports:
+        - protocol: TCP
+          port: 10443
+        - protocol: TCP
+          port: 10080
