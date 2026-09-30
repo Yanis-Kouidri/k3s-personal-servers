@@ -1,0 +1,18 @@
+# Loads the host firewall (nftables table inet host-fw) before the network comes up.
+# Installed to /etc/systemd/system/ by config-install/install-host-firewall.sh.
+[Unit]
+Description=Host firewall (nftables table inet host-fw)
+DefaultDependencies=no
+Wants=network-pre.target
+Before=network-pre.target k3s.service shutdown.target
+Conflicts=shutdown.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/sbin/nft -f /etc/host-firewall.nft
+ExecReload=/usr/sbin/nft -f /etc/host-firewall.nft
+ExecStop=/usr/sbin/nft delete table inet host-fw
+
+[Install]
+WantedBy=sysinit.target

@@ -1,0 +1,63 @@
+#!/usr/sbin/nft -f
+# Host firewall for the public interface (ens3), IPv4 and IPv6.
+#
+# Without it the node accepted everything: the Kubernetes API (6443), the kubelet
+# (10250), flannel VXLAN (8472/udp, useless from outside on a single node and a way to
+# inject packets into the pod network) and every NodePort (e.g. the CrowdSec LAPI on
+# 30800, only meant for the host bouncer on 127.0.0.1) were reachable from the Internet.
+#
+# Why a prerouting hook and not UFW / an INPUT chain: kube-proxy and ServiceLB (svclb
+# hostPorts) DNAT at prerouting priority -100, so NodePort and LoadBalancer traffic is
+# FORWARDed to pods and never crosses INPUT. Priority -150 runs after conntrack (-200)
+# and before that DNAT, so the rules match the port the client actually targeted.
+#
+# Only ens3 is filtered: pods reach the node IP (API server on :6443, our own domains
+# through Envoy) via cni0/flannel and are left alone. This table is independent of the
+# ones managed by k3s, kube-router and the CrowdSec bouncer; a drop here is final.
+#
+# Allowlist: a new LoadBalancer Service needs its port added below.
+#
+# Loaded by host-firewall.service; install with config-install/install-host-firewall.sh.
+# Never load it through Ubuntu's /etc/nftables.conf: that file starts with
+# `flush ruleset`, which would wipe the k3s and CrowdSec rules.
+
+# Declare then delete so that `nft -f` atomically replaces only this table.
+table inet host-fw
+delete table inet host-fw
+
+table inet host-fw {
+	set tcp_public {
+		type inet_service
+		elements = {
+			22,	# SSH
+			80, 443,	# Envoy Gateway
+			25, 465, 587, 993,	# Stalwart mail
+			25565,	# Minecraft
+		}
+	}
+
+	set udp_public {
+		type inet_service
+		elements = {
+			51820,	# WireGuard
+		}
+	}
+
+	chain prerouting {
+		type filter hook prerouting priority -150; policy accept;
+
+		iifname != "ens3" accept
+		ct state established,related accept
+		ct state invalid drop
+
+		# ICMPv6 carries neighbour discovery: dropping it breaks IPv6 entirely.
+		meta l4proto { icmp, ipv6-icmp } accept
+		# DHCPv4 lease renewal from OVH (IPv6 is static, accept-ra is off).
+		udp dport 68 accept
+
+		tcp dport @tcp_public accept
+		udp dport @udp_public accept
+
+		counter drop
+	}
+}
