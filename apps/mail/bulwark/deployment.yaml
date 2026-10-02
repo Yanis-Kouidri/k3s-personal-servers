@@ -29,7 +29,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: bulwark
-          image: ghcr.io/bulwarkmail/webmail:1.11.2
+          image: ghcr.io/bulwarkmail/webmail:1.12.0
           imagePullPolicy: IfNotPresent
           securityContext:
             runAsNonRoot: true
