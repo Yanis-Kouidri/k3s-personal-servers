@@ -26,7 +26,7 @@ spec:
         seccompProfile:
           type: RuntimeDefault
       containers:
-        - image: ghcr.io/immich-app/immich-machine-learning:v3.2.4
+        - image: ghcr.io/immich-app/immich-machine-learning:v3.3.1
           name: machine-learning-server
           securityContext:
             allowPrivilegeEscalation: false
