@@ -18,10 +18,14 @@ resources:
   - network-policies/network-policy-postgresql.yaml
   - network-policies/network-policy-backup.yaml
 
+# Values ConfigMaps for the HelmReleases. The name has no hash suffix (the HelmRelease's
+# valuesFrom refers to it literally), so a change is not a new object: the watch label
+# makes helm-controller react to it right away instead of at the next interval.
 configMapGenerator:
   - name: authentik-values
     files:
       - values.yaml
-
-generatorOptions:
-  disableNameSuffixHash: true
+    options:
+      disableNameSuffixHash: true
+      labels:
+        reconcile.fluxcd.io/watch: Enabled

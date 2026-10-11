@@ -21,14 +21,21 @@ resources:
   - network-policies/network-policy-postgres.yaml
   - network-policies/network-policy-backup.yaml
 
+# Values ConfigMaps for the HelmReleases. The name has no hash suffix (the HelmRelease's
+# valuesFrom refers to it literally), so a change is not a new object: the watch label
+# makes helm-controller react to it right away instead of at the next interval.
 configMapGenerator:
   - name: sonarqube-values
     files:
       - values.yaml=sonar-values.yaml
     options:
       disableNameSuffixHash: true
+      labels:
+        reconcile.fluxcd.io/watch: Enabled
   - name: postgres-sonarqube-values
     files:
       - values.yaml=postgres-values.yaml
     options:
       disableNameSuffixHash: true
+      labels:
+        reconcile.fluxcd.io/watch: Enabled
