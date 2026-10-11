@@ -55,9 +55,13 @@ A restored count *lower* than production is normal for append-only tables
 (executions, issues) — the dump is a point in time and production has moved on.
 Only a **higher** count is reported as a failure.
 
-Last run, 2026-09-15: Immich 67 tables / 5855 assets, n8n 139 tables / 5
-workflows, SonarQube 164 tables / 13717 rules — all matching production.
-Authentik was added to the script afterwards and was not part of that run.
+Last run, 2026-10-11: Immich 73 tables / 6247 assets, n8n 148 tables / 5
+workflows, SonarQube 164 tables / 13717 rules, Authentik 230 tables / 4 users —
+all matching production.
+
+The scratch pod runs as the image's postgres user with a Pod Security
+`restricted` securityContext: sonarqube enforces that level, and refuses any pod
+without it.
 
 ### Automatically, every week
 
