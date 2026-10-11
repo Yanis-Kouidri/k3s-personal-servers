@@ -22,15 +22,14 @@
   ],
   "customManagers": [
     {
-      "description": "Tool versions pinned as env vars in CI workflows. The github-actions manager only looks at `uses:` lines, so these were updated by nobody -- five of them are still on whatever version they were written with. Annotate a variable with a `# renovate:` comment above it and it gets picked up here.",
+      "description": "Tool versions pinned as env vars in CI workflows. The github-actions manager only looks at `uses:` lines, so these need their own manager. Annotate a variable with a `# renovate: datasource=... depName=... [extractVersion=...]` comment on the line above it. extractVersion is set per annotation because the tag formats differ (vX.Y.Z, kustomize/vX.Y.Z, none on PyPI).",
       "customType": "regex",
       "managerFilePatterns": [
         "/^\\.github/workflows/.*\\.ya?ml$/"
       ],
       "matchStrings": [
-        "# renovate: datasource=(?<datasource>[a-z-]+) depName=(?<depName>\\S+)\\s+[A-Z_]+: \"(?<currentValue>[^\"]+)\""
-      ],
-      "extractVersionTemplate": "^v(?<version>.+)$"
+        "# renovate: datasource=(?<datasource>[a-z-]+) depName=(?<depName>\\S+)(?: extractVersion=(?<extractVersion>\\S+))?\\s+[A-Z_]+: \"(?<currentValue>[^\"]+)\""
+      ]
     },
     {
       "customType": "regex",
