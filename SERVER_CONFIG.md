@@ -93,6 +93,8 @@ Setup k3s config file:
 ```bash
 sudo mkdir -p /etc/rancher/k3s/
 sudo cp config-install/config.yaml /etc/rancher/k3s/config.yaml
+# referenced by config.yaml (kubelet-arg), must be present before k3s starts
+sudo cp config-install/kubelet-config.yaml /etc/rancher/k3s/kubelet-config.yaml
 ```
 
 Install k3s:
@@ -245,15 +247,30 @@ Look for `backup.sh` files over differents servicies to locally save data
 
 ## Firewall
 
-Do not use `ufw` or over firewall on the vps itselt, it may collaps with `k3s`.
+Do not use `ufw`: it rewrites the same netfilter chains as k3s and the two end
+up fighting. The host firewall is a dedicated nftables table instead,
+`config-install/host-firewall.nft`, which only filters traffic arriving on
+`ens3` and leaves the cluster's own chains alone.
 
-Instead use the host firewall (OVH, Hetzner, etc.) and allow only requiered port.
+Publicly open ports (anything else arriving on `ens3` is dropped):
 
-Exemple with this priority : 
-1. Allow TCP destination port 22, 80, 443, 25565, 51820
-2. Allow TCP established to be able to reach internet
-3. Allow UDP source port 53 and 123 to get UDP response for DNS and NTP
-4. Refuse all
+- TCP 22 (SSH), 80 and 443 (Envoy Gateway), 25, 465, 587 and 993 (Stalwart mail),
+  25565 (Minecraft)
+- UDP 51820 (WireGuard)
+
+Install it with an automatic rollback, in case it locks you out:
+
+```bash
+config-install/install-host-firewall.sh            # loads the rules, rollback in 180s
+# from ANOTHER machine: open a new ssh session and check the public services
+config-install/install-host-firewall.sh --confirm  # keep them, enable at boot
+```
+
+The current ssh session survives the load, so it proves nothing: test with a new
+one. Doing nothing is enough to roll back. Remove it with `--uninstall`.
+
+The provider's network firewall (OVH, Hetzner, ...) can be used on top, with the
+same port list.
 
 ## DNS
 

@@ -7,6 +7,14 @@ global:
       existingSecret: sonarqube-postgres-secret
       # NB name of the key on the secret "sonarqube-postgres-secret" must be password for user sonar and postgres-password
 
+# The chart defaults to bitnami/postgresql:latest -- the only tag Bitnami still
+# publishes for free -- so any pod restart could pull a new PostgreSQL major
+# over a data directory it cannot open. Pinned by digest to what was running
+# (PostgreSQL 18.4) when this was written. Nothing bumps it automatically: take a
+# backup, then update the digest on purpose.
+image:
+  digest: "sha256:db2312d9b243afa8c3b3f5496e478d17d0dff9791d06f3b93b9567abd86ae92f"
+
 primary:
   # Follows SonarQube: on its own it serves nothing.
   priorityClassName: background
