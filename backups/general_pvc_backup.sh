@@ -249,14 +249,14 @@ if ! sudo tar --use-compress-program=zstd -tf "$BACKUP_FILE" > /dev/null; then
 fi
 log "Archive integrity OK."
 
-# Backup rotation: Keep the 2 most recent files
-# Note: using 'ls' carefully. If no files exist, we don't want the script to fail (set -e).
+# Backup rotation: keep the 2 most recent archives, newest first by mtime.
 log "Cleaning up old backups..."
-count=$(ls -1 "$BACKUP_PATH"*.tar.zst 2>/dev/null | wc -l)
+mapfile -t old_backups < <(find "$BACKUP_PATH" -maxdepth 1 -type f -name '*.tar.zst' -printf '%T@ %p\n' \
+    | sort -rn | tail -n +3 | cut -d' ' -f2-)
 
-if [ "$count" -gt 2 ]; then
-    # Using sudo rm because files created by sudo tar likely belong to root
-    ls -t "$BACKUP_PATH"*.tar.zst | tail -n +3 | xargs -I {} sudo rm -v {}
+if [[ ${#old_backups[@]} -gt 0 ]]; then
+    # sudo rm: the archives are written by `sudo tar`, so they belong to root
+    sudo rm -v -- "${old_backups[@]}"
 else
     log "Fewer than 3 backups exist, skipping deletion."
 fi

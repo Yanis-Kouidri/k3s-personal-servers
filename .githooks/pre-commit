@@ -13,7 +13,7 @@
 #   5. plaintext Secret    (a `kind: Secret` outside a *.enc.yaml file)
 #   6. actionlint          (staged GitHub workflows)                        [optional tool]
 #   7. gitleaks            (same .gitleaks.toml as CI)                      [optional tool]
-#   8. shellcheck          (staged shell scripts, errors only)               [optional tool]
+#   8. shellcheck          (staged shell scripts, default severity)          [optional tool]
 #
 # Escape hatches: `git commit --no-verify`, or `SKIP_HOOKS=1 git commit ...`
 set -uo pipefail
@@ -223,13 +223,12 @@ else
 fi
 
 # --- 8. shellcheck --------------------------------------------------------------------
-# Errors only: a few older scripts (backups/, scripts/) carry style warnings
-# (SC2086 & friends) that are not worth blocking a commit on, while an error is real
-# breakage — bad syntax, a misused construct.
+# Default severity, like CI: every script is clean, a new warning is worth fixing
+# before it lands (or silencing with a `# shellcheck disable=` that says why).
 if [[ ${#staged_shell[@]} -gt 0 ]]; then
   if command -v shellcheck >/dev/null 2>&1; then
     start "shellcheck"
-    if out=$( (cd "$snapshot" && shellcheck --severity=error --external-sources "${staged_shell[@]}") 2>&1 ); then
+    if out=$( (cd "$snapshot" && shellcheck --external-sources "${staged_shell[@]}") 2>&1 ); then
       pass "shellcheck (${#staged_shell[@]} file(s))"
     else
       report_fail "shellcheck"
