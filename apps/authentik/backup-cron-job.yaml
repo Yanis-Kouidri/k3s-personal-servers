@@ -55,54 +55,19 @@ spec:
                 capabilities:
                   drop:
                     - ALL
+              # The script is shared by every app: apps/components/postgres-backup/backup.sh
               command:
                 - /bin/sh
-                - -c
-                - |
-                  set -eu
-
-                  DB_HOST=authentik-postgresql
-                  DATE="$(date +%Y-%m-%d_%H-%M-%S)"
-                  BACKUP_FILE="/backups/authentik_db_${DATE}.dump"
-
-                  # A dump that dies midway (DB restarting, disk full) still leaves a
-                  # truncated file behind, which the rotation below would happily count
-                  # as a valid backup. Drop it unless the script reaches the end.
-                  trap 'rm -f "$BACKUP_FILE"' EXIT
-
-                  # k3s programs a new pod's NetworkPolicy rules slightly after the pod
-                  # gets its IP, so the very first connection out of a freshly created
-                  # backup pod is refused. Without this wait the first attempt always
-                  # fails and only the OnFailure restart succeeds.
-                  i=0
-                  until pg_isready -h "$DB_HOST" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -q; do
-                    i=$((i + 1))
-                    if [ "$i" -ge 30 ]; then
-                      echo "PostgreSQL unreachable at $DB_HOST after 60s, giving up" >&2
-                      exit 1
-                    fi
-                    echo "waiting for PostgreSQL at $DB_HOST..."
-                    sleep 2
-                  done
-
-                  echo "Starting authentik PostgreSQL backup..."
-                  # Custom format: compressed, and restorable with pg_restore
-                  # --no-owner into a database whose roles differ from production.
-                  PGPASSWORD="$POSTGRES_PASSWORD" pg_dump \
-                    -h "$DB_HOST" \
-                    -U "$POSTGRES_USER" \
-                    -d "$POSTGRES_DB" \
-                    --format=custom \
-                    --file="$BACKUP_FILE"
-
-                  trap - EXIT
-
-                  # Only reached once the dump above succeeded: with `set -e` a failed
-                  # pg_dump exits here and fails the Job, so the retention below can no
-                  # longer delete good backups in the wake of a broken run.
-                  find /backups -type f -mtime +7 -name "*.dump" -delete
-                  echo "Backup completed: $BACKUP_FILE ($(du -h "$BACKUP_FILE" | cut -f1))"
+                - /scripts/backup.sh
               env:
+                - name: DB_HOST
+                  value: "authentik-postgresql"
+                - name: DUMP_PREFIX
+                  value: "authentik"
+                # Custom format: compressed, and restorable with pg_restore --no-owner
+                # into a database whose roles differ from production.
+                - name: DUMP_FORMAT
+                  value: "custom"
                 # Must match the postgresql subchart's defaults in values.yaml.
                 - name: POSTGRES_USER
                   value: authentik
@@ -123,7 +88,13 @@ spec:
               volumeMounts:
                 - name: backup-storage
                   mountPath: /backups
+                - name: scripts
+                  mountPath: /scripts
+                  readOnly: true
           volumes:
             - name: backup-storage
               persistentVolumeClaim:
                 claimName: backup-authentik-pvc
+            - name: scripts
+              configMap:
+                name: postgres-backup-scripts

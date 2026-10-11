@@ -1,1 +1,6 @@
+# Host scripts (backups/, config-install/, scripts/...) have no business in the
+# artifact Flux applies.
 **/*.sh
+# ...except the scripts the in-cluster CronJobs run: a configMapGenerator reads them
+# at build time, and Flux's kustomize build fails if they are missing.
+!apps/components/**/*.sh

@@ -1,6 +1,10 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
+# Every resource here already lives in n8n; set explicitly so the shared
+# component's ConfigMap lands there too.
+namespace: n8n
+
 resources:
   - namespace.yaml
   - secrets.enc.yaml
@@ -22,3 +26,7 @@ resources:
   - network-policy-postgres.yaml
   - network-policy-backup.yaml
   - network-policy-n8n.yaml
+
+# Scripts of the *-db-backup and *-restore-verify CronJobs
+components:
+  - ../components/postgres-backup

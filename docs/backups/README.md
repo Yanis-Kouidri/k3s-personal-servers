@@ -22,6 +22,10 @@ kept 7 days:
 generations kept. `backups/get_backup_folder.sh` pulls that tree to a machine
 off the VPS — which is the only copy that survives losing the node.
 
+All four CronJobs run the same script,
+`apps/components/postgres-backup/backup.sh`, configured through env variables
+(`DB_HOST`, `DUMP_PREFIX`, `DUMP_FORMAT`...).
+
 The dump PVCs are themselves archived by the second layer, so a database ends up
 in both.
 
@@ -62,8 +66,9 @@ Four CronJobs do a narrower version of the same thing on Sunday mornings —
 `sonarqube-restore-verify` at 05:00, `authentik-restore-verify` at 05:30,
 staggered because they compete for the same disk.
 
-Each one starts a PostgreSQL inside its own container against an emptyDir,
-restores this namespace's newest dump into it, and fails the Job if the dump is
+They all run `apps/components/postgres-backup/restore-verify.sh`, each with its
+own thresholds in env variables. Each one starts a PostgreSQL inside its own
+container against an emptyDir, restores this namespace's newest dump into it, and fails the Job if the dump is
 missing or empty, if the restore errors, if fewer tables come back than expected,
 or if the key table restores empty. A failed Job is picked up by the
 `job-monitor` CronJob and reported to Telegram.

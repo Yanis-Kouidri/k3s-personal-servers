@@ -127,7 +127,7 @@ jobs:
           tar -xJf "shellcheck-v${SHELLCHECK_VERSION}.linux.x86_64.tar.xz" "shellcheck-v${SHELLCHECK_VERSION}/shellcheck"
           mv "shellcheck-v${SHELLCHECK_VERSION}/shellcheck" shellcheck
 
-      # Errors only: the older scripts under backups/ and apps/ carry style warnings that
+      # Errors only: a few older scripts (backups/, scripts/) carry style warnings that
       # are not worth failing the build on, while an error is genuine breakage. The same
       # threshold is used by the pre-commit hook (.githooks/pre-commit).
       - name: Run shellcheck

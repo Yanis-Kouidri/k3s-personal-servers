@@ -29,3 +29,7 @@ configMapGenerator:
       disableNameSuffixHash: true
       labels:
         reconcile.fluxcd.io/watch: Enabled
+
+# Scripts of the *-db-backup and *-restore-verify CronJobs
+components:
+  - ../components/postgres-backup

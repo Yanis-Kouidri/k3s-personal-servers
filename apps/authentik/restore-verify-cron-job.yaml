@@ -1,11 +1,8 @@
-# Weekly proof that the backup this namespace produces can actually be restored.
-# Same design as the immich, n8n and sonarqube ones (see docs/backups/README.md):
-# no Kubernetes API access and no network -- the namespace's default-deny covers
-# it -- a PostgreSQL started inside the container against an emptyDir, and this
-# namespace's backup volume mounted READ-ONLY. Nothing it can reach is production.
-#
-# When it fails the Job fails, and the job-monitor CronJob in `monitoring` reports
-# it to Telegram like any other failed Job.
+# Weekly proof that this namespace's newest dump can actually be restored: a
+# throwaway PostgreSQL inside the container, no Kubernetes API access, no network,
+# the backup volume READ-ONLY. The design and the env variables are described in
+# apps/components/postgres-backup/restore-verify.sh; a failed Job is reported to
+# Telegram by the job-monitor CronJob.
 apiVersion: batch/v1
 kind: CronJob
 metadata:
@@ -53,45 +50,18 @@ spec:
                 capabilities:
                   drop:
                     - ALL
+              # The script is shared by every app: apps/components/postgres-backup/restore-verify.sh
               command:
                 - /bin/sh
-                - -c
-                - |
-                  set -eu
-
-                  DUMP=$(ls -t /backups/*.dump 2>/dev/null | head -1)
-                  if [ -z "$DUMP" ] || [ ! -s "$DUMP" ]; then
-                    echo "no usable dump in /backups -- backups are not being produced" >&2
-                    exit 1
-                  fi
-                  echo "verifying $DUMP ($(du -h "$DUMP" | cut -f1))"
-
-                  # A throwaway cluster in this container's own emptyDir.
-                  export PGDATA=/scratch/pgdata
-                  initdb -U postgres --auth=trust -D "$PGDATA" >/dev/null
-                  pg_ctl -D "$PGDATA" \
-                    -o "-k /scratch -c listen_addresses=''" -w start >/dev/null
-                  createdb -h /scratch -U postgres verify
-                  pg_restore -h /scratch -U postgres -d verify --exit-on-error \
-                    --no-owner --no-privileges "$DUMP"
-
-                  TABLES=$(psql -h /scratch -U postgres -d verify -tAc \
-                    "SELECT count(*) FROM information_schema.tables WHERE table_schema='public';")
-                  USERS=$(psql -h /scratch -U postgres -d verify -tAc \
-                    "SELECT count(*) FROM authentik_core_user;")
-                  FLOWS=$(psql -h /scratch -U postgres -d verify -tAc \
-                    "SELECT count(*) FROM authentik_flows_flow;")
-                  echo "restored $TABLES tables, $USERS users, $FLOWS flows"
-
-                  # Thresholds rather than an exact match against production: the
-                  # live database keeps moving, while a dump that restored to
-                  # nothing does not reach these by accident. Production had
-                  # 230 tables, 4 users and 15 flows when this was written.
-                  [ "$TABLES" -ge 150 ] || {
-                    echo "only $TABLES tables, expected at least 150" >&2; exit 1; }
-                  [ "$USERS" -gt 0 ] || { echo "authentik_core_user restored empty" >&2; exit 1; }
-                  [ "$FLOWS" -gt 0 ] || { echo "authentik_flows_flow restored empty" >&2; exit 1; }
-                  echo "backup verified"
+                - /scripts/restore-verify.sh
+              env:
+                - name: DUMP_FORMAT
+                  value: "custom"
+                # Production had 230 tables, 4 users and 15 flows when this was written.
+                - name: MIN_TABLES
+                  value: "150"
+                - name: NONEMPTY_TABLES
+                  value: "authentik_core_user authentik_flows_flow"
               resources:
                 requests:
                   cpu: "200m"
@@ -105,6 +75,9 @@ spec:
                 - name: backups
                   mountPath: /backups
                   readOnly: true
+                - name: scripts
+                  mountPath: /scripts
+                  readOnly: true
           volumes:
             - name: scratch
               emptyDir:
@@ -113,3 +86,6 @@ spec:
               persistentVolumeClaim:
                 claimName: backup-authentik-pvc
                 readOnly: true
+            - name: scripts
+              configMap:
+                name: postgres-backup-scripts

@@ -221,7 +221,7 @@ else
 fi
 
 # --- 8. shellcheck --------------------------------------------------------------------
-# Errors only: the pre-existing scripts under backups/ and apps/ carry style warnings
+# Errors only: a few older scripts (backups/, scripts/) carry style warnings
 # (SC2086 & friends) that are not worth blocking a commit on, while an error is real
 # breakage — bad syntax, a misused construct.
 if [[ ${#staged_shell[@]} -gt 0 ]]; then
