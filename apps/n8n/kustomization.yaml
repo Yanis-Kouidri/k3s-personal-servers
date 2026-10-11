@@ -21,11 +21,11 @@ resources:
   - postgres/backup-cron-job.yaml
   - postgres/restore-verify-cron-job.yaml
   # Network policies
-  - network-policy-default-deny.yaml
-  - network-policy-allow-dns.yaml
-  - network-policy-postgres.yaml
-  - network-policy-backup.yaml
-  - network-policy-n8n.yaml
+  - network-policies/network-policy-default-deny.yaml
+  - network-policies/network-policy-allow-dns.yaml
+  - network-policies/network-policy-postgres.yaml
+  - network-policies/network-policy-backup.yaml
+  - network-policies/network-policy-n8n.yaml
 
 # Scripts of the *-db-backup and *-restore-verify CronJobs
 components:

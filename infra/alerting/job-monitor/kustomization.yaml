@@ -4,6 +4,6 @@ resources:
   - namespace.yaml
   - rbac.yaml
   - cron-job.yaml
-  - network-policy-default-deny.yaml
-  - network-policy-allow-dns.yaml
-  - network-policy-job-monitor.yaml
+  - network-policies/network-policy-default-deny.yaml
+  - network-policies/network-policy-allow-dns.yaml
+  - network-policies/network-policy-job-monitor.yaml

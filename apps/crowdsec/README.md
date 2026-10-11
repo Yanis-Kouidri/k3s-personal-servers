@@ -2,7 +2,7 @@
 
 ## Installation
 
-Managed by Flux: `helmrelease.yaml` installs the `crowdsec` chart (version pinned
+Managed by Flux: `helm-release.yaml` installs the `crowdsec` chart (version pinned
 there, bumped by Renovate) with the values from `values.yaml`, rendered into the
 `crowdsec-values` ConfigMap by `kustomization.yaml`. Nothing to install by hand
 in the cluster. After editing `values.yaml`, `flux reconcile hr crowdsec -n
@@ -87,7 +87,7 @@ API error: user 'crowdsec-agent-xxxxx': user already exist
 ```
 
 The init container then crash-loops forever and the agent never starts, which silently
-disables CrowdSec on the node. The `postRenderers` block in `helmrelease.yaml` patches the
+disables CrowdSec on the node. The `postRenderers` block in `helm-release.yaml` patches the
 command so it registers only when the agent has no credentials yet.
 
 Each *recreated* pod still registers under a new name, so dead machines accumulate in LAPI.

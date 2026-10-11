@@ -4,8 +4,8 @@ resources:
   - namespace.yaml
   - config-map.yaml
   - deployment.yaml
-  - network-policy.yaml
-  - network-policy-allow-dns.yaml
-  - network-policy-default-deny.yaml
+  - network-policies/network-policy-minecraft-server.yaml
+  - network-policies/network-policy-allow-dns.yaml
+  - network-policies/network-policy-default-deny.yaml
   - pvc.yaml
   - service.yaml

@@ -2,7 +2,7 @@
 
 Managed by Flux, nothing to install by hand.
 
-- `controller/`: the cert-manager HelmRelease (chart pinned in `release.yaml`,
+- `controller/`: the cert-manager HelmRelease (chart pinned in `helm-release.yaml`,
   bumped by Renovate) with the Gateway API integration enabled
   (`enableGatewayAPI: true`), and its NetworkPolicies. Applied by the
   `cert-manager` Flux Kustomization (`clusters/my-cluster/cert-manager.yaml`).
