@@ -72,6 +72,16 @@
       "automerge": false
     },
     {
+      "description": "The authentik backup and restore-verify images must keep the PostgreSQL major of the server deployed by the authentik chart (17): a newer pg_dump writes archives the server's pg_restore 17 cannot read, so a real restore would fail. Patch and minor 17.x updates still flow. Lift this together with the server's major.",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["postgres"],
+      "matchFileNames": [
+        "apps/authentik/backup-cron-job.yaml",
+        "apps/authentik/restore-verify-cron-job.yaml"
+      ],
+      "allowedVersions": "/^17\\./"
+    },
+    {
       "matchFileNames": [
         "**/gotk-components.yaml"
       ],
