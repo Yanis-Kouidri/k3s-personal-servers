@@ -63,7 +63,7 @@ install_tools() {
 
   # yamllint: installed (not `pipx run`) so the hook also works offline.
   local yamllint_version
-  yamllint_version=$(sed -nE 's/.*yamllint==([0-9][A-Za-z0-9._-]*).*/\1/p' "$workflow" | head -1)
+  yamllint_version=$(ci_version YAMLLINT_VERSION)
   if command -v pipx >/dev/null 2>&1; then
     echo "  installing yamllint==${yamllint_version}"
     pipx install --force "yamllint==${yamllint_version}" >/dev/null

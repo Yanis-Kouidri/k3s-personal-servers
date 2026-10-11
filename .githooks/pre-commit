@@ -87,12 +87,14 @@ fi
 # --- tool resolution ------------------------------------------------------------------
 # Versions come from the CI workflow so there is a single source of truth (Renovate
 # bumps them there).
-YAMLLINT_VERSION=$(sed -nE 's/.*yamllint==([0-9][A-Za-z0-9._-]*).*/\1/p' .github/workflows/build.yml | head -1)
-: "${YAMLLINT_VERSION:=1.38.0}"
+YAMLLINT_VERSION=$(sed -nE 's/^[[:space:]]*YAMLLINT_VERSION:[[:space:]]*"([^"]+)".*/\1/p' .github/workflows/build.yml | head -1)
 
 run_yamllint() {
   if command -v yamllint >/dev/null 2>&1; then
     yamllint "$@"
+  elif [[ -z $YAMLLINT_VERSION ]]; then
+    echo "cannot read YAMLLINT_VERSION from .github/workflows/build.yml" >&2
+    return 1
   elif command -v pipx >/dev/null 2>&1; then
     pipx run "yamllint==${YAMLLINT_VERSION}" "$@"
   elif command -v uvx >/dev/null 2>&1; then
