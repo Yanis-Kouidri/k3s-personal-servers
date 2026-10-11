@@ -137,14 +137,13 @@ jobs:
           tar -xJf "shellcheck-v${SHELLCHECK_VERSION}.linux.x86_64.tar.xz" "shellcheck-v${SHELLCHECK_VERSION}/shellcheck"
           mv "shellcheck-v${SHELLCHECK_VERSION}/shellcheck" shellcheck
 
-      # Errors only: a few older scripts (backups/, scripts/) carry style warnings that
-      # are not worth failing the build on, while an error is genuine breakage. The same
-      # threshold is used by the pre-commit hook (.githooks/pre-commit).
+      # Default severity (style and up): every script is clean, keep it that way. The
+      # pre-commit hook (.githooks/pre-commit) uses the same threshold.
       - name: Run shellcheck
         run: |
           set -euo pipefail
           mapfile -t scripts < <(git ls-files '*.sh' .githooks)
-          ./shellcheck --severity=error --external-sources --color=always "${scripts[@]}"
+          ./shellcheck --external-sources --color=always "${scripts[@]}"
 
   secret-scan:
     name: Scan for leaked secrets

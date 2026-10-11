@@ -20,7 +20,7 @@
 set -uo pipefail
 
 repo_root=$(git rev-parse --show-toplevel)
-cd "$repo_root"
+cd "$repo_root" || exit 1
 
 if [[ -t 1 ]]; then
   RED=$'\033[31m'; GREEN=$'\033[32m'; BOLD=$'\033[1m'; OFF=$'\033[0m'

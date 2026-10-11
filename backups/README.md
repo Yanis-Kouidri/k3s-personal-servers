@@ -1,12 +1,16 @@
 # Backup
 
-This script `get_backup_folder.sh` is aim to be run on a remote machine to copy the backup folder present on VPS.
+`get_backup_folder.sh` runs on another machine (a personal computer) and pulls the
+VPS backup folder there: it is the only copy that survives losing the node.
 
-To perform that automaticaly :
+To run it automatically:
 
 1. Clone the repo on an external machine such as personal computer.
 
-2. Check variable on `k3s-personal-servers/backups/get_backup_folder.sh` script.
+2. Check the settings at the top of `backups/get_backup_folder.sh`. Each one can be
+   overridden from the environment instead of editing the script: `VPS_NAME` (the
+   host alias in `~/.ssh/config`, default `ovh-vps`), `SOURCE_DIR`, `DEST_DIR`
+   (default `$HOME/vps_backups/`) and `LOG_FILE` (default `$HOME/pull_backups.log`).
 
 3. Install anacron
 
@@ -35,4 +39,4 @@ sudo chmod +x /etc/cron.daily/pull_backup_from_vps
 sudo chmod +x k3s-personal-servers/backups/get_backup_folder.sh
 ```
 
-6. Check the logs to be sure everithing is ok
+6. Check the log file (`$HOME/pull_backups.log` by default) after the first run.
