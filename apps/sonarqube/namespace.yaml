@@ -16,11 +16,9 @@ metadata:
     # enforce-version is pinned so upgrading k3s cannot silently tighten the rules
     # and leave pods unable to start; bump it deliberately after a cluster upgrade.
     #
-    # Stuck at `privileged` because of a privileged container: the chart's
-    # `init-sysctl` initContainer raises vm.max_map_count for the embedded
-    # Elasticsearch. Setting initSysctl.enabled=false and raising the sysctl on the
-    # node instead would let this namespace move to `baseline`.
-    pod-security.kubernetes.io/enforce: privileged
+    # Was `privileged` because of the chart's init-sysctl initContainer. It is
+    # disabled in sonar-values.yaml, and the sysctl it guarded is set on the node.
+    pod-security.kubernetes.io/enforce: restricted
     pod-security.kubernetes.io/enforce-version: v1.36
     pod-security.kubernetes.io/warn: restricted
     pod-security.kubernetes.io/audit: restricted

@@ -1,6 +1,15 @@
 # 2.2Gi resident, and nothing depends on it. First to go.
 priorityClassName: background
 
+# The chart's init-sysctl initContainer runs privileged as root only to check that
+# vm.max_map_count, fs.file-max and the nofile/nproc ulimits meet Elasticsearch's
+# needs, raising them if not. The node already exceeds all four (its log only ever
+# showed the comparisons), and vm.max_map_count is pinned on the host in
+# config-install/99-sysctl-tuning.conf. Without it the namespace can enforce
+# Pod Security `restricted`.
+initSysctl:
+  enabled: false
+
 postgresql:
   enabled: false
 
