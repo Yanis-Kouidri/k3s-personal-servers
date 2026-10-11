@@ -90,7 +90,7 @@ spec:
                   # shell *before* pg_dump runs, so a failing dump left an empty .sql
                   # behind while the job still exited 0.
                   PGPASSWORD="$POSTGRES_PASSWORD" pg_dump \
-                    -h postgres \
+                    -h "$DB_HOST" \
                     -U "$POSTGRES_USER" \
                     -d "$POSTGRES_DB" \
                     --file="$BACKUP_FILE"
