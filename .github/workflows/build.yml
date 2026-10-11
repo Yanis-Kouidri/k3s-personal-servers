@@ -88,26 +88,12 @@ jobs:
           tar -xzf kubeconform-linux-amd64.tar.gz kubeconform
           sudo mv kubeconform /usr/local/bin/kubeconform
 
-      # Secrets are SOPS-encrypted (see AGENTS.md) and are never decrypted in CI, so their
-      # rendered content (ciphertext under data/stringData, plus SOPS' own metadata block)
-      # cannot and should not pass Kubernetes schema validation. Kustomize itself doesn't
-      # need decryption to build though: it just treats the encrypted Secret as an opaque
-      # resource, so `kustomize build` still validates the surrounding kustomization graph.
-      # Secret content is checked separately by the verify-sops-encryption job instead.
+      # Same script as the pre-commit hook, so the kubeconform flags live in one place.
+      # Secrets are SOPS-encrypted and never decrypted in CI: kustomize builds them as
+      # opaque resources, kubeconform skips them, and the verify-sops-encryption job
+      # checks their content instead (see the header of the script).
       - name: kustomize build + kubeconform schema validation
-        run: |
-          set -euo pipefail
-          for root in apps infra clusters/my-cluster; do
-            echo "::group::$root"
-            kustomize build "$root" | kubeconform \
-              -summary \
-              -strict \
-              -skip Secret \
-              -ignore-missing-schemas \
-              -schema-location default \
-              -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json'
-            echo "::endgroup::"
-          done
+        run: ./scripts/validate-manifests.sh
 
   verify-sops-encryption:
     name: Verify secrets are SOPS-encrypted

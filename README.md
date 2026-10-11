@@ -100,8 +100,8 @@ After cloning, install the git hooks once (git hooks are not versioned by design
 config-install/install-git-hooks.sh --install-tools
 ```
 
-`--install-tools` also installs the linters (yamllint, kubeconform, gitleaks, actionlint,
-shellcheck), pinned to the same versions CI uses. Drop the flag if you already have them.
+`--install-tools` also installs the tools (kustomize, yamllint, kubeconform, gitleaks,
+actionlint, shellcheck), pinned to the same versions CI uses. Drop the flag if you already have them.
 
 The `pre-commit` hook then runs the CI checks on the staged tree before each commit:
 yamllint, `kustomize build` + kubeconform on the touched roots, SOPS encryption checks,

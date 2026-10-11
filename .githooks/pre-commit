@@ -7,8 +7,8 @@
 #
 # Checks (in order, all of them run — you get the full report, not just the first error):
 #   1. yamllint            (same .yamllint.yaml as CI)
-#   2. kustomize build     (only the roots touched by the commit)
-#   3. kubeconform         (schema validation, Secrets skipped like in CI)   [optional tool]
+#   2. kustomize build     (only the roots touched by the commit)  } scripts/validate-manifests.sh,
+#   3. kubeconform         (schema validation, Secrets skipped)    } shared with CI [kubeconform optional]
 #   4. SOPS encryption     (scripts/check-sops-encryption.sh, shared with CI)
 #   5. plaintext Secret    (a `kind: Secret` outside a *.enc.yaml file)
 #   6. actionlint          (staged GitHub workflows)                        [optional tool]
@@ -136,41 +136,22 @@ if [[ ${#roots[@]} -gt 0 ]]; then
   mapfile -t roots < <(printf '%s\n' "${roots[@]}" | sort -u)
 fi
 
-have_kubeconform=0
-command -v kubeconform >/dev/null 2>&1 && have_kubeconform=1
-
 if [[ ${#roots[@]} -eq 0 ]]; then
   skip "kustomize build" "no manifest staged"
 else
+  # Same script as CI, run against the snapshot. kubeconform is optional here: without
+  # it only the kustomize build is checked, and CI still runs the schema validation.
+  command -v kubeconform >/dev/null 2>&1 \
+    || skip "kubeconform" "not installed — config-install/install-git-hooks.sh --install-tools"
   for root in "${roots[@]}"; do
-    start "kustomize build $root"
-    if ! build=$( (cd "$snapshot" && kustomize build "$root") 2>&1 ); then
-      if ! command -v kustomize >/dev/null 2>&1; then
-        report_fail "kustomize build $root: kustomize not installed"
-      else
-        report_fail "kustomize build $root"
-        printf '%s\n' "$build" | sed 's/^/       /'
-      fi
-      continue
-    fi
-    pass "kustomize build $root"
-
-    # Secrets are SOPS-encrypted and never decrypted here, so their rendered ciphertext
-    # cannot pass schema validation — skipped, exactly like in CI, and covered by check 4.
-    if [[ $have_kubeconform -eq 1 ]]; then
-      start "kubeconform $root"
-      if out=$(printf '%s\n' "$build" | kubeconform \
-        -summary -strict -skip Secret -ignore-missing-schemas \
-        -schema-location default \
-        -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' 2>&1); then
-        pass "kubeconform $root"
-      else
-        report_fail "kubeconform $root"
-        printf '%s\n' "$out" | sed 's/^/       /'
-      fi
+    start "kustomize build + kubeconform $root"
+    if out=$("$snapshot/scripts/validate-manifests.sh" --root "$snapshot" --kubeconform-optional "$root" 2>&1); then
+      pass "kustomize build + kubeconform $root"
+    else
+      report_fail "kustomize build + kubeconform $root"
+      printf '%s\n' "$out" | sed 's/^/       /'
     fi
   done
-  [[ $have_kubeconform -eq 0 ]] && skip "kubeconform" "not installed — config-install/install-git-hooks.sh --install-tools"
 fi
 
 # --- 4. SOPS encryption ---------------------------------------------------------------
