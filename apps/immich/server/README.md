@@ -13,25 +13,15 @@ To ensure backups work correctly, go to the web UI (photos.kouidri.fr) and follo
 
 ### Restore from Backup
 
-If data is lost on the server side, the backup archive contains only the `library` folder.
+The archive holds the whole `server-immich-pvc` volume (library, uploads,
+thumbnails...). It is only half of Immich: restore it together with the
+database dump of the same day, as described in `docs/backups/README.md`.
 
-To restore:
-
-1. Extract the archive  
-2. Place the `library` folder on the Immich volume  
-3. In the web UI, go to **Administration** → **Jobs**  
-4. Run **Generate Thumbnails**
+If thumbnails are missing afterwards, go to **Administration** → **Jobs** in the
+web UI and run **Generate Thumbnails**.
 
 ### Crontask
 
-Do
-
-```bash
-crontab -e
-```
-
-And add this line (adapt do correct location if needed)
-
-```bash
-0 3 * * * /home/ubuntu/k3s-personal-servers/backups/general_pvc_backup.sh -n immich -N immich-server -p server-immich-pvc >> /home/ubuntu/backups/immich/backup-immich-server.log 2>&1
-```
+Archived nightly by the host cron with `backups/general_pvc_backup.sh`, see the
+`-- Immich --` entries in `backups/crontab.bak` (the single source for those lines)
+and `docs/backups/README.md` for the restore procedure.

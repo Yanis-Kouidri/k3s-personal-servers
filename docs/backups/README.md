@@ -53,6 +53,7 @@ Only a **higher** count is reported as a failure.
 
 Last run, 2026-09-15: Immich 67 tables / 5855 assets, n8n 139 tables / 5
 workflows, SonarQube 164 tables / 13717 rules — all matching production.
+Authentik was added to the script afterwards and was not part of that run.
 
 ### Automatically, every week
 
@@ -159,7 +160,7 @@ had since resolved to the node's IPv6 address — drift, not corruption.
 
 ## Restoring the mail store
 
-Same as any PVC archive below, with `statefulset/stalwart` as the workload to
+Same as any PVC archive above, with `statefulset/stalwart` as the workload to
 scale down, and one difference: **empty the volume directory before extracting**
 (`sudo find "$DIR" -mindepth 1 -delete`). Extracting over it would leave the
 current WAL files (`*.log`) next to the restored ones, and RocksDB replays what
@@ -187,8 +188,9 @@ archive: exit 0, all subspaces exported.
 - The 2 generations kept on the node and the copy pulled by
   `get_backup_folder.sh` are the whole story. There is no offsite copy beyond
   that machine.
-- Backups are verified by `verify-restore.sh` only when someone runs it; nothing
-  runs it on a schedule yet.
+- The weekly restore-verify CronJobs compare against fixed thresholds, not
+  against production. The exact comparison (`verify-restore.sh`) only runs when
+  someone runs it.
 - Every Immich and SonarQube dump taken before 2026-09-15 is 0 bytes: a failing
   `pg_dump` exited 0 and the retention step deleted the previous ones anyway.
   Fixed in commits 661fefa and f5979a1. The host archives of those PVCs from

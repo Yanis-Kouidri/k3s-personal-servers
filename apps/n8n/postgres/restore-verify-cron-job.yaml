@@ -17,8 +17,9 @@ metadata:
   name: n8n-restore-verify
   namespace: n8n
 spec:
-  # Weekly, staggered across the three so they never restore at the same time --
-  # they compete for the same disk.
+  # Weekly, staggered across the four (immich 04:00, n8n 04:30, sonarqube 05:00,
+  # authentik 05:30) so they never restore at the same time -- they compete for
+  # the same disk.
   schedule: "30 4 * * 0"
   concurrencyPolicy: Forbid
   startingDeadlineSeconds: 3600

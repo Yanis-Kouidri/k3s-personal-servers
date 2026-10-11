@@ -15,6 +15,9 @@ Currently running:
 - **Envoy API Gateway** - Reverse proxy
 - **Wireguard** - Fast and secure VPN
 - **n8n** - Workflow automation platform
+- **Authentik** - Identity provider (SSO)
+- **Stalwart** + **Bulwark** - Mail server and its webmail
+- **CrowdSec** - Collaborative intrusion detection, with a host firewall bouncer
 - And more to come…
 
 ### Personal website

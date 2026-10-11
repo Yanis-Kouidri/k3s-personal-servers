@@ -241,9 +241,31 @@ See `docs/backups/README.md` for what is backed up, how to check a backup is
 actually restorable (`scripts/verify-restore.sh`), and the restore procedure --
 including the traps that only show up when you try it.
 
-Look on `./backups/` folder to save all local data on a remote computer.
+The host side of the backups is a crontab: install `backups/crontab.bak` with
+`crontab backups/crontab.bak` (create the log directories it writes to first,
+cron fails silently otherwise), and `backups/k8s-backups` into
+`/etc/logrotate.d/`. `backups/README.md` explains how to pull the archives to
+another machine.
 
-Look for `backup.sh` files over differents servicies to locally save data
+## Host tuning
+
+Each file carries its own explanation in its header.
+
+```bash
+# journald capped at 1G
+sudo install -D -m 0644 config-install/99-journald-size.conf /etc/systemd/journald.conf.d/99-journald-size.conf
+sudo systemctl restart systemd-journald
+
+# inotify limits, TCP BBR
+sudo cp config-install/tcp-bbr.conf /etc/modules-load.d/tcp-bbr.conf
+sudo modprobe tcp_bbr
+sudo cp config-install/99-sysctl-tuning.conf /etc/sysctl.d/99-sysctl-tuning.conf
+sudo sysctl --system
+
+# fq qdisc on ens3, paired with BBR (applied at next boot)
+sudo install -D -m 0644 config-install/10-netplan-ens3-fq.conf /etc/systemd/network/10-netplan-ens3.network.d/fq.conf
+sudo tc qdisc replace dev ens3 root fq
+```
 
 ## Firewall
 

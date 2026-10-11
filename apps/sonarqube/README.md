@@ -1,57 +1,36 @@
 # SonarQube Community
 
-## Prerequisites
+Available at `https://sonarqube.kouidri.fr`. Managed by Flux, together with its
+PostgreSQL database.
 
-- HTTPRoute CRD must be installed
-- The secret `sonarqube-postgres-secret` must exist in the `sonarqube` namespace (created manually from `secrets.enc.yaml`)
+## Layout
 
-## FluxCD Management
+- `helm-release.yaml`: the `sonarqube` chart, values from `sonar-values.yaml`
+- `postgres-helm-release.yaml`: the Bitnami `postgresql` chart, values from
+  `postgres-values.yaml`. The image is pinned by digest there: the chart
+  defaults to `bitnami/postgresql:latest`, so bumping it is a deliberate step
+  (backup first).
+- `secrets.enc.yaml`: `sonarqube-postgres-secret`, SOPS-encrypted and decrypted
+  by Flux at apply time
+- `backup-cron-job.yaml` / `restore-verify-cron-job.yaml`: nightly dump and
+  weekly restore test, see `docs/backups/README.md`
 
-SonarQube and its PostgreSQL database are now managed by **FluxCD**.
+Both values files are rendered into ConfigMaps by `kustomization.yaml`
+(`sonarqube-values`, `postgres-sonarqube-values`).
 
-### Automatic upgrade workflow
+## Upgrades
 
-1. **Renovate** updates `buildNumber: "26.6.0.123539"` in `sonar-values.yaml` when a new SonarQube version is released
-2. Flux detects the change in the Git repository
-3. Kustomize regenerates the `sonarqube-values` ConfigMap from the updated `sonar-values.yaml`
-4. The `HelmRelease` detects the ConfigMap change and triggers a Helm upgrade to the latest chart version
-5. SonarQube is upgraded automatically
+1. Renovate bumps `buildNumber` in `sonar-values.yaml` when SonarQube is
+   released, and the chart versions in the HelmReleases.
+2. Once merged, Flux updates the ConfigMap. The HelmRelease picks the new values
+   up at its next interval (5 min), or right away with
+   `flux reconcile hr sonarqube -n sonarqube`.
 
 > **Note:** It may be necessary to visit `https://sonarqube.kouidri.fr/setup` to run database migrations after an upgrade.
 
-### Manual approach (alternative)
+## Backup
 
-If you need to manage SonarQube manually without Flux:
-
-```bash
-# Install PostgreSQL
-helm upgrade --install --create-namespace -n sonarqube postgres-sonarqube oci://registry-1.docker.io/bitnamicharts/postgresql -f postgres-values.yaml
-
-# Install SonarQube
-helm upgrade --install --create-namespace -n sonarqube sonarqube sonarqube/sonarqube -f sonar-values.yaml
-```
-
-### Secrets
-
-The secret `sonarqube-postgres-secret` is encrypted with SOPS (`secrets.enc.yaml`). To create/update it:
-
-```bash
-sops --decrypt secrets.enc.yaml | kubectl apply -f -
-```
-
-### Database backup
-
-The log directory must exist first: cron opens the `>>` redirection before
-running the script, so a missing directory means the script never starts and
-nothing reports it.
-
-```bash
-mkdir -p /home/ubuntu/backups/sonarqube
-crontab -e
-```
-
-Add this line (also in `backups/crontab.bak`):
-
-```bash
-0 3 * * * /home/ubuntu/k3s-personal-servers/backups/general_pvc_backup.sh -n sonarqube -N sonarqube-postgres -p backup-sonarqube-pvc >> /home/ubuntu/backups/sonarqube/backup-sonarqube.log 2>&1
-```
+The database dump is taken by `backup-cron-job.yaml` into `backup-sonarqube-pvc`.
+Archived nightly by the host cron with `backups/general_pvc_backup.sh`, see the
+`-- Sonarqube --` entries in `backups/crontab.bak` (the single source for those lines)
+and `docs/backups/README.md` for the restore procedure.
