@@ -2,30 +2,21 @@
 
 ## Get a peer config file
 
-Adapt to peer2, peer3, or PEERS varibales configure in config-map etc.
+Peers are named (`PEERS` in `config-map.yaml`), and each one gets a
+`/config/peer_<name>/` directory. For the `pc` peer:
 
 ```bash
-    kubectl exec deployments/wireguard -- cat /config/peer1/peer1.conf
+kubectl exec -n wireguard deployment/wireguard -- cat /config/peer_pc/peer_pc.conf
 ```
 
 ## Show a peer QR code
 
-Adapt pc to 1, 2, 3 or PEERS varibales configure in config-map etc.
-
 ```bash
-    kubectl exec deployments/wireguard -- /app/show-peer pc
+kubectl exec -n wireguard deployment/wireguard -- /app/show-peer pc
 ```
 
 ## Backup
 
-Open crontab
-
-```bash
-crontab -e
-```
-
-Add this line:
-
-```bash
-0 3 * * * /home/ubuntu/k3s-personal-servers/backups/general_pvc_backup.sh -n wireguard -N wireguard -p wireguard-pvc >> /home/ubuntu/backups/wireguard/backup-wireguard.log 2>&1
-```
+Archived nightly by the host cron with `backups/general_pvc_backup.sh`, see the
+`-- WireGuard --` entries in `backups/crontab.bak` (the single source for those lines)
+and `docs/backups/README.md` for the restore procedure.

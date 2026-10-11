@@ -1,43 +1,37 @@
 # Minecraft
 
-## Replace world map: (adapte pod name)
+## Replace the world map
 
-Delete previous one
+Delete the previous one:
 
 ```bash
-k exec deployments/minecraft-server -- rm -rf /data/world
+kubectl exec -n minecraft deployment/minecraft-server -- rm -rf /data/world
 ```
 
-Copy the new one
+Copy the new one (`kubectl cp` needs a pod name):
 
 ```bash
-k cp world minecraft-server-569794569d-ltz7v:/data/world
+POD=$(kubectl get pod -n minecraft -l app=minecraft-server -o jsonpath='{.items[0].metadata.name}')
+kubectl cp world "minecraft/$POD:/data/world"
 ```
 
-Give correct right
+Give it the right owner:
 
 ```bash
-k exec deployments/minecraft-server -- chown -R minecraft:minecraft /data/world
+kubectl exec -n minecraft deployment/minecraft-server -- chown -R minecraft:minecraft /data/world
 ```
 
-## User rcon
+## RCON console
 
 ```bash
-k exec deployments/minecraft-server -it -- rcon-cli
+kubectl exec -n minecraft -it deployment/minecraft-server -- rcon-cli
 ```
 
 ## Backup
 
-### Crontask
+The archive is taken with `-m minecraft-server`: autosave is turned off and the
+world flushed through RCON for the duration of the archive.
 
-Do
-
-```bash
-crontab -e
-```
-
-And add this line (adapt do correct location if needed)
-
-```bash
-0 3 * * * /home/ubuntu/k3s-personal-servers/backups/general_pvc_backup.sh -n minecraft -N minecraft -p minecraft-pvc -m minecraft-server >> /home/ubuntu/backups/minecraft/backup-minecraft.log 2>&1
-```
+Archived nightly by the host cron with `backups/general_pvc_backup.sh`, see the
+`-- Minecraft --` entries in `backups/crontab.bak` (the single source for those lines)
+and `docs/backups/README.md` for the restore procedure.

@@ -1,13 +1,10 @@
 # TOR
 
+Onion service of the personal website. Its hostname and keys live on the
+`tor-hostname-data` volume: losing it means a new `.onion` address.
+
 ## Backup
 
-```bash
-crontab -e
-```
-
-Add:
-
-```bash
-0 3 * * * /home/ubuntu/k3s-personal-servers/backups/general_pvc_backup.sh -n envoy-gateway-system -N tor -p tor-hostname-data >> /home/ubuntu/backups/envoy-gateway-system/backup-tor.log 2>&1
-```
+Archived nightly by the host cron with `backups/general_pvc_backup.sh`, see the
+`-- Tor --` entries in `backups/crontab.bak` (the single source for those lines)
+and `docs/backups/README.md` for the restore procedure.

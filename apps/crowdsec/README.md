@@ -2,24 +2,13 @@
 
 ## Installation
 
-```bash
-helm repo add crowdsec https://crowdsecurity.github.io/helm-charts
-helm repo update
-```
+Managed by Flux: `helmrelease.yaml` installs the `crowdsec` chart (version pinned
+there, bumped by Renovate) with the values from `values.yaml`, rendered into the
+`crowdsec-values` ConfigMap by `kustomization.yaml`. Nothing to install by hand
+in the cluster. After editing `values.yaml`, `flux reconcile hr crowdsec -n
+crowdsec` applies it without waiting for the HelmRelease interval.
 
-```bash
-kubectl create ns crowdsec
-```
-
-```bash
-helm install crowdsec crowdsec/crowdsec -n crowdsec -f values.yaml
-```
-
-Reinstall with a new `values.yaml` config:
-
-```bash
-helm upgrade --install crowdsec crowdsec/crowdsec -n crowdsec -f values.yaml
-```
+The bouncer below is the only part installed on the host.
 
 ## Bouncer component
 
