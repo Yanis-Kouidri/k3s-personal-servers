@@ -20,6 +20,12 @@ spec:
   failedJobsHistoryLimit: 1
   jobTemplate:
     spec:
+      # A hung run (stuck connection, lock wait) would otherwise hold the Job
+      # forever, and with concurrencyPolicy: Forbid block every later run without
+      # failing, so no alert. Past the deadline the Job fails with DeadlineExceeded
+      # and job-monitor reports it.
+      # Normally under a minute. 30 min leaves room for the databases to grow.
+      activeDeadlineSeconds: 1800
       backoffLimit: 1
       template:
         metadata:
