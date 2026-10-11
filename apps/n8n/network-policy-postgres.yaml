@@ -22,7 +22,7 @@ spec:
               kubernetes.io/metadata.name: n8n
           podSelector:
             matchLabels:
-              service: postgres-backup
+              service: n8n-db-backup
       ports:
         - protocol: TCP
           port: 5432

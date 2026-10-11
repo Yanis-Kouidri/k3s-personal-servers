@@ -14,6 +14,7 @@ Kubernetes secrets are encrypted with SOPS and age.
 ## Structure
 
 - `apps/`: Contains yaml manifests for user applications of the cluster such as n8n, mail, crowdsec, immich, authentik, minecraft-server, personal-website-v2, sonarqube and wireguard-vpn. One folder per app
+- `apps/components/`: Kustomize components shared by several apps. `postgres-backup` holds the scripts run by every `*-db-backup` and `*-restore-verify` CronJob
 - `backups/`: Bash scripts for backups
 - `clusters/`: Flux manifests
 - `config-install/`: Install or maintenance scripts

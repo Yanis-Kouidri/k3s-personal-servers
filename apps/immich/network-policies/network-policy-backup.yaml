@@ -6,7 +6,7 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      app: postgres-backup
+      app: immich-db-backup
   policyTypes:
     - Egress
   egress:

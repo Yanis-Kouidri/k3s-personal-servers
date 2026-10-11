@@ -6,7 +6,7 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      service: postgres-backup
+      service: n8n-db-backup
   policyTypes:
     - Egress
   egress:

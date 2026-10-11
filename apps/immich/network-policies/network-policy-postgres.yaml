@@ -22,7 +22,7 @@ spec:
               kubernetes.io/metadata.name: immich
           podSelector:
             matchLabels:
-              app: postgres-backup
+              app: immich-db-backup
       ports:
         - protocol: TCP
           port: 5432

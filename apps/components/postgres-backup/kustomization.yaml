@@ -1,0 +1,17 @@
+# The scripts run by every *-db-backup and *-restore-verify CronJob, shared so a fix
+# lands in all of them at once. Include it from an app's kustomization with
+# `components: [../components/postgres-backup]` (the app's kustomization must set
+# `namespace:`, which this ConfigMap inherits), mount the `postgres-backup-scripts`
+# ConfigMap at /scripts and run `/bin/sh /scripts/<script>`. Each script documents
+# the env variables it reads.
+#
+# The name keeps its hash suffix on purpose: kustomize rewrites the reference in the
+# CronJobs, so a script change is a new ConfigMap and the next run picks it up.
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+configMapGenerator:
+  - name: postgres-backup-scripts
+    files:
+      - backup.sh
+      - restore-verify.sh
