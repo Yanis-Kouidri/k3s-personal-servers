@@ -25,6 +25,15 @@ off the VPS — which is the only copy that survives losing the node.
 The dump PVCs are themselves archived by the second layer, so a database ends up
 in both.
 
+Stalwart (mail) has no dump: everything it holds -- messages, accounts, DKIM
+keys, settings -- is one RocksDB on `stalwart-data`. A RocksDB copied while it
+is being written can be unopenable, and upstream's supported recipe is to stop
+the server and copy the directory. So that archive runs with
+`-S statefulset/stalwart`: the script scales it to 0, archives, checks no pod
+came back in the meantime (Flux puts `replicas` back on its next reconcile),
+and scales it up again -- also on error, from its exit trap. Mail is down about
+10 seconds at 03:00; sending servers retry, nothing is lost.
+
 ## Verifying a backup is restorable
 
 ```bash
@@ -147,6 +156,20 @@ Verified on 2026-09-15 with the WireGuard archive: 42 files extracted, and the
 server and peer private keys byte-identical to production. The peer `.conf` and
 `.png` files differed only on their `Endpoint` line, because `SERVERURL: "auto"`
 had since resolved to the node's IPv6 address — drift, not corruption.
+
+## Restoring the mail store
+
+Same as any PVC archive below, with `statefulset/stalwart` as the workload to
+scale down, and one difference: **empty the volume directory before extracting**
+(`sudo find "$DIR" -mindepth 1 -delete`). Extracting over it would leave the
+current WAL files (`*.log`) next to the restored ones, and RocksDB replays what
+it finds there on startup.
+
+To check an archive opens without touching production, extract it
+into a scratch pod running the same Stalwart image and run
+`stalwart --config <json pointing at it> --export /tmp/out`: the export reads
+every subspace and fails on a corrupt store. Done on 2026-10-11 with the first
+archive: exit 0, all subspaces exported.
 
 ## What is NOT backed up
 

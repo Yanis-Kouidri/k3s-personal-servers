@@ -13,6 +13,9 @@ NAME=""
 KUBECONFIG="${KUBECONFIG:-/home/ubuntu/.kube/config}"
 MC_DEPLOYMENT="" # (optional) Minecraft deployment name for RCON save-off/save-on
 MC_SAVE_OFF_DONE=false # tracks whether save-off was issued, so cleanup knows to re-enable it
+STOP_WORKLOAD="" # (optional) <kind>/<name> scaled to 0 for the duration of the archive
+STOP_REPLICAS="" # replica count to restore; set once the workload has been scaled down
+STOP_SELECTOR="" # label selector of the stopped workload's pods
 
 # --- Colors ---
 RED='\033[0;31m'
@@ -36,6 +39,50 @@ mc_rcon() {
     fi
 }
 
+# Label selector ("k=v,k=v") matching the pods of $STOP_WORKLOAD
+workload_selector() {
+    kubectl get -n "$NAMESPACE" "$STOP_WORKLOAD" -o json \
+        | jq -r '.spec.selector.matchLabels // {} | to_entries | map("\(.key)=\(.value)") | join(",")'
+}
+
+# Fails if any pod of the stopped workload exists. Flux reconciles every 10 min
+# and puts `replicas` back to what git says; a pod started while tar reads the
+# volume would make the archive inconsistent, so it must not be kept.
+assert_workload_stopped() {
+    local pods
+    pods=$(kubectl get pods -n "$NAMESPACE" -l "$STOP_SELECTOR" -o name)
+    if [[ -n "$pods" ]]; then
+        log "${RED}Error: '$STOP_WORKLOAD' came back while it should be stopped (Flux reconcile?): $pods${NC}"
+        return 1
+    fi
+}
+
+stop_workload() {
+    STOP_SELECTOR=$(workload_selector)
+    if [[ -z "$STOP_SELECTOR" ]]; then
+        log "${RED}Error: unable to read the pod selector of '$STOP_WORKLOAD' ($NAMESPACE).${NC}"
+        return 1
+    fi
+    STOP_REPLICAS=$(kubectl get -n "$NAMESPACE" "$STOP_WORKLOAD" -o jsonpath='{.spec.replicas}')
+    log "Stopping $STOP_WORKLOAD (was $STOP_REPLICAS replica(s))..."
+    kubectl scale -n "$NAMESPACE" "$STOP_WORKLOAD" --replicas=0
+    # Waits for the pods to be gone, not just for the scale to be accepted: the
+    # application only flushes and closes its files on SIGTERM, within its
+    # terminationGracePeriodSeconds.
+    kubectl wait --for=delete pod -n "$NAMESPACE" -l "$STOP_SELECTOR" --timeout=180s
+    assert_workload_stopped
+}
+
+start_workload() {
+    log "Starting $STOP_WORKLOAD again ($STOP_REPLICAS replica(s))..."
+    kubectl scale -n "$NAMESPACE" "$STOP_WORKLOAD" --replicas="$STOP_REPLICAS"
+    STOP_REPLICAS=""
+    if ! kubectl rollout status -n "$NAMESPACE" "$STOP_WORKLOAD" --timeout=300s; then
+        log "${RED}Error: '$STOP_WORKLOAD' did not become ready again. Check it manually!${NC}"
+        return 1
+    fi
+}
+
 usage() {
     echo -e "${YELLOW}Usage: $0 -n <namespace> -p <pvc_name> -N <backup_name> [-s <sub_path>]${NC}"
     echo -e "  -n  Kubernetes Namespace (e.g., personal-website-v2)"
@@ -45,21 +92,27 @@ usage() {
     echo -e "  -m  (Optional) Minecraft deployment name (e.g., minecraft-server)."
     echo -e "      When set, runs 'save-off' + 'save-all flush' via RCON before the"
     echo -e "      archive, and 'save-on' after (also on error, via cleanup trap)."
+    echo -e "  -S  (Optional) Workload to stop during the archive, as <kind>/<name>"
+    echo -e "      (e.g., statefulset/stalwart). Scaled to 0 before, back to its replica"
+    echo -e "      count after (also on error, via cleanup trap). For stores that are only"
+    echo -e "      consistent on disk once the application has shut down (RocksDB, ...)."
     echo -e "Example: ${YELLOW}$0 -n wireguard -N wireguard -p wireguard-pvc${NC}"
     echo -e "Example (Minecraft): ${YELLOW}$0 -n minecraft -N minecraft -p minecraft-pvc -m minecraft-server${NC}"
+    echo -e "Example (stopped):   ${YELLOW}$0 -n mail -N stalwart -p stalwart-data -S statefulset/stalwart${NC}"
     echo -e "This script works well in cron jobs for automated backups."
     exit 1
 }
 
 # --- Argument Parsing ---
 
-while getopts "n:p:N:s:m:h" opt; do
+while getopts "n:p:N:s:m:S:h" opt; do
   case $opt in
     n) NAMESPACE="$OPTARG" ;;
     p) PVC="$OPTARG" ;;
     N) NAME="$OPTARG" ;;
     s) SUB_PATH="$OPTARG" ;;
     m) MC_DEPLOYMENT="$OPTARG" ;;
+    S) STOP_WORKLOAD="$OPTARG" ;;
     h) usage ;;
     *) usage ;;
   esac
@@ -93,6 +146,10 @@ cleanup() {
     # (e.g. the script errored out mid-backup), make sure save-on is issued anyway.
     if [[ "$MC_SAVE_OFF_DONE" == true ]]; then
         mc_rcon "save-on" || log "${RED}Warning: failed to re-enable autosave via cleanup trap. Check manually!${NC}"
+    fi
+    # Same safety net for a stopped workload: never leave it scaled to 0.
+    if [[ -n "$STOP_REPLICAS" ]]; then
+        start_workload || log "${RED}Warning: failed to restart '$STOP_WORKLOAD' via cleanup trap. Check manually!${NC}"
     fi
     exec 200>&-
     rm -f "$LOCK_FILE"
@@ -155,6 +212,10 @@ if [[ -n "$MC_DEPLOYMENT" ]]; then
     sleep 2
 fi
 
+if [[ -n "$STOP_WORKLOAD" ]]; then
+    stop_workload
+fi
+
 # Create archive
 # --numeric-owner (point 2): preserve UID/GID as numbers, safe for cross-host restore
 # --checkpoint (point 5): lightweight progress instead of full file listing (-v)
@@ -167,6 +228,16 @@ sudo tar --use-compress-program=zstd --acls --numeric-owner \
 if [[ -n "$MC_DEPLOYMENT" ]]; then
     mc_rcon "save-on"
     MC_SAVE_OFF_DONE=false
+fi
+
+# Restart as soon as the copy is done, after checking nothing reopened the
+# volume while tar was reading it.
+if [[ -n "$STOP_WORKLOAD" ]]; then
+    if ! assert_workload_stopped; then
+        sudo rm -f "$BACKUP_FILE"
+        exit 1
+    fi
+    start_workload
 fi
 
 # Integrity check (point 3): make sure the archive isn't corrupted before trusting it
