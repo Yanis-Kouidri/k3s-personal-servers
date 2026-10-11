@@ -41,11 +41,16 @@ sops --decrypt secrets.enc.yaml | kubectl apply -f -
 
 ### Database backup
 
+The log directory must exist first: cron opens the `>>` redirection before
+running the script, so a missing directory means the script never starts and
+nothing reports it.
+
 ```bash
+mkdir -p /home/ubuntu/backups/sonarqube
 crontab -e
 ```
 
-Add this line:
+Add this line (also in `backups/crontab.bak`):
 
 ```bash
 0 3 * * * /home/ubuntu/k3s-personal-servers/backups/general_pvc_backup.sh -n sonarqube -N sonarqube-postgres -p backup-sonarqube-pvc >> /home/ubuntu/backups/sonarqube/backup-sonarqube.log 2>&1
