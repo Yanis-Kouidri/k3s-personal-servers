@@ -1,0 +1,122 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: authentik-db-backup
+  namespace: authentik
+spec:
+  schedule: "0 2 * * *"
+  concurrencyPolicy: Forbid
+  # A CronJob that misses more than 100 schedules (node down, cluster off for a few
+  # days) stops scheduling altogether and never recovers on its own. This bounds how
+  # far behind a missed run may start, so the counter never reaches that limit.
+  startingDeadlineSeconds: 3600
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            # Selected by network-policies/network-policy-backup.yaml (egress to the DB)
+            # and allowed as a source by network-policy-postgresql.yaml -- keep both in sync.
+            app: authentik-db-backup
+        spec:
+          priorityClassName: background
+          # None of this container's processes talk to the Kubernetes API, so the
+          # ServiceAccount token has no reason to be mounted.
+          automountServiceAccountToken: false
+          restartPolicy: OnFailure
+          # Unlike the older backup PVCs, this one never held root-owned dumps, so
+          # the job can run as the image's own postgres user (uid 70 on alpine).
+          # local-path creates the volume directory world-writable.
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 70
+            runAsGroup: 70
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: postgres-backup
+              # Same major as the server (postgres 17, from the authentik chart). A
+              # newer pg_dump would still read the server, but its archive format
+              # can be too new for the pg_restore 17 that a real restore into the
+              # production database would use. Bump together with the server.
+              image: postgres:17.11-alpine
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop:
+                    - ALL
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -eu
+
+                  DB_HOST=authentik-postgresql
+                  DATE="$(date +%Y-%m-%d_%H-%M-%S)"
+                  BACKUP_FILE="/backups/authentik_db_${DATE}.dump"
+
+                  # A dump that dies midway (DB restarting, disk full) still leaves a
+                  # truncated file behind, which the rotation below would happily count
+                  # as a valid backup. Drop it unless the script reaches the end.
+                  trap 'rm -f "$BACKUP_FILE"' EXIT
+
+                  # k3s programs a new pod's NetworkPolicy rules slightly after the pod
+                  # gets its IP, so the very first connection out of a freshly created
+                  # backup pod is refused. Without this wait the first attempt always
+                  # fails and only the OnFailure restart succeeds.
+                  i=0
+                  until pg_isready -h "$DB_HOST" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -q; do
+                    i=$((i + 1))
+                    if [ "$i" -ge 30 ]; then
+                      echo "PostgreSQL unreachable at $DB_HOST after 60s, giving up" >&2
+                      exit 1
+                    fi
+                    echo "waiting for PostgreSQL at $DB_HOST..."
+                    sleep 2
+                  done
+
+                  echo "Starting authentik PostgreSQL backup..."
+                  # Custom format: compressed, and restorable with pg_restore
+                  # --no-owner into a database whose roles differ from production.
+                  PGPASSWORD="$POSTGRES_PASSWORD" pg_dump \
+                    -h "$DB_HOST" \
+                    -U "$POSTGRES_USER" \
+                    -d "$POSTGRES_DB" \
+                    --format=custom \
+                    --file="$BACKUP_FILE"
+
+                  trap - EXIT
+
+                  # Only reached once the dump above succeeded: with `set -e` a failed
+                  # pg_dump exits here and fails the Job, so the retention below can no
+                  # longer delete good backups in the wake of a broken run.
+                  find /backups -type f -mtime +7 -name "*.dump" -delete
+                  echo "Backup completed: $BACKUP_FILE ($(du -h "$BACKUP_FILE" | cut -f1))"
+              env:
+                # Must match the postgresql subchart's defaults in values.yaml.
+                - name: POSTGRES_USER
+                  value: authentik
+                - name: POSTGRES_DB
+                  value: authentik
+                - name: POSTGRES_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: authentik-postgresql-credentials
+                      key: password
+              resources:
+                requests:
+                  cpu: "100m"
+                  memory: "128Mi"
+                limits:
+                  cpu: "500m"
+                  memory: "512Mi"
+              volumeMounts:
+                - name: backup-storage
+                  mountPath: /backups
+          volumes:
+            - name: backup-storage
+              persistentVolumeClaim:
+                claimName: backup-authentik-pvc

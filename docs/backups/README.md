@@ -15,6 +15,7 @@ kept 7 days:
 | Immich | `immich-db-backup` | plain SQL | `backup-immich-pvc` |
 | n8n | `n8n-db-backup` | custom (`pg_restore`) | `backup-n8n-pvc` |
 | SonarQube | `sonarqube-db-backup` | plain SQL | `backup-sonarqube-pvc` |
+| Authentik | `authentik-db-backup` | custom (`pg_restore`) | `backup-authentik-pvc` |
 
 **Whole-PVC archives**, taken by host cron at 03:00 with
 `backups/general_pvc_backup.sh`, into `/home/ubuntu/backups/<ns>/<name>/`, 2
@@ -27,7 +28,7 @@ in both.
 ## Verifying a backup is restorable
 
 ```bash
-scripts/verify-restore.sh              # all three
+scripts/verify-restore.sh              # all four
 scripts/verify-restore.sh n8n          # just one
 ```
 
@@ -46,10 +47,10 @@ workflows, SonarQube 164 tables / 13717 rules — all matching production.
 
 ### Automatically, every week
 
-Three CronJobs do a narrower version of the same thing on Sunday mornings —
+Four CronJobs do a narrower version of the same thing on Sunday mornings —
 `immich-restore-verify` at 04:00, `n8n-restore-verify` at 04:30,
-`sonarqube-restore-verify` at 05:00, staggered because they compete for the same
-disk.
+`sonarqube-restore-verify` at 05:00, `authentik-restore-verify` at 05:30,
+staggered because they compete for the same disk.
 
 Each one starts a PostgreSQL inside its own container against an emptyDir,
 restores this namespace's newest dump into it, and fails the Job if the dump is
@@ -88,6 +89,12 @@ kubectl scale deploy/immich-server -n immich --replicas=1
 
 n8n is the same shape but `pg_restore -d n8n --no-owner --no-privileges` instead
 of `psql -f`, and the deployment to scale is `deploy/n8n`.
+
+Authentik too, with `pg_restore -d authentik`, run as the `authentik` user with
+the password from `$POSTGRES_PASSWORD_FILE` in `authentik-postgresql-0`. Scale
+down **both** `deploy/authentik-server` and `deploy/authentik-worker` first.
+The dump is taken with a PostgreSQL 17 client to match the server: a newer
+`pg_dump` writes an archive the server's `pg_restore` 17 cannot read.
 
 ### Three things that will bite
 

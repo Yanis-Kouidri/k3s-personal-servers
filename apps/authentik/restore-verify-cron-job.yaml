@@ -1,0 +1,109 @@
+# Weekly proof that the backup this namespace produces can actually be restored.
+# Same design as the immich, n8n and sonarqube ones (see docs/backups/README.md):
+# no Kubernetes API access and no network -- the namespace's default-deny covers
+# it -- a PostgreSQL started inside the container against an emptyDir, and this
+# namespace's backup volume mounted READ-ONLY. Nothing it can reach is production.
+#
+# When it fails the Job fails, and the job-monitor CronJob in `monitoring` reports
+# it to Telegram like any other failed Job.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: authentik-restore-verify
+  namespace: authentik
+spec:
+  # Staggered after sonarqube-restore-verify (05:00): they compete for the same disk.
+  schedule: "30 5 * * 0"
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 3600
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        metadata:
+          labels:
+            app: authentik-restore-verify
+        spec:
+          priorityClassName: background
+          restartPolicy: Never
+          automountServiceAccountToken: false
+          # initdb refuses to run as root. uid 70 is postgres in the alpine image.
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 70
+            runAsGroup: 70
+            fsGroup: 70
+            seccompProfile:
+              type: RuntimeDefault
+          containers:
+            - name: verify
+              # Same major as the server, as in backup-cron-job.yaml.
+              image: postgres:17.11-alpine
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop:
+                    - ALL
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -eu
+
+                  DUMP=$(ls -t /backups/*.dump 2>/dev/null | head -1)
+                  if [ -z "$DUMP" ] || [ ! -s "$DUMP" ]; then
+                    echo "no usable dump in /backups -- backups are not being produced" >&2
+                    exit 1
+                  fi
+                  echo "verifying $DUMP ($(du -h "$DUMP" | cut -f1))"
+
+                  # A throwaway cluster in this container's own emptyDir.
+                  export PGDATA=/scratch/pgdata
+                  initdb -U postgres --auth=trust -D "$PGDATA" >/dev/null
+                  pg_ctl -D "$PGDATA" \
+                    -o "-k /scratch -c listen_addresses=''" -w start >/dev/null
+                  createdb -h /scratch -U postgres verify
+                  pg_restore -h /scratch -U postgres -d verify --exit-on-error \
+                    --no-owner --no-privileges "$DUMP"
+
+                  TABLES=$(psql -h /scratch -U postgres -d verify -tAc \
+                    "SELECT count(*) FROM information_schema.tables WHERE table_schema='public';")
+                  USERS=$(psql -h /scratch -U postgres -d verify -tAc \
+                    "SELECT count(*) FROM authentik_core_user;")
+                  FLOWS=$(psql -h /scratch -U postgres -d verify -tAc \
+                    "SELECT count(*) FROM authentik_flows_flow;")
+                  echo "restored $TABLES tables, $USERS users, $FLOWS flows"
+
+                  # Thresholds rather than an exact match against production: the
+                  # live database keeps moving, while a dump that restored to
+                  # nothing does not reach these by accident. Production had
+                  # 230 tables, 4 users and 15 flows when this was written.
+                  [ "$TABLES" -ge 150 ] || {
+                    echo "only $TABLES tables, expected at least 150" >&2; exit 1; }
+                  [ "$USERS" -gt 0 ] || { echo "authentik_core_user restored empty" >&2; exit 1; }
+                  [ "$FLOWS" -gt 0 ] || { echo "authentik_flows_flow restored empty" >&2; exit 1; }
+                  echo "backup verified"
+              resources:
+                requests:
+                  cpu: "200m"
+                  memory: "256Mi"
+                limits:
+                  cpu: "1"
+                  memory: "1Gi"
+              volumeMounts:
+                - name: scratch
+                  mountPath: /scratch
+                - name: backups
+                  mountPath: /backups
+                  readOnly: true
+          volumes:
+            - name: scratch
+              emptyDir:
+                sizeLimit: 2Gi
+            - name: backups
+              persistentVolumeClaim:
+                claimName: backup-authentik-pvc
+                readOnly: true

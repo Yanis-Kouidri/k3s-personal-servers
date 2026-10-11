@@ -47,3 +47,7 @@
 0 3 * * * /home/ubuntu/k3s-personal-servers/backups/general_pvc_backup.sh -n minecraft -N minecraft -p minecraft-pvc -m minecraft-server >> /home/ubuntu/backups/minecraft/backup-minecraft.log 2>&1
 
 # -- Sonarqube --
+
+# -- Authentik --
+
+0 3 * * * /home/ubuntu/k3s-personal-servers/backups/general_pvc_backup.sh -n authentik -N authentik-postgres -p backup-authentik-pvc >> /home/ubuntu/backups/authentik/backup-authentik-postgres.log 2>&1

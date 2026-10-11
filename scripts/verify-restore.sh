@@ -3,7 +3,7 @@
 # production. A backup nobody has ever restored is not a backup.
 #
 # Usage:
-#   scripts/verify-restore.sh [app ...]     (default: immich n8n sonarqube)
+#   scripts/verify-restore.sh [app ...]     (default: immich n8n sonarqube authentik)
 #
 # What it does, per app:
 #   1. starts a scratch PostgreSQL pod in the app's namespace, with an emptyDir
@@ -44,6 +44,7 @@ APPS=(
   "immich|immich|backup-immich-pvc|ghcr.io/immich-app/postgres:18-vectorchord0.5.3-pgvector0.8.1|*.sql|postgres-immich-db-0|immich||asset person album"
   "n8n|n8n|backup-n8n-pvc|postgres:18.6|*.dump|postgres-0|n8n||workflow_entity credentials_entity"
   "sonarqube|sonarqube|backup-sonarqube-pvc|postgres:18.6|*.sql|postgres-sonarqube-postgresql-0|sonar|sonar|projects rules"
+  "authentik|authentik|backup-authentik-pvc|postgres:17.11-alpine|*.dump|authentik-postgresql-0|authentik||authentik_core_user authentik_flows_flow"
 )
 
 # Each image exposes its superuser password differently; this is what works in
@@ -66,6 +67,10 @@ prod_psql() {
     sonarqube) kubectl exec -n "$ns" "$pod" -- sh -c \
                  "pw=\$(cat \"\$POSTGRES_PASSWORD_FILE\"); PGPASSWORD=\$pw \
                   psql -U sonar -d $db -tAc \"$query\"" 2>/dev/null ;;
+    # Same password-file form as sonarqube, see above.
+    authentik) kubectl exec -n "$ns" "$pod" -- sh -c \
+                 "pw=\$(cat \"\$POSTGRES_PASSWORD_FILE\"); PGPASSWORD=\$pw \
+                  psql -U authentik -d $db -tAc \"$query\"" 2>/dev/null ;;
   esac | tr -d '\r' | tr -d '[:space:]'
 }
 
@@ -186,7 +191,7 @@ YAML
 }
 
 targets=("$@")
-[[ ${#targets[@]} -eq 0 ]] && targets=(immich n8n sonarqube)
+[[ ${#targets[@]} -eq 0 ]] && targets=(immich n8n sonarqube authentik)
 
 for want in "${targets[@]}"; do
   found=0
