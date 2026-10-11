@@ -33,7 +33,12 @@ fi
 
 POD=restore-verify
 
-# app|namespace|backup PVC|scratch image|dump glob|production pod|db|roles|tables
+# app|namespace|backup PVC|scratch image|uid|dump glob|production pod|db|roles|tables
+#
+# `uid` is the postgres user of the scratch image (999 on Debian, 70 on Alpine), the
+# same as in the app's restore-verify CronJob. The scratch pod runs as that user so it
+# passes Pod Security `restricted` (enforced on sonarqube), and the image's own
+# socket directory stays writable.
 #
 # `roles` are roles the dump expects to already exist. A plain-SQL dump carries
 # `ALTER TABLE ... OWNER TO <role>` statements and psql stops on the first one
@@ -41,10 +46,10 @@ POD=restore-verify
 # 29 with `role "sonar" does not exist`. pg_restore is given --no-owner instead,
 # so the custom-format dump (n8n) needs nothing here.
 APPS=(
-  "immich|immich|backup-immich-pvc|ghcr.io/immich-app/postgres:18-vectorchord0.5.3-pgvector0.8.1|*.sql|postgres-immich-db-0|immich||asset person album"
-  "n8n|n8n|backup-n8n-pvc|postgres:18.6|*.dump|postgres-0|n8n||workflow_entity credentials_entity"
-  "sonarqube|sonarqube|backup-sonarqube-pvc|postgres:18.6|*.sql|postgres-sonarqube-postgresql-0|sonar|sonar|projects rules"
-  "authentik|authentik|backup-authentik-pvc|postgres:17.11-alpine|*.dump|authentik-postgresql-0|authentik||authentik_core_user authentik_flows_flow"
+  "immich|immich|backup-immich-pvc|ghcr.io/immich-app/postgres:18-vectorchord0.5.3-pgvector0.8.1|999|*.sql|postgres-immich-db-0|immich||asset person album"
+  "n8n|n8n|backup-n8n-pvc|postgres:18.6|999|*.dump|postgres-0|n8n||workflow_entity credentials_entity"
+  "sonarqube|sonarqube|backup-sonarqube-pvc|postgres:18.6|999|*.sql|postgres-sonarqube-postgresql-0|sonar|sonar|projects rules"
+  "authentik|authentik|backup-authentik-pvc|postgres:17.11-alpine|70|*.dump|authentik-postgresql-0|authentik||authentik_core_user authentik_flows_flow"
 )
 
 # Each image exposes its superuser password differently; this is what works in
@@ -80,7 +85,7 @@ trap cleanup EXIT
 failures=()
 
 verify_app() {
-  local app=$1 ns=$2 pvc=$3 image=$4 glob=$5 prodpod=$6 db=$7 roles=$8 tables=$9
+  local app=$1 ns=$2 pvc=$3 image=$4 uid=$5 glob=$6 prodpod=$7 db=$8 roles=$9 tables=${10}
   CURRENT_NS=$ns
   echo "${BOLD}==> $app${OFF}"
 
@@ -95,7 +100,8 @@ verify_app() {
 
   # automountServiceAccountToken: false -- this pod has no business talking to
   # the API, same rule as every other workload in the cluster.
-  if ! kubectl apply -f - >/dev/null 2>&1 <<YAML
+  local applied
+  if ! applied=$(kubectl apply -f - 2>&1 <<YAML
 apiVersion: v1
 kind: Pod
 metadata:
@@ -104,9 +110,18 @@ metadata:
 spec:
   restartPolicy: Never
   automountServiceAccountToken: false
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: $uid
+    runAsGroup: $uid
+    fsGroup: $uid
+    seccompProfile: {type: RuntimeDefault}
   containers:
     - name: pg
       image: $image
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities: {drop: [ALL]}
       env:
         - {name: POSTGRES_PASSWORD, value: "$scratch_pw"}
         - {name: PGDATA, value: /var/lib/postgresql/data/pgdata}
@@ -118,8 +133,12 @@ spec:
     - name: backups
       persistentVolumeClaim: {claimName: $pvc, readOnly: true}
 YAML
-  then
-    echo "${RED}  x could not start the scratch pod${OFF}"; failures+=("$app: scratch pod"); return
+  ); then
+    # Shown rather than swallowed: an admission refusal (Pod Security, quota) says
+    # exactly what to change.
+    echo "${RED}  x could not start the scratch pod${OFF}"
+    printf '%s\n' "$applied" | cut -c1-400 | sed 's/^/      /'
+    failures+=("$app: scratch pod"); return
   fi
 
   local deadline=$(( $(date +%s) + 300 ))
@@ -196,10 +215,10 @@ targets=("$@")
 for want in "${targets[@]}"; do
   found=0
   for row in "${APPS[@]}"; do
-    IFS='|' read -r app ns pvc image glob prodpod db roles tables <<<"$row"
+    IFS='|' read -r app ns pvc image uid glob prodpod db roles tables <<<"$row"
     [[ "$app" == "$want" ]] || continue
     found=1
-    verify_app "$app" "$ns" "$pvc" "$image" "$glob" "$prodpod" "$db" "$roles" "$tables"
+    verify_app "$app" "$ns" "$pvc" "$image" "$uid" "$glob" "$prodpod" "$db" "$roles" "$tables"
   done
   [[ $found -eq 1 ]] || { echo "${RED}unknown app: $want${OFF}" >&2; failures+=("unknown app: $want"); }
 done
