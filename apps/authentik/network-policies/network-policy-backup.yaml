@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backup-policy
+  namespace: authentik
+spec:
+  podSelector:
+    matchLabels:
+      app: authentik-db-backup
+  policyTypes:
+    - Egress
+  # DNS is already allowed namespace-wide by network-policy-allow-dns.yaml.
+  egress:
+    # PostgreSQL local
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: primary
+              app.kubernetes.io/instance: authentik
+              app.kubernetes.io/name: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432

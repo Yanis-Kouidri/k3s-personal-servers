@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: backup-authentik-pvc
+  namespace: authentik
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      # The database is ~170 MB; a compressed custom-format dump is a fraction of
+      # that, and 7 days of them are kept.
+      storage: 2Gi
+  storageClassName: local-path

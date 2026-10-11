@@ -23,6 +23,10 @@ spec:
             matchLabels:
               app.kubernetes.io/component: worker
               app.kubernetes.io/name: authentik
+        # Nightly pg_dump, see backup-cron-job.yaml.
+        - podSelector:
+            matchLabels:
+              app: authentik-db-backup
       ports:
         - protocol: TCP
           port: 5432
