@@ -1,11 +1,17 @@
 #!/usr/bin/env bash
-# Validate rendered Kubernetes manifests, the way .github/workflows/build.yml does.
+# Validate rendered Kubernetes manifests: kustomize build + kubeconform (+ optional server dry-run).
 #
 # Usage:
-#   scripts/validate-manifests.sh [--server] [path...]
+#   scripts/validate-manifests.sh [--server] [--root DIR] [--kubeconform-optional] [path...]
 #
-#   path...    kustomization directories to validate (default: apps infra clusters/my-cluster)
-#   --server   additionally run `kubectl apply --dry-run=server` against the live cluster
+#   path...                kustomization directories to validate (default: apps infra clusters/my-cluster)
+#   --server               additionally run `kubectl apply --dry-run=server` against the live cluster
+#   --root DIR             validate the tree in DIR instead of this repository (the pre-commit
+#                          hook passes its snapshot of the index); not combinable with --server
+#   --kubeconform-optional skip schema validation instead of failing when kubeconform is missing
+#
+# The single implementation of this check: CI (.github/workflows/build.yml) and the
+# pre-commit hook both call it, so the kubeconform flags cannot drift between them.
 #
 # Why not plain `kustomize build <path> | kubectl apply --dry-run=server -f -`:
 # Secrets live in git SOPS-encrypted, so the rendered stream carries a `sops:` metadata
@@ -13,11 +19,10 @@
 # `strict decoding error: unknown field "sops"` and echoes the full ciphertext back,
 # which buries any real error in thousands of lines. Decrypting them is Flux's job at
 # apply time; their structure is verified by scripts/check-sops-encryption.sh instead.
-# So Secrets are skipped here, exactly like in CI, and everything else is validated.
+# So Secrets are skipped here, and everything else is validated.
 set -euo pipefail
 
-repo_root=$(git rev-parse --show-toplevel)
-cd "$repo_root"
+script_dir=$(cd "$(dirname "$0")" && pwd)
 
 if [[ -t 1 ]]; then
   BOLD=$'\033[1m'; RED=$'\033[31m'; GREEN=$'\033[32m'; DIM=$'\033[2m'; OFF=$'\033[0m'
@@ -26,23 +31,44 @@ else
 fi
 
 server=0
+root=
+kubeconform_optional=0
 paths=()
-for arg in "$@"; do
-  case "$arg" in
+while [[ $# -gt 0 ]]; do
+  case "$1" in
     --server) server=1 ;;
-    -h|--help) sed -n '2,18p' "$0" | sed 's/^# \?//'; exit 0 ;;
-    -*) echo "unknown option: $arg" >&2; exit 2 ;;
-    *) paths+=("${arg%/}") ;;
+    --root) root=${2:?--root needs a directory}; shift ;;
+    --kubeconform-optional) kubeconform_optional=1 ;;
+    -h|--help) sed -n '2,23p' "$0" | sed 's/^# \?//'; exit 0 ;;
+    -*) echo "unknown option: $1" >&2; exit 2 ;;
+    *) paths+=("${1%/}") ;;
   esac
+  shift
 done
 [[ ${#paths[@]} -eq 0 ]] && paths=(apps infra clusters/my-cluster)
 
-for tool in kustomize kubeconform; do
-  command -v "$tool" >/dev/null 2>&1 || {
-    echo "${RED}$tool is not installed — config-install/install-git-hooks.sh --install-tools${OFF}" >&2
+if [[ -n $root ]]; then
+  # --server compares against the live cluster and greps the repository for node
+  # addresses: it means "this checkout", never an arbitrary tree.
+  [[ $server -eq 0 ]] || { echo "--root and --server cannot be combined" >&2; exit 2; }
+  cd "$root"
+else
+  cd "$(git rev-parse --show-toplevel)"
+fi
+
+command -v kustomize >/dev/null 2>&1 || {
+  echo "${RED}kustomize is not installed — config-install/install-git-hooks.sh --install-tools${OFF}" >&2
+  exit 1
+}
+have_kubeconform=1
+if ! command -v kubeconform >/dev/null 2>&1; then
+  if [[ $kubeconform_optional -eq 0 ]]; then
+    echo "${RED}kubeconform is not installed — config-install/install-git-hooks.sh --install-tools${OFF}" >&2
     exit 1
-  }
-done
+  fi
+  have_kubeconform=0
+  echo "${DIM}kubeconform not installed, schema validation skipped${OFF}"
+fi
 
 # Drops every `kind: Secret` document from a rendered stream. Parsing the YAML rather
 # than grepping so a `kind: Secret` string nested in an RBAC rule or a comment cannot
@@ -69,8 +95,10 @@ for path in "${paths[@]}"; do
   fi
   echo "${GREEN}  ✓${OFF} kustomize build"
 
-  # 2. schema validation — same flags as the CI job, Secrets skipped (see header)
-  if out=$(printf '%s\n' "$build" | kubeconform \
+  # 2. schema validation, Secrets skipped (see header)
+  if [[ $have_kubeconform -eq 0 ]]; then
+    :
+  elif out=$(printf '%s\n' "$build" | kubeconform \
     -summary -strict -skip Secret -ignore-missing-schemas \
     -schema-location default \
     -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' 2>&1); then
@@ -98,7 +126,7 @@ done
 # live cluster, so this rides along with --server rather than running in CI.
 if [[ $server -eq 1 ]]; then
   echo "${BOLD}==> node addresses${OFF}"
-  if out=$("$repo_root/scripts/check-node-ip.sh" 2>&1); then
+  if out=$("$script_dir/check-node-ip.sh" 2>&1); then
     echo "${GREEN}  ✓${OFF} hardcoded node addresses match the cluster"
   else
     echo "${RED}  ✗ node addresses${OFF}"

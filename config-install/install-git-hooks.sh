@@ -6,11 +6,11 @@
 # update arrives with a normal `git pull`.
 #
 #   config-install/install-git-hooks.sh                  install the hooks
-#   config-install/install-git-hooks.sh --install-tools   + install the optional linters
+#   config-install/install-git-hooks.sh --install-tools   + install the tools the hooks use
 #   config-install/install-git-hooks.sh --uninstall       remove the hooks
 #
-# The optional linters (yamllint, kubeconform, gitleaks, actionlint) are pinned to the
-# exact versions used by .github/workflows/build.yml and installed into ~/.local/bin.
+# The tools (kustomize, yamllint, kubeconform, gitleaks, actionlint, shellcheck) are pinned
+# to the exact versions used by .github/workflows/build.yml and installed into ~/.local/bin.
 set -euo pipefail
 
 repo_root=$(git rev-parse --show-toplevel)
@@ -73,6 +73,13 @@ install_tools() {
   fi
 
   local v
+  # kustomize tags its releases `kustomize/vX.Y.Z`, hence the encoded slash.
+  v=$(ci_version KUSTOMIZE_VERSION)
+  install_binary kustomize \
+    "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${v}/kustomize_v${v}_linux_amd64.tar.gz" \
+    "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv${v}/checksums.txt" \
+    "kustomize_v${v}_linux_amd64.tar.gz" kustomize
+
   v=$(ci_version KUBECONFORM_VERSION)
   install_binary kubeconform \
     "https://github.com/yannh/kubeconform/releases/download/v${v}/kubeconform-linux-amd64.tar.gz" \
@@ -143,7 +150,7 @@ case "${1:-}" in
     exit 0
     ;;
   --install-tools)
-    echo "${BOLD}Installing the linters pinned in $workflow${OFF}"
+    echo "${BOLD}Installing the tools pinned in $workflow${OFF}"
     install_tools
     ;;
   -h|--help)
