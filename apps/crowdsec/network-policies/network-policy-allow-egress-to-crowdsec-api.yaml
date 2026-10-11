@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-egress-to-crowdsec-api
+  namespace: crowdsec
+spec:
+  podSelector: {}
+  egress:
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - protocol: TCP
+          port: 443
+    - to:
+        - ipBlock:
+            cidr: ::/0
+            except:
+              - 2001:db8:42::/64
+              - 2001:db8:43::/112
+              - fc00::/7
+      ports:
+        - protocol: TCP
+          port: 443

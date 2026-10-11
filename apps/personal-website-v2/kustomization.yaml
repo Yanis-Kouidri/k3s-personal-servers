@@ -6,6 +6,6 @@ resources:
   - http-route.yaml
   - namespace.yaml
   # Network policies
-  - network-policy-default-deny.yaml
-  - network-policy-allow-dns.yaml
-  - network-policy-server.yaml
+  - network-policies/network-policy-default-deny.yaml
+  - network-policies/network-policy-allow-dns.yaml
+  - network-policies/network-policy-server.yaml

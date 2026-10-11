@@ -24,6 +24,11 @@ Kubernetes secrets are encrypted with SOPS and age.
 - `.githooks/`: Versioned git hooks, installed with `config-install/install-git-hooks.sh`
 - `.sops.yaml`: Contains rules for secrets encryption. To encrypt a plaintext secret use `sops -e secret.enc.yaml`, it will output an encrypted version.
 
+## Conventions
+
+- File names are kebab-case and named after the kind: `helm-release.yaml`, `helm-repository.yaml`, `oci-repository.yaml`, `http-route.yaml`, `config-map.yaml`...
+- NetworkPolicies live in a `network-policies/` folder of their app, one file per policy, starting with `network-policy-default-deny.yaml` and `network-policy-allow-dns.yaml`
+
 ## Workflow
 
 To fix a problem or create something new, follow this workflow:

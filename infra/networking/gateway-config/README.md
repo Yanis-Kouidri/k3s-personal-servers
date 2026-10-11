@@ -2,7 +2,7 @@
 
 Envoy Gateway itself (the controller) is installed by Flux from
 `infra/networking/envoy-gateway/`, as a HelmRelease of the `gateway-helm` OCI
-chart (version pinned in `repository.yaml`, bumped by Renovate). It is applied
+chart (version pinned in `oci-repository.yaml`, bumped by Renovate). It is applied
 by the `envoy` Flux Kustomization (`clusters/my-cluster/envoy.yaml`).
 
 This folder holds what runs on top of it, applied by the `infra` Kustomization:

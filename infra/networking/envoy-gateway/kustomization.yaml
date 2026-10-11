@@ -3,12 +3,12 @@ kind: Kustomization
 
 resources:
   - namespace.yaml
-  - repository.yaml
-  - release.yaml
-  - network-policy-default-deny.yaml
-  - network-policy-allow-dns.yaml
-  - network-policy-allow-ingress.yaml
-  - network-policy-allow-internal.yaml
-  - network-policy-allow-egress-to-kubernetes-api.yaml
-  - network-policy-allow-egress-to-cert-manager.yaml
-  - network-policy-allow-egress-to-backends.yaml
+  - oci-repository.yaml
+  - helm-release.yaml
+  - network-policies/network-policy-default-deny.yaml
+  - network-policies/network-policy-allow-dns.yaml
+  - network-policies/network-policy-allow-ingress.yaml
+  - network-policies/network-policy-allow-internal.yaml
+  - network-policies/network-policy-allow-egress-to-kubernetes-api.yaml
+  - network-policies/network-policy-allow-egress-to-cert-manager.yaml
+  - network-policies/network-policy-allow-egress-to-backends.yaml

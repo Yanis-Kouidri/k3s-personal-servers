@@ -3,10 +3,15 @@ kind: Kustomization
 namespace: crowdsec
 resources:
   - namespace.yaml
-  - helmrepository.yaml
+  - helm-repository.yaml
   - secrets.enc.yaml
-  - helmrelease.yaml
-  - network-policy.yaml
+  - helm-release.yaml
+  - network-policies/network-policy-default-deny.yaml
+  - network-policies/network-policy-allow-dns.yaml
+  - network-policies/network-policy-allow-egress-to-crowdsec-api.yaml
+  - network-policies/network-policy-lapi.yaml
+  - network-policies/network-policy-agent.yaml
+  - network-policies/network-policy-allow-internal-egress.yaml
   - lapi-nodeport-service.yaml
 
 # Values ConfigMaps for the HelmReleases. The name has no hash suffix (the HelmRelease's
