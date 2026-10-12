@@ -1,5 +1,13 @@
 # n8n
 
+## Access
+
+n8n is only reachable through the WireGuard VPN (`apps/wireguard-vpn`), webhooks
+included: `n8n/security-policy.yaml` makes Envoy answer 403 to any client outside
+the pod network. Connect to the VPN, then open https://n8n.kouidri.fr as usual.
+A trigger called from the Internet (webhook, form) no longer works; to expose one,
+add a route for its path that the policy does not target.
+
 PostgreSQL runs as a single-replica `StatefulSet` (`postgres`). The
 `postgresql-pvc` volume is referenced explicitly instead of through
 `volumeClaimTemplates`: it predates the StatefulSet, which replaced a
