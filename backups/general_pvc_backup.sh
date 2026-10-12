@@ -258,7 +258,7 @@ if [[ ${#old_backups[@]} -gt 0 ]]; then
     # sudo rm: the archives are written by `sudo tar`, so they belong to root
     sudo rm -v -- "${old_backups[@]}"
 else
-    log "Fewer than 3 backups exist, skipping deletion."
+    log "2 backups or fewer exist, nothing to delete."
 fi
 
 # Final Report
