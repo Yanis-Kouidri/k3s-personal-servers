@@ -33,7 +33,7 @@ env:
   KUBECONFORM_VERSION: "0.8.0"
   # The kustomize repository also tags api/, kyaml/... releases: only kustomize/ ones count.
   # renovate: datasource=github-releases depName=kubernetes-sigs/kustomize extractVersion=^kustomize/v(?<version>.+)$
-  KUSTOMIZE_VERSION: "5.8.1"
+  KUSTOMIZE_VERSION: "5.8.3"
   # renovate: datasource=github-releases depName=gitleaks/gitleaks extractVersion=^v(?<version>.+)$
   GITLEAKS_VERSION: "8.30.1"
   # renovate: datasource=github-releases depName=koalaman/shellcheck extractVersion=^v(?<version>.+)$
