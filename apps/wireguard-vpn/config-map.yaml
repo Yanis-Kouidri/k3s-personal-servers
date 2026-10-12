@@ -7,7 +7,12 @@ data:
   PUID: "1000"
   PGID: "1000"
   TZ: "Europe/Paris"
-  SERVERURL: "auto"
+  # Not "auto": the image then asks icanhazip.com at boot, which is flaky here.
+  # The pod's first outbound connection is refused while its NetworkPolicy is
+  # still being programmed, so detection came back empty and every peer conf got
+  # `Endpoint = :51820`; on another boot it picked the IPv6 address instead.
+  # The apex resolves to the node over both IPv4 and IPv6.
+  SERVERURL: "kouidri.fr"
   SERVERPORT: "51820"
   PEERS: "pc,laptop,neusta,iphone,guest1,guest2,guest3"
   PEERDNS: "auto"
