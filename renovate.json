@@ -65,13 +65,6 @@
       "automerge": false
     },
     {
-      "description": "A human gate for images this repo runs as stateful apps. Renovate can and does automerge these -- it shipped immich v3.2.2 straight to production on 2026-09-27, unreviewed -- and that is what this rule stops. Automerge stays on for Docker Hub images, whose blast radius is smaller here. minimumReleaseAge is dropped rather than kept: the soak exists to let other people hit a regression before a robot merges it, but once a human decides the timing the soak only delays the notification, and a PR nobody has seen yet is not a risk. Must stay AFTER the matchUpdateTypes rules above -- packageRules are applied in order, last match wins.",
-      "matchDatasources": ["docker"],
-      "matchPackageNames": ["ghcr.io/**"],
-      "minimumReleaseAge": null,
-      "automerge": false
-    },
-    {
       "description": "The authentik backup and restore-verify images must keep the PostgreSQL major of the server deployed by the authentik chart (17): a newer pg_dump writes archives the server's pg_restore 17 cannot read, so a real restore would fail. Patch and minor 17.x updates still flow. Lift this together with the server's major.",
       "matchDatasources": ["docker"],
       "matchPackageNames": ["postgres"],
