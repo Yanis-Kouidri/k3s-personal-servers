@@ -133,15 +133,21 @@ The key lives in `/var/lib/rancher/k3s/server/cred/encryption-config.json`, next
 the database: this protects a copy of `state.db` on its own (a leaked snapshot or
 backup), not someone who is root on the node or can `get secrets` through the API.
 
-On a node installed before this setting, enable it and re-encrypt what is already
-stored (each restart makes the API unavailable for a few seconds, pods keep running):
+On a node installed before this setting, copy `config.yaml` to
+`/etc/rancher/k3s/config.yaml`, then enable it and re-encrypt what is already stored
+(the restart makes the API unavailable for a few seconds, pods keep running):
 
 ```bash
 sudo k3s secrets-encrypt enable
 sudo systemctl restart k3s
-sudo k3s secrets-encrypt reencrypt
-sudo systemctl restart k3s
+sudo k3s secrets-encrypt rotate-keys
 ```
+
+`enable` only writes an encryption config holding the `identity` provider, i.e. no
+key at all: `status` still reports `Disabled` after the restart, and `reencrypt`
+would rewrite every Secret in plaintext. `rotate-keys` is what generates the AES-CBC
+key and re-encrypts every Secret with it, without another restart. Done on
+2026-10-12: 58 Secrets, all stored as `k8s:enc:aescbc:v1:` in `state.db` afterwards.
 
 Check (expected: `Encryption Status: Enabled` and `Current Rotation Stage: reencrypt_finished`):
 
@@ -149,7 +155,7 @@ Check (expected: `Encryption Status: Enabled` and `Current Rotation Stage: reenc
 sudo k3s secrets-encrypt status
 ```
 
-Rotate the key later with `sudo k3s secrets-encrypt rotate-keys`, then restart k3s.
+Rotate the key later the same way, with `sudo k3s secrets-encrypt rotate-keys`.
 
 ## Kubens
 
