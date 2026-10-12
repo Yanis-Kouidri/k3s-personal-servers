@@ -1,0 +1,37 @@
+# n8n is only reachable through the WireGuard VPN, webhooks included.
+#
+# NetworkPolicies cannot do this: every site goes through the same Envoy proxy pod
+# on the same port, so the decision has to be made by Envoy, on the route.
+#
+# Envoy sees two kinds of client address:
+# - Internet clients keep their public IP: the Envoy LoadBalancer Service is
+#   externalTrafficPolicy: Local, and no ClientTrafficPolicy trusts
+#   X-Forwarded-For, so the address cannot be spoofed with a header.
+# - Traffic coming from inside the node shows a pod-network address: VPN clients
+#   are masqueraded behind the WireGuard pod, then reach the node's public IP,
+#   which is DNATed straight to Envoy (seen as the pod IP or the cni0 gateway,
+#   10.42.0.1 / 2001:db8:42::1).
+#
+# Allowing the pod CIDRs therefore means "from the VPN or from a pod". Only the
+# wireguard and n8n pods have an egress rule to Envoy (namespaces without a
+# default-deny policy, such as kube-system and flux-system, could also connect).
+# Everyone else gets a 403.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: n8n-vpn-only
+  namespace: n8n
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: n8n-kouidri-fr
+  authorization:
+    defaultAction: Deny
+    rules:
+      - name: allow-vpn-and-pods
+        action: Allow
+        principal:
+          clientCIDRs:
+            - 10.42.0.0/16
+            - 2001:db8:42::/64

@@ -11,6 +11,7 @@ resources:
   - n8n-secret.enc.yaml
   - n8n/deployment.yaml
   - n8n/http-route.yaml
+  - n8n/security-policy.yaml
   - n8n/pvc.yaml
   - n8n/service.yaml
   - postgres/config-map.yaml
