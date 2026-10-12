@@ -187,6 +187,11 @@ archive: exit 0, all subspaces exported.
   and it exists only in the `sops-age` secret in `flux-system` and wherever you
   keep it. Losing it means re-encrypting every secret from scratch. It belongs
   in a password manager, not on this node.
+- **The k3s secrets encryption key**
+  (`/var/lib/rancher/k3s/server/cred/encryption-config.json`). The k3s datastore
+  is not backed up either, and they only matter together: a `state.db` restored
+  without its key has unreadable Secrets. Rebuilding from git does not need it,
+  since Flux recreates every SOPS secret and cert-manager reissues certificates.
 - **Anything that is only in the cluster and not in git**, such as resources
   created by hand. Flux rebuilds the rest from this repository.
 - **Immich's `machine-learning-server-pvc`** — a model cache, refetched on
