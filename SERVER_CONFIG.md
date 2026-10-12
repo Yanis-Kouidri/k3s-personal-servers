@@ -124,6 +124,33 @@ sudo systemctl status k3s
 kubectl get nodes
 ```
 
+## Secrets encryption at rest
+
+`config.yaml` sets `secrets-encryption: true`, so a fresh install encrypts Secret
+objects in the datastore (`/var/lib/rancher/k3s/server/db/state.db`) from the start.
+
+The key lives in `/var/lib/rancher/k3s/server/cred/encryption-config.json`, next to
+the database: this protects a copy of `state.db` on its own (a leaked snapshot or
+backup), not someone who is root on the node or can `get secrets` through the API.
+
+On a node installed before this setting, enable it and re-encrypt what is already
+stored (each restart makes the API unavailable for a few seconds, pods keep running):
+
+```bash
+sudo k3s secrets-encrypt enable
+sudo systemctl restart k3s
+sudo k3s secrets-encrypt reencrypt
+sudo systemctl restart k3s
+```
+
+Check (expected: `Encryption Status: Enabled` and `Current Rotation Stage: reencrypt_finished`):
+
+```bash
+sudo k3s secrets-encrypt status
+```
+
+Rotate the key later with `sudo k3s secrets-encrypt rotate-keys`, then restart k3s.
+
 ## Kubens
 
 To easly change namespace
