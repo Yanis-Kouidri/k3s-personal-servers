@@ -25,8 +25,13 @@ spec:
         # The image renders wg0.conf and the peer confs from /config/templates only
         # when wg0.conf is missing or one of its environment variables changed, and
         # never overwrites templates already on the volume. Install the templates
-        # from Git and delete wg0.conf so they are rendered again on every start:
-        # keys and peer addresses are kept, they are read back from the volume.
+        # from Git and delete the file it stores the previous variables in, so they
+        # all look changed and the confs are rendered again on every start: keys and
+        # peer addresses are kept, they are read back from the volume.
+        #
+        # Do not delete wg0.conf instead: the image would then create it with the
+        # default umask, world-readable with the server's private key in it. Rendered
+        # over the existing file, it keeps its mode, which is reset to 0600 here.
         - name: install-templates
           image: linuxserver/wireguard:1.0.20260223
           command:
@@ -35,7 +40,9 @@ spec:
             - >-
               cp /templates/server.conf /templates/peer.conf /config/templates/ &&
               cp /templates/Corefile /config/coredns/Corefile &&
-              rm -f /config/wg_confs/wg0.conf
+              rm -f /config/.donoteditthisfile &&
+              if [ -f /config/wg_confs/wg0.conf ]; then
+              chmod 600 /config/wg_confs/wg0.conf; fi
           securityContext:
             # Files on the config volume belong to PUID 1000.
             runAsUser: 1000
