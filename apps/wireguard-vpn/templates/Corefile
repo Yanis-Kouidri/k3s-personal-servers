@@ -1,0 +1,7 @@
+. {
+    loop
+    errors
+    health
+    cache 300
+    forward . /etc/resolv.conf
+}
