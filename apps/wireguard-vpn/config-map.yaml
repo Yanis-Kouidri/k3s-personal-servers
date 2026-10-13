@@ -17,3 +17,15 @@ data:
   PEERS: "pc,laptop,neusta,iphone,guest1,guest2,guest3"
   PEERDNS: "auto"
   INTERNAL_SUBNET: "10.13.13.0"
+  # IPv6 inside the tunnel: fd13:13:13::/64 (ULA) mirrors 10.13.13.0/24, a peer
+  # with 10.13.13.N gets fd13:13:13::N (see templates/peer.conf). The image only
+  # writes the IPv4 address in the server's AllowedIPs for a peer, so its IPv6
+  # address has to be added here, one variable per peer named after PEERS.
+  # A new peer without its line here gets IPv6 traffic dropped by the server.
+  SERVER_ALLOWEDIPS_PEER_pc: "fd13:13:13::2/128"
+  SERVER_ALLOWEDIPS_PEER_laptop: "fd13:13:13::3/128"
+  SERVER_ALLOWEDIPS_PEER_neusta: "fd13:13:13::4/128"
+  SERVER_ALLOWEDIPS_PEER_iphone: "fd13:13:13::5/128"
+  SERVER_ALLOWEDIPS_PEER_guest1: "fd13:13:13::6/128"
+  SERVER_ALLOWEDIPS_PEER_guest2: "fd13:13:13::7/128"
+  SERVER_ALLOWEDIPS_PEER_guest3: "fd13:13:13::8/128"

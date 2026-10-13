@@ -10,3 +10,15 @@ resources:
   - network-policies/network-policy-allow-dns.yaml
   - network-policies/network-policy-wireguard.yaml
   - pvc.yaml
+
+# Templates the image renders wg0.conf and every peer conf from, plus the CoreDNS
+# config it serves to peers. Copied onto the config volume by the init container
+# of the Deployment, see the comment there. The hash suffix rolls the pod when one
+# of them changes.
+configMapGenerator:
+  - name: wireguard-templates
+    namespace: wireguard
+    files:
+      - templates/server.conf
+      - templates/peer.conf
+      - templates/Corefile

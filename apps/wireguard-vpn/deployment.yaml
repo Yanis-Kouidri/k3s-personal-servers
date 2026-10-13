@@ -21,6 +21,44 @@ spec:
       securityContext:
         seccompProfile:
           type: RuntimeDefault
+      initContainers:
+        # The image renders wg0.conf and the peer confs from /config/templates only
+        # when wg0.conf is missing or one of its environment variables changed, and
+        # never overwrites templates already on the volume. Install the templates
+        # from Git and delete wg0.conf so they are rendered again on every start:
+        # keys and peer addresses are kept, they are read back from the volume.
+        - name: install-templates
+          image: linuxserver/wireguard:1.0.20260223
+          command:
+            - sh
+            - -c
+            - >-
+              cp /templates/server.conf /templates/peer.conf /config/templates/ &&
+              cp /templates/Corefile /config/coredns/Corefile &&
+              rm -f /config/wg_confs/wg0.conf
+          securityContext:
+            # Files on the config volume belong to PUID 1000.
+            runAsUser: 1000
+            runAsGroup: 1000
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: config
+              mountPath: /config
+            - name: templates
+              mountPath: /templates
+              readOnly: true
+          resources:
+            requests:
+              memory: "16Mi"
+              cpu: "10m"
+            limits:
+              memory: "64Mi"
+              cpu: "100m"
       containers:
         - name: wireguard
           image: linuxserver/wireguard:1.0.20260223
@@ -92,3 +130,6 @@ spec:
         - name: modules
           hostPath:
             path: /lib/modules
+        - name: templates
+          configMap:
+            name: wireguard-templates
