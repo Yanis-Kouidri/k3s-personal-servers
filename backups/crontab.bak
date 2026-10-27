@@ -58,6 +58,6 @@
 
 # -S: RocksDB is only consistent on disk once Stalwart has shut down (the supported
 # backup recipe upstream). Mail is down ~10s; sending servers retry.
-0 3 * * * /home/ubuntu/k3s-personal-servers/backups/general_pvc_backup.sh -n mail -N stalwart -p stalwart-data -S statefulset/stalwart >> /home/ubuntu/backups/mail/backup-stalwart.log 2>&1
+0 3 * * * /home/ubuntu/k3s-personal-servers/backups/general_pvc_backup.sh -n mail -N stalwart -p stalwart-data-v1 -S statefulset/stalwart >> /home/ubuntu/backups/mail/backup-stalwart.log 2>&1
 
 0 3 * * * /home/ubuntu/k3s-personal-servers/backups/general_pvc_backup.sh -n mail -N bulwark -p bulwark-data >> /home/ubuntu/backups/mail/backup-bulwark.log 2>&1
