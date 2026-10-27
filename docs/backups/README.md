@@ -30,7 +30,7 @@ The dump PVCs are themselves archived by the second layer, so a database ends up
 in both.
 
 Stalwart (mail) has no dump: everything it holds -- messages, accounts, DKIM
-keys, settings -- is one RocksDB on `stalwart-data`. A RocksDB copied while it
+keys, settings -- is one RocksDB on `stalwart-data-v1`. A RocksDB copied while it
 is being written can be unopenable, and upstream's supported recipe is to stop
 the server and copy the directory. So that archive runs with
 `-S statefulset/stalwart`: the script scales it to 0, archives, checks no pod

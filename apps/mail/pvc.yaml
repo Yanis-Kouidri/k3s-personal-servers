@@ -10,3 +10,19 @@ spec:
   resources:
     requests:
       storage: 20Gi
+---
+# Stalwart 1.0 store. 1.0 cannot open a 0.16 store, so stalwart-migrate copied
+# stalwart-data into this new one. stalwart-data stays until 1.0 is confirmed:
+# it is the rollback, and dropping it from git would let Flux prune it.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: stalwart-data-v1
+  namespace: mail
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 20Gi

@@ -98,7 +98,7 @@ usage() {
     echo -e "      consistent on disk once the application has shut down (RocksDB, ...)."
     echo -e "Example: ${YELLOW}$0 -n wireguard -N wireguard -p wireguard-pvc${NC}"
     echo -e "Example (Minecraft): ${YELLOW}$0 -n minecraft -N minecraft -p minecraft-pvc -m minecraft-server${NC}"
-    echo -e "Example (stopped):   ${YELLOW}$0 -n mail -N stalwart -p stalwart-data -S statefulset/stalwart${NC}"
+    echo -e "Example (stopped):   ${YELLOW}$0 -n mail -N stalwart -p stalwart-data-v1 -S statefulset/stalwart${NC}"
     echo -e "This script works well in cron jobs for automated backups."
     exit 1
 }
