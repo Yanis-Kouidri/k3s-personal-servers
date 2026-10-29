@@ -20,6 +20,10 @@ spec:
       priorityClassName: application
       # GoatCounter never talks to the Kubernetes API.
       automountServiceAccountToken: false
+      # GoatCounter reads its flags from GOATCOUNTER_* variables, and the service
+      # links of the `goatcounter` Service inject GOATCOUNTER_PORT=tcp://... into
+      # the pod: it refuses to start on "PORT: invalid syntax (must be a number)".
+      enableServiceLinks: false
       securityContext:
         # The image runs as goatcounter (1000:1000), declared by name only, so the
         # numeric ids are repeated here for runAsNonRoot to be checkable.
