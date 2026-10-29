@@ -9,5 +9,6 @@ resources:
   - network-policies/network-policy-allow-dns.yaml
   - network-policies/network-policy-allow-api.yaml
   - network-policies/network-policy-allow-acme.yaml
+  - network-policies/network-policy-allow-acme-self-check.yaml
   - network-policies/network-policy-allow-ingress.yaml
   - network-policies/network-policy-allow-metrics.yaml

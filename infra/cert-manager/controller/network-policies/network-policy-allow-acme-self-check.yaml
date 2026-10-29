@@ -1,0 +1,29 @@
+# Before telling Let's Encrypt to validate an HTTP-01 challenge, the controller
+# fetches http://<domain>/.well-known/acme-challenge/... itself. Our domains
+# resolve to the node's public IPs, which kube-proxy DNATs straight to the Envoy
+# proxy pod before the policy is evaluated, so allow-acme-https (public ipBlocks,
+# port 443 only) refuses it and every renewal stays pending. Allow the post-DNAT
+# target.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-acme-self-check
+  namespace: cert-manager
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: controller
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: envoy-gateway-system
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/component: proxy
+              app.kubernetes.io/name: envoy
+      ports:
+        - protocol: TCP
+          port: 10080
