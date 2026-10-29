@@ -25,6 +25,7 @@ spec:
     - n8n.kouidri.fr
     - mail.kouidri.fr
     - webmail.kouidri.fr
+    - stats.kouidri.fr
     - kouidri.me
   privateKey:
     algorithm: ECDSA

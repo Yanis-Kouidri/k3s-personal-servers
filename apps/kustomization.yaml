@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - authentik
   - crowdsec
+  - goatcounter
   - immich
   - minecraft-server
   - n8n

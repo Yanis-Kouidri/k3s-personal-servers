@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: goatcounter
+  namespace: goatcounter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: goatcounter
+  # SQLite on a ReadWriteOnce volume: two pods must never open the database at
+  # the same time.
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: goatcounter
+    spec:
+      priorityClassName: application
+      # GoatCounter never talks to the Kubernetes API.
+      automountServiceAccountToken: false
+      securityContext:
+        # The image runs as goatcounter (1000:1000), declared by name only, so the
+        # numeric ids are repeated here for runAsNonRoot to be checkable.
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: goatcounter
+          image: arp242/goatcounter:2.7.0
+          imagePullPolicy: IfNotPresent
+          # Plain HTTP on 8080, TLS is terminated by Envoy. The client address is
+          # read from X-Forwarded-For (right-most public entry, the one Envoy
+          # appends), see http-route.yaml for the headers stripped in front of it.
+          # The country is resolved with the GeoIP database built into the binary.
+          args:
+            - serve
+            - -automigrate
+            - -listen=:8080
+            - -tls=http
+            - -db=sqlite+/home/goatcounter/goatcounter-data/db.sqlite3
+          ports:
+            - name: http
+              containerPort: 8080
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: data
+              mountPath: /home/goatcounter/goatcounter-data
+            - name: tmp
+              mountPath: /tmp
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "10m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+          # /status answers without a site configured, unlike /.
+          startupProbe:
+            httpGet:
+              path: /status
+              port: 8080
+            periodSeconds: 2
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /status
+              port: 8080
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /status
+              port: 8080
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 2
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: goatcounter-data
+        - name: tmp
+          emptyDir:
+            sizeLimit: 64Mi

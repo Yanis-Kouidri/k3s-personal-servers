@@ -1,0 +1,21 @@
+# Only Envoy reaches GoatCounter. No egress beyond DNS: the GeoIP database is
+# built into the binary and no SMTP relay is configured.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: goatcounter-policy
+  namespace: goatcounter
+spec:
+  podSelector:
+    matchLabels:
+      app: goatcounter
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: envoy-gateway-system
+      ports:
+        - protocol: TCP
+          port: 8080

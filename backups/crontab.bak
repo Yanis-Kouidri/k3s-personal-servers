@@ -54,6 +54,12 @@
 
 0 3 * * * /home/ubuntu/k3s-personal-servers/backups/general_pvc_backup.sh -n authentik -N authentik-postgres -p backup-authentik-pvc >> /home/ubuntu/backups/authentik/backup-authentik-postgres.log 2>&1
 
+# -- GoatCounter --
+
+# -S: copying a live SQLite file can catch it mid-write. GoatCounter is down a few
+# seconds; hits sent meanwhile are lost.
+0 3 * * * /home/ubuntu/k3s-personal-servers/backups/general_pvc_backup.sh -n goatcounter -N goatcounter -p goatcounter-data -S deployment/goatcounter >> /home/ubuntu/backups/goatcounter/backup-goatcounter.log 2>&1
+
 # -- Mail --
 
 # -S: RocksDB is only consistent on disk once Stalwart has shut down (the supported

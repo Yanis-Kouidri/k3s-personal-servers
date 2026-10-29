@@ -26,6 +26,16 @@ spec:
     - to:
         - namespaceSelector:
             matchLabels:
+              kubernetes.io/metadata.name: goatcounter
+          podSelector:
+            matchLabels:
+              app: goatcounter
+      ports:
+        - protocol: TCP
+          port: 8080
+    - to:
+        - namespaceSelector:
+            matchLabels:
               kubernetes.io/metadata.name: immich
           podSelector:
             matchLabels:

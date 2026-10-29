@@ -1,0 +1,14 @@
+# SQLite database (goatcounter-data/db.sqlite3). Archived nightly by the host cron,
+# see README.md.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: goatcounter-data
+  namespace: goatcounter
+spec:
+  storageClassName: local-path
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
