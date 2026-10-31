@@ -63,6 +63,17 @@ spec:
       ports:
         - protocol: TCP
           port: 8080
+    # ACME HTTP-01 solver of mail-kouidri-fr-tls, only alive during an issuance.
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: mail
+          podSelector:
+            matchLabels:
+              acme.cert-manager.io/http01-solver: "true"
+      ports:
+        - protocol: TCP
+          port: 8089
     - to:
         - namespaceSelector:
             matchLabels:

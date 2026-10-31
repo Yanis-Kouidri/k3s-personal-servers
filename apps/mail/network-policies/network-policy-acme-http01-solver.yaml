@@ -1,0 +1,27 @@
+# cert-manager runs the ACME HTTP-01 solver of mail-kouidri-fr-tls as a pod in
+# this namespace, for the few seconds of each issuance or renewal. Let's Encrypt
+# reaches it through the gateway, so only the Envoy proxy pods need to get in, on
+# the solver's port.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-acme-http01-solver
+  namespace: mail
+spec:
+  podSelector:
+    matchLabels:
+      acme.cert-manager.io/http01-solver: "true"
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: envoy-gateway-system
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/component: proxy
+              app.kubernetes.io/name: envoy
+      ports:
+        - protocol: TCP
+          port: 8089

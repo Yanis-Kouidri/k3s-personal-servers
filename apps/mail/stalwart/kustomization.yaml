@@ -9,3 +9,4 @@ resources:
   - http-route.yaml
   - cors-policy.yaml
   - mail-service.yaml
+  - certificate.yaml

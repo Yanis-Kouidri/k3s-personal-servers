@@ -1,0 +1,24 @@
+# Stalwart's own certificate for SMTP/IMAP (MX is mail.kouidri.fr, the only name
+# clients and other servers check). It used to be a Reflector copy of the
+# gateway's kouidri-fr-tls; issuing it here instead removes the need for a
+# controller with read/write access to every Secret of the cluster.
+#
+# HTTP-01: cert-manager starts the solver pod in this namespace and attaches its
+# HTTPRoute to the gateway; network-policy-acme-http01-solver.yaml lets Envoy in.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: mail-kouidri-fr-tls
+  namespace: mail
+spec:
+  secretName: mail-kouidri-fr-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  commonName: mail.kouidri.fr
+  dnsNames:
+    - mail.kouidri.fr
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
