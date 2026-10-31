@@ -15,6 +15,34 @@ spec:
       envoyDeployment:
         pod:
           priorityClassName: platform-critical
+        # Envoy Gateway defaults to a 512Mi request and no limit at all, so a leak
+        # or a flood of connections could grow the proxy until the node itself is
+        # short of memory. Peak measured over ~43h (cgroup memory.peak, 2026-10-31):
+        # envoy 110Mi, shutdown-manager 24Mi. Requests at ~2x that, limits with
+        # wide headroom for traffic bursts and config reloads.
+        container:
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 1Gi
+        # The shutdown-manager sidecar has no field of its own in EnvoyProxy; the
+        # strategic-merge patch on the rendered Deployment is the supported way in.
+        patch:
+          type: StrategicMerge
+          value:
+            spec:
+              template:
+                spec:
+                  containers:
+                    - name: shutdown-manager
+                      resources:
+                        requests:
+                          cpu: 10m
+                          memory: 32Mi
+                        limits:
+                          memory: 128Mi
 ---
 # GatewayClass
 apiVersion: gateway.networking.k8s.io/v1
