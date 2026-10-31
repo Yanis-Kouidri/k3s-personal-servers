@@ -71,6 +71,17 @@
       "minimumReleaseAgeBehaviour": "timestamp-optional"
     },
     {
+      "description": "Pin every container image to its digest (tag@sha256:...). A tag is mutable: patch and minor updates are automerged and Flux applies main within the minute, so a tag re-pushed upstream would reach the cluster unreviewed. With the digest, Renovate opens a `digest` PR instead (automerged above), visible in the history.",
+      "matchDatasources": ["docker"],
+      "pinDigests": true
+    },
+    {
+      "description": "Our own image, bumped by hand (chore(personal-website-v2): bump image to X). A hand edit that changes only the tag would keep the old digest, and the kubelet pulls by digest: the old image would stay deployed with no error. Leave it tag-only.",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["ghcr.io/yanis-kouidri/personal-website-v2"],
+      "pinDigests": false
+    },
+    {
       "description": "The authentik backup and restore-verify images must keep the PostgreSQL major of the server deployed by the authentik chart (17): a newer pg_dump writes archives the server's pg_restore 17 cannot read, so a real restore would fail. Patch and minor 17.x updates still flow. Lift this together with the server's major.",
       "matchDatasources": ["docker"],
       "matchPackageNames": ["postgres"],
