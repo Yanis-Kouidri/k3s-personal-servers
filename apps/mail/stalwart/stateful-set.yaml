@@ -127,4 +127,4 @@ spec:
             name: stalwart-config
         - name: tls
           secret:
-            secretName: kouidri-fr-tls
+            secretName: mail-kouidri-fr-tls

@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - rbac.yaml
+  - telegram-token.enc.yaml
   - cron-job.yaml
   - network-policies/network-policy-default-deny.yaml
   - network-policies/network-policy-allow-dns.yaml

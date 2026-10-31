@@ -1,0 +1,27 @@
+# Bot token for the job-monitor CronJob. Same token as
+# infra/alerting/flux/telegram-token.enc.yaml (Flux alerts), kept as a separate
+# SOPS secret: a Secret cannot be read across namespaces, and replicating it would
+# need a controller with access to every Secret of the cluster.
+apiVersion: v1
+kind: Secret
+metadata:
+    name: telegram-token
+    namespace: monitoring
+type: Opaque
+stringData:
+    token: ENC[AES256_GCM,data:VI5Jg/7/Jkwq1fOnmdV++7VmHalLKhsu4LBNoD/xozGa1O4Dz2ygwPz3hcoHhw==,iv:gGmEBlQAxmlXjGJNTIH2z4RgWtpB0WTQdQm+qaEzgT0=,tag:jgom747vWebhIX5Z/B4Saw==,type:str]
+sops:
+    age:
+        - enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBJbW9ZdTlQZTlPV2lFVjZo
+            cTJnSW9LZFFmbjRmNXR2UGlkREVUZ212M0M4CmNPOTJLRDEzemRjbHBSZml4Ly9h
+            SnZ6Z0xuWHQ1ZEs0VUt4cHpMMmZWSnMKLS0tIFl2UGNLYVJVcGc5TUdBd1lFNHVv
+            WFNoeTdsa3dDOVlCMUVPTWlveHd2NVEK4wnDwtsxlt9V2zlXdY36LktY/kXsDxLI
+            8/14V4nJJEhk+BNAhbgWJwM934qkjxuUIPgRyeocCrsVV0CeOoW2Bw==
+            -----END AGE ENCRYPTED FILE-----
+          recipient: age1kyhazfmr49eddkxfws9apdlauaevqsktfhfhyxdhkxhwdg03qszs7c337j
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-10-31T21:28:55Z"
+    mac: ENC[AES256_GCM,data:JWeTdg8l0u+7GbTofFkvEMvi5FQWIR7roQsoz3Tx3zC2ZSt7Kzgi1grLMsqJP75ScC+3ePQbBk4tkM5sezg1Gp3qiqcG35Y9082wT1l4MrAWV7qMnJROu48g0biXwKBCHiGE1iOypQ+RVg0dsvhP/aL7LXvNFcjvDrGvxoRBQC8=,iv:cIretxvnqrdqmaIxpTiQ9J41zJIEHVelsB4WozPZ+ZM=,tag:SwR/L69P8epmTFOijNgoSg==,type:str]
+    version: 3.13.2

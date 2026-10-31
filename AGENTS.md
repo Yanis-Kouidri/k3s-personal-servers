@@ -7,7 +7,7 @@ Traefik is disabled. All HTTP traffic is handled by Envoy API Gateway
 Non-HTTP services use a k3s's built-in ServiceLB to expose a LoadBalancer Service on the node's IP (using the service's port, e.g. port 25565 for minecraft-server)
 HTTP certificates are handled with cert-manager
 GitOps is handled by Flux CD
-Reflector is used to replicate secrets when needed
+No secret is replicated across namespaces: each namespace gets its own (a cert-manager Certificate, or its own SOPS secret)
 The cluster uses Dual-stack IP (IPv4 and IPv6)
 Kubernetes secrets are encrypted with SOPS and age.
 
@@ -19,7 +19,7 @@ Kubernetes secrets are encrypted with SOPS and age.
 - `clusters/`: Flux manifests
 - `config-install/`: Install or maintenance scripts
 - `docs/`: Docs
-- `infra/`: Contains yaml manifests for infra applications of the cluster such as cert-manager, envoy (networking), reflector, alerting (Flux alerts and the job-monitor) and priority-classes. One app per folder
+- `infra/`: Contains yaml manifests for infra applications of the cluster such as cert-manager, envoy (networking), alerting (Flux alerts and the job-monitor) and priority-classes. One app per folder
 - `scripts/`: Check scripts shared by the CI and the git hooks. `validate-manifests.sh` validates rendered manifests, `check-sops-encryption.sh` verifies that secrets are encrypted, `verify-restore.sh` restores each database backup into a throwaway PostgreSQL and checks it against production, `check-node-ip.sh` verifies the node addresses hardcoded in NetworkPolicies still match the cluster
 - `.githooks/`: Versioned git hooks, installed with `config-install/install-git-hooks.sh`
 - `.sops.yaml`: Contains rules for secrets encryption. To encrypt a plaintext secret use `sops -e secret.enc.yaml`, it will output an encrypted version.
