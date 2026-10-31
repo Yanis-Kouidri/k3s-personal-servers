@@ -65,6 +65,12 @@
       "automerge": false
     },
     {
+      "description": "The docker datasource returns no release timestamp for ghcr.io tags, and minimumReleaseAgeBehaviour defaults to timestamp-required, so the minimumReleaseAge soak above kept every ghcr.io update (immich, bulwark) pending forever. Treat a missing timestamp as stable; tags that do carry one still wait.",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["ghcr.io/**"],
+      "minimumReleaseAgeBehaviour": "timestamp-optional"
+    },
+    {
       "description": "The authentik backup and restore-verify images must keep the PostgreSQL major of the server deployed by the authentik chart (17): a newer pg_dump writes archives the server's pg_restore 17 cannot read, so a real restore would fail. Patch and minor 17.x updates still flow. Lift this together with the server's major.",
       "matchDatasources": ["docker"],
       "matchPackageNames": ["postgres"],
