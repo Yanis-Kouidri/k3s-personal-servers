@@ -1,6 +1,16 @@
 global:
   # Covers the server and worker deployments; both default to global.
   priorityClassName: platform-auth
+  # Pod-level security context, merged by the chart into both server and worker.
+  # The chart ships them empty: the image already runs as uid 1000, but nothing
+  # stopped a privilege escalation and the pods kept the default capabilities.
+  # With the container contexts below, both pods pass the `restricted` profile.
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    seccompProfile:
+      type: RuntimeDefault
 
 authentik:
   existingSecret:
@@ -10,6 +20,11 @@ authentik:
 
 server:
   replicas: 1
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
   # 524Mi observed against a 512Mi request: it lived just above its own request,
   # which is what marks a pod for eviction first.
   podAnnotations:
@@ -23,6 +38,11 @@ server:
 
 worker:
   replicas: 1
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
   podAnnotations:
     checksum/authentik-config: "ab5008401c8012426db8f800e8457a5529d233f2d02f41286e71d5a5547a418a"
   resources:
