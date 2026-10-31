@@ -25,10 +25,43 @@ spec:
       securityContext:
         seccompProfile:
           type: RuntimeDefault
+      # local-path volumes are plain host directories: the kubelet does not apply
+      # fsGroup to them, so ownership has to be fixed by hand. The files were
+      # written as root before the move to uid 1000 (2026-10-31), and a restore
+      # done as root on the node would bring root-owned files back. This walks
+      # /data once (instant when it is already right) and chowns only if needed.
+      # Root, but with only CHOWN and DAC_OVERRIDE (to enter 0700 directories),
+      # both allowed by the namespace's baseline profile.
+      initContainers:
+        - name: fix-ownership
+          image: ghcr.io/immich-app/immich-server:v3.3.1
+          command:
+            - sh
+            - -c
+            - |
+              if [ -n "$(find /data ! -uid 1000 -print -quit)" ]; then
+                echo "fixing ownership of /data"
+                chown -R 1000:1000 /data
+              fi
+          securityContext:
+            runAsUser: 0
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+              add:
+                - CHOWN
+                - DAC_OVERRIDE
+          volumeMounts:
+            - name: server-storage
+              mountPath: /data
       containers:
         - image: ghcr.io/immich-app/immich-server:v3.3.1
           name: immich-server
           securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
             allowPrivilegeEscalation: false
             capabilities:
               drop:

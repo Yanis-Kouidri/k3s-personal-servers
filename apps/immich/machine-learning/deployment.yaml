@@ -25,10 +25,43 @@ spec:
       securityContext:
         seccompProfile:
           type: RuntimeDefault
+      # local-path volumes are plain host directories: the kubelet does not apply
+      # fsGroup to them, so ownership has to be fixed by hand. The files were
+      # written as root before the move to uid 1000 (2026-10-31), and a restore
+      # done as root on the node would bring root-owned files back. This walks
+      # /cache once (instant when it is already right) and chowns only if needed.
+      # Root, but with only CHOWN and DAC_OVERRIDE (to enter 0700 directories),
+      # both allowed by the namespace's baseline profile.
+      initContainers:
+        - name: fix-ownership
+          image: ghcr.io/immich-app/immich-machine-learning:v3.3.1
+          command:
+            - sh
+            - -c
+            - |
+              if [ -n "$(find /cache ! -uid 1000 -print -quit)" ]; then
+                echo "fixing ownership of /cache"
+                chown -R 1000:1000 /cache
+              fi
+          securityContext:
+            runAsUser: 0
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+              add:
+                - CHOWN
+                - DAC_OVERRIDE
+          volumeMounts:
+            - name: modele-cache
+              mountPath: /cache
       containers:
         - image: ghcr.io/immich-app/immich-machine-learning:v3.3.1
           name: machine-learning-server
           securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
             allowPrivilegeEscalation: false
             capabilities:
               drop:
@@ -36,6 +69,12 @@ spec:
           envFrom:
             - configMapRef:
                 name: immich-server-config
+          env:
+            # HOME is /root in the image, which uid 1000 cannot write. onnxruntime
+            # drops a small state file under ~/.cache; /tmp keeps it writable.
+            # Models stay in /cache (HF_HOME and the cache folder are set there).
+            - name: HOME
+              value: /tmp
           # /ping answers 200 with "pong" (checked in the pod). The image carries no
           # curl or wget, which is why these are httpGet: the kubelet performs the
           # request itself, so nothing has to exist inside the container.
