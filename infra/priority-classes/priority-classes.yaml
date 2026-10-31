@@ -21,8 +21,7 @@ metadata:
 value: 1000000
 globalDefault: false
 description: >-
-  The gateway and its certificates: envoy-gateway and cert-manager, plus the
-  reflector that copies the TLS secret into the mail namespace. Nothing is
+  The gateway and its certificates: envoy-gateway and cert-manager. Nothing is
   reachable from outside without these, and certificates stop renewing, so they
   outrank everything they serve.
 ---

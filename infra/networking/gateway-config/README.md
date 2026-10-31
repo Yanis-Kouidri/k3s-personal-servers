@@ -11,7 +11,8 @@ This folder holds what runs on top of it, applied by the `infra` Kustomization:
   GatewayClass and Gateway (HTTP and HTTPS listeners), the HTTP to HTTPS redirect
   and the `kouidri.me` redirect
 - `certificates.yaml`: the `kouidri-fr-tls` certificate used by the HTTPS
-  listener, replicated to the `mail` namespace by Reflector
+  listener. Stalwart has its own, issued in its namespace
+  (`apps/mail/stalwart/certificate.yaml`)
 - `client-traffic-policy.yaml`: response headers added to every response
 - `backend-traffic-policy.yaml`: PROXY protocol towards Stalwart
 - `tor/`: the onion service of the personal website
