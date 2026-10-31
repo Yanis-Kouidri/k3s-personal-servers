@@ -112,9 +112,11 @@ spec:
     - name: envoy-gateway
       sectionName: https
       namespace: envoy-gateway-system
+  # www.kouidri.me was listed here too, but it has no DNS record and is not in the
+  # kouidri-fr-tls certificate, so it could never be reached. Add both before
+  # listing it again.
   hostnames:
     - "kouidri.me"
-    - "www.kouidri.me"
   rules:
     - filters:
         - type: RequestRedirect
