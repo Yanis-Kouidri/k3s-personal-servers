@@ -10,3 +10,4 @@ resources:
   - network-policies/network-policy-bulwark.yaml
   - network-policies/network-policy-stalwart-http.yaml
   - network-policies/network-policy-stalwart-mail.yaml
+  - network-policies/network-policy-acme-http01-solver.yaml
