@@ -2,6 +2,30 @@
 container_runtime: containerd
 
 agent:
+  # Stays root: it reads /var/log/pods (root:root 0750) and /var/log/auth.log
+  # (syslog:adm 0640) through the read-only hostPath, which is also why the
+  # namespace has to stay `enforce: privileged`. What it does not need is any
+  # capability: uid 0 reads root-owned files without CAP_DAC_OVERRIDE, and adm
+  # (gid 4) covers auth.log. Checked on the node with this image and drop ALL.
+  # The image puts root in adm already; supplementalGroups keeps it explicit.
+  podSecurityContext:
+    supplementalGroups:
+      - 4
+    seccompProfile:
+      type: RuntimeDefault
+  securityContext:
+    allowPrivilegeEscalation: false
+    privileged: false
+    capabilities:
+      drop:
+        - ALL
+  wait_for_lapi:
+    securityContext:
+      allowPrivilegeEscalation: false
+      privileged: false
+      capabilities:
+        drop:
+          - ALL
   # Detection stops if this goes, but existing bans stay in the host firewall,
   # so nothing becomes reachable that was not already.
   priorityClassName: application
@@ -36,6 +60,17 @@ agent:
       value: "crowdsecurity/cri-logs"
 
 lapi:
+  # Root as in the image (its PVCs are root-owned), but with no capability:
+  # it only listens on 8080/6060 and writes files it owns.
+  podSecurityContext:
+    seccompProfile:
+      type: RuntimeDefault
+  securityContext:
+    allowPrivilegeEscalation: false
+    privileged: false
+    capabilities:
+      drop:
+        - ALL
   priorityClassName: application
   # The chart defaults to 500m/500Mi. Observed: 7m and 93Mi.
   resources:
