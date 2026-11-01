@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tor
+  labels:
+    # Pod Security Admission, see infra/alerting/job-monitor/namespace.yaml for the
+    # reasoning. Tor runs as its own user with no capability, so `restricted` holds.
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: v1.36
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/audit: restricted

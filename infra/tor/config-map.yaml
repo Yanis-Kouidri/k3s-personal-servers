@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: tor-config
-  namespace: envoy-gateway-system
+  namespace: tor
 data:
   torrc: |
     DataDirectory /var/lib/tor
