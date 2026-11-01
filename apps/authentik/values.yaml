@@ -11,15 +11,34 @@ global:
     runAsGroup: 1000
     seccompProfile:
       type: RuntimeDefault
+  # Plain settings go here, not under `authentik:`: with existingSecret the chart
+  # renders none of that block, so its values never reached the pods.
+  env:
+    - name: AUTHENTIK_ERROR_REPORTING__ENABLED
+      value: "false"
+    # The hourly check to version.goauthentik.io only failed: the worker has no
+    # Internet egress, and Renovate already tracks new releases.
+    - name: AUTHENTIK_DISABLE_UPDATE_CHECK
+      value: "true"
 
 authentik:
   existingSecret:
     secretName: authentik-config
-  error_reporting:
-    enabled: false
+
+# No Kubernetes API access. The chart's ServiceAccount, Role (create/delete
+# Secrets and Deployments in the namespace) and ClusterRole only serve outposts
+# that authentik deploys itself; the embedded outpost needs none of it. Without a
+# token, authentik no longer creates its "Local Kubernetes Cluster" connection,
+# whose health check hit the API (blocked by the NetworkPolicy) every few minutes.
+# Re-enable all three (and an egress to the node on 6443) for a managed LDAP or
+# RADIUS outpost.
+serviceAccount:
+  create: false
 
 server:
   replicas: 1
+  serviceAccountName: default
+  automountServiceAccountToken: false
   containerSecurityContext:
     allowPrivilegeEscalation: false
     capabilities:
@@ -38,6 +57,8 @@ server:
 
 worker:
   replicas: 1
+  serviceAccountName: default
+  automountServiceAccountToken: false
   containerSecurityContext:
     allowPrivilegeEscalation: false
     capabilities:
