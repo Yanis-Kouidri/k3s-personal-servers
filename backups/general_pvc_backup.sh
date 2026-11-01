@@ -5,6 +5,10 @@
 # Configuration: Stop on errors, unset variables, and fail on pipe errors
 set -euo pipefail
 
+# Archives hold database dumps and private keys (Tor onion key, WireGuard): only
+# the owner may read them. New folders get 0700 and archives 0600.
+umask 077
+
 # --- Default Variables ---
 NAMESPACE=""
 PVC=""
@@ -219,9 +223,13 @@ fi
 # Create archive
 # --numeric-owner (point 2): preserve UID/GID as numbers, safe for cross-host restore
 # --checkpoint (point 5): lightweight progress instead of full file listing (-v)
+# The archive is written to stdout and redirected by this shell, not by sudo, so it
+# belongs to the user running the script (read by the off-site pull) with the 0600
+# from the umask above; the checkpoint messages go to stderr, i.e. the log.
+# shellcheck disable=SC2024 # the redirect is meant to run without sudo
 sudo tar --use-compress-program=zstd --acls --numeric-owner \
     --checkpoint=1000 --checkpoint-action=echo="Archived %u files..." \
-    -cpf "$BACKUP_FILE" -C "$PATH_TO_BACKUP" .
+    -cpf - -C "$PATH_TO_BACKUP" . > "$BACKUP_FILE"
 
 # Re-enable autosave as soon as the copy is done; no need to keep the world frozen
 # during the integrity check / rotation steps below.
@@ -255,7 +263,7 @@ mapfile -t old_backups < <(find "$BACKUP_PATH" -maxdepth 1 -type f -name '*.tar.
     | sort -rn | tail -n +3 | cut -d' ' -f2-)
 
 if [[ ${#old_backups[@]} -gt 0 ]]; then
-    # sudo rm: the archives are written by `sudo tar`, so they belong to root
+    # sudo rm: archives made before the umask change belong to root
     sudo rm -v -- "${old_backups[@]}"
 else
     log "2 backups or fewer exist, nothing to delete."
