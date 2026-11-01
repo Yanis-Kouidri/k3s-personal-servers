@@ -20,6 +20,16 @@ global:
     # Internet egress, and Renovate already tracks new releases.
     - name: AUTHENTIK_DISABLE_UPDATE_CHECK
       value: "true"
+  # Root filesystem is read-only (containerSecurityContext below). Temporary files
+  # already go to /dev/shm (TMPDIR in the image); the only other place authentik
+  # writes is /media (uploaded icons and backgrounds), which used to live in the
+  # container layer and is just as ephemeral as an emptyDir.
+  volumes:
+    - name: media
+      emptyDir: {}
+  volumeMounts:
+    - name: media
+      mountPath: /media
 
 authentik:
   existingSecret:
@@ -41,6 +51,7 @@ server:
   automountServiceAccountToken: false
   containerSecurityContext:
     allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
     capabilities:
       drop:
         - ALL
@@ -61,6 +72,7 @@ worker:
   automountServiceAccountToken: false
   containerSecurityContext:
     allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
     capabilities:
       drop:
         - ALL
