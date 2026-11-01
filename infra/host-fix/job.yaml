@@ -3,7 +3,8 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: fix-root-permissions
+  # Renamed (the pod template is immutable) when the image moved off busybox.
+  name: fix-root-permissions-2
   namespace: kube-system
 spec:
   backoffLimit: 2
@@ -13,7 +14,10 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: fix
-          image: busybox:1.37.0
+          # Already on the node (the Tor pod uses it): pulling busybox from Docker Hub
+          # may not work while / is broken, since the host resolver runs non-root.
+          image: dockurr/tor:0.4.9.14
+          imagePullPolicy: IfNotPresent
           securityContext:
             runAsUser: 0
           command:
