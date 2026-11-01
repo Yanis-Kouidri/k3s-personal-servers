@@ -15,7 +15,9 @@ This folder holds what runs on top of it, applied by the `infra` Kustomization:
   (`apps/mail/stalwart/certificate.yaml`)
 - `client-traffic-policy.yaml`: response headers added to every response
 - `backend-traffic-policy.yaml`: PROXY protocol towards Stalwart
-- `tor/`: the onion service of the personal website
+
+The onion service of the personal website lives in its own namespace, see
+`infra/tor/`.
 
 ## Check
 

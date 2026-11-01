@@ -5,3 +5,4 @@ resources:
   - priority-classes
   - cert-manager
   - networking
+  - tor

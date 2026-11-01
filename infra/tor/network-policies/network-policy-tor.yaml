@@ -1,8 +1,8 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-tor-public-egress
-  namespace: envoy-gateway-system
+  name: allow-tor-egress
+  namespace: tor
 spec:
   podSelector:
     matchLabels:
@@ -33,3 +33,18 @@ spec:
           port: 9001
         - protocol: TCP
           port: 9030
+    # The onion service forwards to the Envoy Service on :80; kube-proxy DNATs that
+    # to the proxy pod's 10080 before the policy runs, so allow the pod itself.
+    # (In envoy-gateway-system this came from allow-internal, which also let Tor
+    # reach the Envoy Gateway control plane -- the reason it moved out.)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: envoy-gateway-system
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/component: proxy
+              app.kubernetes.io/name: envoy
+      ports:
+        - protocol: TCP
+          port: 10080

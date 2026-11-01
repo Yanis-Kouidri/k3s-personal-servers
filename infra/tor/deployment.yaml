@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tor-daemon
-  namespace: envoy-gateway-system
+  namespace: tor
 spec:
   replicas: 1
   selector:
@@ -18,33 +18,58 @@ spec:
       # ServiceAccount token has no reason to be mounted. Leaving it in place
       # hands a foothold to anything that manages to run code in here.
       automountServiceAccountToken: false
+      # The image's tor user (101:102), which owns everything on the volume. The
+      # image's entrypoint is bypassed (see `command`): it only ran as root to chown
+      # the volume, write a default torrc and su-exec down to that same user.
       securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
+        runAsGroup: 102
         seccompProfile:
           type: RuntimeDefault
+
+      initContainers:
+        # Refuses to start Tor without the onion key. On an empty volume (lost PVC,
+        # restore gone wrong) Tor would otherwise create a brand-new key and publish
+        # a different .onion address without a word. To restore, see README.md.
+        - name: require-onion-key
+          image: dockurr/tor:0.4.9.14
+          command:
+            - sh
+            - -c
+            - |
+              until [ -s /var/lib/tor/hidden_service/hs_ed25519_secret_key ]; do
+                echo "no onion key in /var/lib/tor/hidden_service, waiting (see infra/tor/README.md)"
+                sleep 30
+              done
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: tor-data
+              mountPath: /var/lib/tor
+              readOnly: true
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "16Mi"
+            limits:
+              memory: "32Mi"
 
       containers:
         - name: tor
           image: dockurr/tor:0.4.9.14
-          # Five capabilities instead of the ~14 a container gets by default, each one
-          # established by testing the image rather than guessed:
-          #   CHOWN, FOWNER  the entrypoint runs `install` on /var/lib/tor
-          #   SETUID, SETGID it then uses su-exec; without them the container dies on
-          #                  "su-exec: setgroups: Operation not permitted"
-          #   DAC_OVERRIDE   the process runs as root but every file on the volume is
-          #                  owned by syslog with mode 0600/0700 -- including
-          #                  hs_ed25519_secret_key and hostname, which ARE the onion
-          #                  identity. Without it root cannot read them.
+          # torrc (tor-config) carries every setting the entrypoint used to add.
+          command: ["tor", "-f", "/etc/tor/torrc"]
           securityContext:
             allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
             capabilities:
               drop:
                 - ALL
-              add:
-                - CHOWN
-                - FOWNER
-                - DAC_OVERRIDE
-                - SETUID
-                - SETGID
           # No HTTP endpoint, and SocksPort is bound to 127.0.0.1, so a tcpSocket
           # probe from the kubelet could never reach it -- hence exec. `nc` is present
           # in this image (checked).
