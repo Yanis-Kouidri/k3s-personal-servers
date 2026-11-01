@@ -38,6 +38,10 @@ env:
   GITLEAKS_VERSION: "8.30.1"
   # renovate: datasource=github-releases depName=koalaman/shellcheck extractVersion=^v(?<version>.+)$
   SHELLCHECK_VERSION: "0.11.0"
+  # Upstream publishes no checksum file, so the archive's sha256 is pinned here.
+  # Renovate bumps the version above but not this: its PR fails until this is
+  # updated by hand (see the Install shellcheck step for how to get the value).
+  SHELLCHECK_SHA256: "8c3be12b05d5c177a04c29e3c78ce89ac86f1595681cab149b65b97c4e227198"
   # renovate: datasource=pypi depName=yamllint
   YAMLLINT_VERSION: "1.38.0"
 
@@ -128,12 +132,17 @@ jobs:
         with:
           persist-credentials: false
 
-      # Unlike the other tools pinned above, upstream publishes no checksum file for the
-      # shellcheck release assets, so there is nothing to verify against here.
+      # Upstream publishes no checksum file for the shellcheck release assets, so the
+      # archive is checked against SHELLCHECK_SHA256 pinned above. After a version
+      # bump, take the new value from GitHub's own digest of the asset and check it
+      # matches a local download:
+      #   gh api repos/koalaman/shellcheck/releases/tags/vX.Y.Z \
+      #     -q '.assets[] | select(.name|endswith("linux.x86_64.tar.xz")) | .digest'
       - name: Install shellcheck
         run: |
           set -euo pipefail
           curl -sSLO "https://github.com/koalaman/shellcheck/releases/download/v${SHELLCHECK_VERSION}/shellcheck-v${SHELLCHECK_VERSION}.linux.x86_64.tar.xz"
+          echo "${SHELLCHECK_SHA256}  shellcheck-v${SHELLCHECK_VERSION}.linux.x86_64.tar.xz" | sha256sum -c -
           tar -xJf "shellcheck-v${SHELLCHECK_VERSION}.linux.x86_64.tar.xz" "shellcheck-v${SHELLCHECK_VERSION}/shellcheck"
           mv "shellcheck-v${SHELLCHECK_VERSION}/shellcheck" shellcheck
 

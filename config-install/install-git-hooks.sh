@@ -93,12 +93,15 @@ install_tools() {
     "linux_x64.tar.gz" gitleaks
 
   # The shellcheck release is a .tar.xz with the binary nested in a directory, and
-  # upstream publishes no checksum file, so it does not fit install_binary().
+  # upstream publishes no checksum file (the sha256 is pinned in the workflow), so it
+  # does not fit install_binary().
   v=$(ci_version SHELLCHECK_VERSION)
+  sum=$(ci_version SHELLCHECK_SHA256)
   echo "  downloading shellcheck"
   tmp=$(mktemp -d)
   curl -sSLf -o "$tmp/shellcheck.tar.xz" \
     "https://github.com/koalaman/shellcheck/releases/download/v${v}/shellcheck-v${v}.linux.x86_64.tar.xz"
+  echo "$sum  $tmp/shellcheck.tar.xz" | sha256sum -c - >/dev/null
   tar -xJf "$tmp/shellcheck.tar.xz" -C "$tmp" "shellcheck-v${v}/shellcheck"
   install -Dm755 "$tmp/shellcheck-v${v}/shellcheck" "$bin_dir/shellcheck"
   rm -rf "$tmp"
