@@ -29,6 +29,11 @@ spec:
           port: 51820
   egress:
     # VPN forwards arbitrary client traffic; block cluster/private ranges.
+    # The node's own public addresses are excluded too: the host firewall only
+    # filters ens3, and tunnelled traffic reaches the host through cni0, so peers
+    # (guests included) would otherwise reach the API server (6443), the kubelet
+    # (10250) and the NodePorts. Our sites are unaffected: kube-proxy DNATs
+    # 80/443 to the Envoy pods before the policy runs (rule below).
     - to:
         - ipBlock:
             cidr: 0.0.0.0/0
@@ -37,12 +42,23 @@ spec:
               - 192.168.0.0/16
               - 172.16.0.0/12
               - 169.254.169.254/32
+              - 91.134.243.146/32  # node-address, checked by scripts/check-node-ip.sh
         - ipBlock:
             cidr: ::/0
             except:
               - 2001:db8:42::/64
               - 2001:db8:43::/112
               - fc00::/7
+              - 2001:41d0:305:2100::6ef0/128  # node-address, checked by scripts/check-node-ip.sh
+    # SSH to the VPS keeps working while connected to the VPN (full tunnel).
+    - to:
+        - ipBlock:
+            cidr: 91.134.243.146/32  # node-address, checked by scripts/check-node-ip.sh
+        - ipBlock:
+            cidr: 2001:41d0:305:2100::6ef0/128  # node-address, checked by scripts/check-node-ip.sh
+      ports:
+        - protocol: TCP
+          port: 22
     # VPN clients browsing our own sites (*.kouidri.fr) hit the node's public
     # IPs, which kube-proxy DNATs straight to the Envoy proxy pod before the
     # policy is evaluated, so the ipBlock rule above (which excludes the pod

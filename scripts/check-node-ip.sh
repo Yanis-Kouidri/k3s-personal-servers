@@ -48,8 +48,8 @@ for hit in "${hits[@]}"; do
   file=${hit%%:*}
   rest=${hit#*:}
   line=${rest%%:*}
-  # the address as written, with any prefix length removed
-  ip=$(printf '%s' "$rest" | sed -n 's/.*cidr:[[:space:]]*\([^[:space:]/]*\).*/\1/p')
+  # the address as written (a `cidr:` value or an `except:` item), prefix length removed
+  ip=$(printf '%s' "$rest" | sed -n 's/^[0-9]*:[[:space:]]*\(-[[:space:]]*\)\{0,1\}\(cidr:[[:space:]]*\)\{0,1\}\([0-9a-fA-F:.]*\)\/.*/\3/p')
   [[ -n $ip ]] || continue
   found=0
   for a in "${node_addrs[@]}"; do [[ $ip == "$a" ]] && found=1; done
