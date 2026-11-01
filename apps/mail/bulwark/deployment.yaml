@@ -35,6 +35,11 @@ spec:
             runAsNonRoot: true
             runAsUser: 1001
             allowPrivilegeEscalation: false
+            # Next.js writes its image-optimizer cache to .next/cache at runtime (not
+            # at startup: a read-only test pod served /_next/image but logged
+            # "ENOENT: mkdir '/app/.next/cache/images'"), and Node buffers to /tmp.
+            # Both get an emptyDir; the cache was already lost with the container.
+            readOnlyRootFilesystem: true
             capabilities:
               drop:
                 - ALL
@@ -75,7 +80,15 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /app/data
+            - name: next-cache
+              mountPath: /app/.next/cache
+            - name: tmp
+              mountPath: /tmp
       volumes:
         - name: data
           persistentVolumeClaim:
             claimName: bulwark-data
+        - name: next-cache
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
