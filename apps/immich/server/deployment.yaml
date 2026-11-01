@@ -63,6 +63,11 @@ spec:
             runAsUser: 1000
             runAsGroup: 1000
             allowPrivilegeEscalation: false
+            # Library, thumbnails and encoded videos all go to /data (the volume);
+            # /tmp is an emptyDir for the temporary files of sharp/ffmpeg/exiftool.
+            # Tested API-only against the real database: up, no EROFS. The job
+            # workers were not exercised there -- watch for EROFS after a change.
+            readOnlyRootFilesystem: true
             capabilities:
               drop:
                 - ALL
@@ -116,6 +121,8 @@ spec:
           volumeMounts:
             - name: server-storage
               mountPath: /data
+            - name: tmp
+              mountPath: /tmp
           resources:
             requests:
               # Sized on what it actually holds (~700Mi resident). At 256Mi it sat
@@ -139,3 +146,5 @@ spec:
         - name: server-storage
           persistentVolumeClaim:
             claimName: server-immich-pvc
+        - name: tmp
+          emptyDir: {}
