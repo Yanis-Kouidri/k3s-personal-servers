@@ -37,11 +37,19 @@ spec:
             runAsNonRoot: true
             runAsUser: 1000
             allowPrivilegeEscalation: false
+            # Caddy only writes its own state (instance id, locks, autosave.json)
+            # under XDG_DATA_HOME=/data and XDG_CONFIG_HOME=/config: emptyDirs below.
+            readOnlyRootFilesystem: true
             capabilities:
               drop:
                 - ALL
               add:
                 - NET_BIND_SERVICE
+          volumeMounts:
+            - name: caddy-data
+              mountPath: /data
+            - name: caddy-config
+              mountPath: /config
           resources:
             limits:
               memory: "728Mi"
@@ -73,3 +81,9 @@ spec:
             timeoutSeconds: 3
             failureThreshold: 2
             successThreshold: 1
+
+      volumes:
+        - name: caddy-data
+          emptyDir: {}
+        - name: caddy-config
+          emptyDir: {}
