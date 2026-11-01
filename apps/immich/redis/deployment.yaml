@@ -18,23 +18,29 @@ spec:
       # ServiceAccount token has no reason to be mounted. Leaving it in place
       # hands a foothold to anything that manages to run code in here.
       automountServiceAccountToken: false
+      # Started directly as the image's valkey user (999:1000): the entrypoint only
+      # uses root to chown /data and setpriv down to that user, and skips both when
+      # it is already non-root.
       securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 1000
         seccompProfile:
           type: RuntimeDefault
       containers:
         - name: immich-redis
           image: docker.io/valkey/valkey:9.1.0-alpine3.23
-          # Stays root: the entrypoint uses setpriv to drop to the valkey user, which
-          # needs SETUID/SETGID. A plain `drop: ALL` gets
-          # "setpriv: setresuid failed: Operation not permitted" and a crash loop.
+          # No capability left. Valkey only writes its RDB snapshot to /data, an
+          # emptyDir: a cache, it was already lost with the container before.
           securityContext:
             allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
             capabilities:
               drop:
                 - ALL
-              add:
-                - SETUID
-                - SETGID
+          volumeMounts:
+            - name: data
+              mountPath: /data
           resources:
             requests:
               memory: "64Mi"
@@ -61,3 +67,6 @@ spec:
             periodSeconds: 20
             failureThreshold: 5
       restartPolicy: Always
+      volumes:
+        - name: data
+          emptyDir: {}
