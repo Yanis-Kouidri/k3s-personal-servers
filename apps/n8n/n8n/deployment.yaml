@@ -92,6 +92,10 @@ spec:
             runAsNonRoot: true
             runAsUser: 1000
             runAsGroup: 1000
+            # n8n copies its editor UI to ~/.cache/n8n (~47M) at every start and the
+            # task runner uses /tmp: both are emptyDirs below. Tested on SQLite with a
+            # Code node run through the runner: success, no EROFS.
+            readOnlyRootFilesystem: true
             capabilities:
               drop:
                 - ALL
@@ -130,8 +134,16 @@ spec:
           volumeMounts:
             - mountPath: /home/node/.n8n
               name: n8n-claim0
+            - mountPath: /home/node/.cache
+              name: cache
+            - mountPath: /tmp
+              name: tmp
       restartPolicy: Always
       volumes:
         - name: n8n-claim0
           persistentVolumeClaim:
             claimName: n8n-claim0
+        - name: cache
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
