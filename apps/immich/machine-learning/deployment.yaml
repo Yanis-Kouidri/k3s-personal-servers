@@ -63,6 +63,10 @@ spec:
             runAsUser: 1000
             runAsGroup: 1000
             allowPrivilegeEscalation: false
+            # Models live in /cache (the volume); HOME=/tmp (onnxruntime and matplotlib
+            # caches) is an emptyDir. Tested with the real cache mounted read-only:
+            # /ping and a CLIP inference OK, no EROFS.
+            readOnlyRootFilesystem: true
             capabilities:
               drop:
                 - ALL
@@ -99,6 +103,8 @@ spec:
           volumeMounts:
             - name: modele-cache
               mountPath: /cache
+            - name: tmp
+              mountPath: /tmp
           resources:
             requests:
               memory: "1Gi"
@@ -110,3 +116,5 @@ spec:
         - name: modele-cache
           persistentVolumeClaim:
             claimName: machine-learning-server-pvc
+        - name: tmp
+          emptyDir: {}
