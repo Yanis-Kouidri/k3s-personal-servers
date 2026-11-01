@@ -34,7 +34,7 @@ spec:
       # both allowed by the namespace's baseline profile.
       initContainers:
         - name: fix-ownership
-          image: ghcr.io/immich-app/immich-machine-learning:v3.3.1
+          image: ghcr.io/immich-app/immich-machine-learning:v3.3.5@sha256:5b28c9352c8374b8a1ed96fbdd8d6755fea6e43510ec43fdf6538aa02ea40f56
           command:
             - sh
             - -c
@@ -56,7 +56,7 @@ spec:
             - name: modele-cache
               mountPath: /cache
       containers:
-        - image: ghcr.io/immich-app/immich-machine-learning:v3.3.1
+        - image: ghcr.io/immich-app/immich-machine-learning:v3.3.5@sha256:5b28c9352c8374b8a1ed96fbdd8d6755fea6e43510ec43fdf6538aa02ea40f56
           name: machine-learning-server
           securityContext:
             runAsNonRoot: true

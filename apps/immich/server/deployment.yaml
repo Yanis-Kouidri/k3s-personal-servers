@@ -34,7 +34,7 @@ spec:
       # both allowed by the namespace's baseline profile.
       initContainers:
         - name: fix-ownership
-          image: ghcr.io/immich-app/immich-server:v3.3.1
+          image: ghcr.io/immich-app/immich-server:v3.3.5@sha256:485d546a2e31d6a8b4db8423fcba5c109de8c218d93410af115fd1ccfc4352a6
           command:
             - sh
             - -c
@@ -56,7 +56,7 @@ spec:
             - name: server-storage
               mountPath: /data
       containers:
-        - image: ghcr.io/immich-app/immich-server:v3.3.1
+        - image: ghcr.io/immich-app/immich-server:v3.3.5@sha256:485d546a2e31d6a8b4db8423fcba5c109de8c218d93410af115fd1ccfc4352a6
           name: immich-server
           securityContext:
             runAsNonRoot: true
