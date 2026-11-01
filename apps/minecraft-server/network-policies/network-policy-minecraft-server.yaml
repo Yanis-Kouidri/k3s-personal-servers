@@ -27,6 +27,18 @@ spec:
       ports:
         - protocol: TCP
           port: 25565
+    # VPN clients reach this LoadBalancer through the wireguard pod, which
+    # masquerades them behind its own (private) pod IP, refused by the rule above.
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: wireguard
+          podSelector:
+            matchLabels:
+              app: wireguard
+      ports:
+        - protocol: TCP
+          port: 25565
   egress:
     - to:
         - ipBlock:

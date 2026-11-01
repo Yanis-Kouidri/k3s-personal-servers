@@ -76,3 +76,32 @@ spec:
           port: 10443
         - protocol: TCP
           port: 10080
+    # Same for mail and Minecraft: their LoadBalancer Services on the node's
+    # addresses are DNATed to the pods before the policy runs, so the ipBlock
+    # rule above refuses them. The other end lets the wireguard pod in.
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: mail
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: stalwart
+      ports:
+        - protocol: TCP
+          port: 25
+        - protocol: TCP
+          port: 465
+        - protocol: TCP
+          port: 587
+        - protocol: TCP
+          port: 993
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: minecraft
+          podSelector:
+            matchLabels:
+              app: minecraft-server
+      ports:
+        - protocol: TCP
+          port: 25565
