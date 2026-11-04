@@ -293,6 +293,8 @@ sudo systemctl restart systemd-journald
 sudo cp config-install/tcp-bbr.conf /etc/modules-load.d/tcp-bbr.conf
 sudo modprobe tcp_bbr
 sudo cp config-install/99-sysctl-tuning.conf /etc/sysctl.d/99-sysctl-tuning.conf
+# TEMPORARY, until k3s ships the containerd AppArmor fix (see the file)
+sudo cp config-install/20-apparmor.conf /etc/sysctl.d/20-apparmor.conf
 sudo sysctl --system
 
 # fq qdisc on ens3, paired with BBR (applied at next boot)
