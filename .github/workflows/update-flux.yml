@@ -9,14 +9,25 @@ on:
 concurrency:
   group: ${{ github.workflow }}
 
+# The PR is created and merged with a GitHub App token, not GITHUB_TOKEN: events from
+# GITHUB_TOKEN never start other workflows, so the CI did not run on these PRs and they
+# sat unmerged (the 2.10.0 one waited 4 days). The App needs Contents and Pull requests
+# read & write on this repository only; its client ID is the FLUX_UPDATER_CLIENT_ID
+# variable and its private key the FLUX_UPDATER_PRIVATE_KEY secret.
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
   components:
     runs-on: ubuntu-latest
     steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510  # v3.3.0
+        with:
+          client-id: ${{ vars.FLUX_UPDATER_CLIENT_ID }}
+          private-key: ${{ secrets.FLUX_UPDATER_PRIVATE_KEY }}
+
       - name: Check out code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
@@ -26,15 +37,31 @@ jobs:
       - name: Check for updates
         id: update
         run: |
-          flux install \
-            --export > ./clusters/my-cluster/flux-system/gotk-components.yaml
+          MANIFEST=./clusters/my-cluster/flux-system/gotk-components.yaml
+          CURRENT="$(sed -n 's/^# Flux Version: v//p' "$MANIFEST")"
 
+          flux install --export > "$MANIFEST"
+
+          NEW="$(sed -n 's/^# Flux Version: v//p' "$MANIFEST")"
           VERSION="$(flux -v)"
           echo "flux_version=$VERSION" >> "$GITHUB_OUTPUT"
 
+          # Flux ships its breaking changes in minor releases (2.10 changed the default
+          # RBAC and the notification APIs): only patch releases merge on their own.
+          if [ -n "$CURRENT" ] && [ "${CURRENT%.*}" = "${NEW%.*}" ]; then
+            echo "automerge=true" >> "$GITHUB_OUTPUT"
+            echo "merge_note=Patch release: merges on its own once the CI is green." >> "$GITHUB_OUTPUT"
+          else
+            echo "automerge=false" >> "$GITHUB_OUTPUT"
+            echo "merge_note=**Minor or major release**: read the breaking changes in the release notes and check the Kubernetes compatibility table before merging." >> "$GITHUB_OUTPUT"
+          fi
+          echo "current=$CURRENT new=$NEW"
+
       - name: Create Pull Request
+        id: cpr
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1  # v8.1.1
         with:
+          token: ${{ steps.app-token.outputs.token }}
           branch: update-flux
           commit-message: "chore(flux): update to ${{ steps.update.outputs.flux_version }}"
           title: "chore(flux): update to ${{ steps.update.outputs.flux_version }}"
@@ -44,6 +71,15 @@ jobs:
             Version : ${{ steps.update.outputs.flux_version }}
 
             Generated via `flux install --export`.
+
+            ${{ steps.update.outputs.merge_note }}
           labels: |
             flux
             dependencies
+
+      - name: Enable auto-merge (patch releases only)
+        if: steps.update.outputs.automerge == 'true' && steps.cpr.outputs.pull-request-number != ''
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          PR: ${{ steps.cpr.outputs.pull-request-number }}
+        run: gh pr merge "$PR" --auto --squash --repo "$GITHUB_REPOSITORY"
