@@ -2,6 +2,11 @@
 
 disable:
   - traefik
+  # Since v1.37 k3s also installs the Gateway API CRDs (standard channel). The
+  # envoy-gateway HelmRelease already ships them, matched to its controller version
+  # and managed from Git: two owners would overwrite each other on every Envoy
+  # upgrade and every k3s restart.
+  - gateway-api-crd
 
 # Configure Kubeconfig permissions upon generation
 write-kubeconfig-mode: "0600"

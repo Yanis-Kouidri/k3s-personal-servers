@@ -100,7 +100,7 @@ sudo cp config-install/kubelet-config.yaml /etc/rancher/k3s/kubelet-config.yaml
 Install k3s:
 
 ```bash
-curl -sfL https://get.k3s.io | sh -
+curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=v1.37.2+k3s1 sh -
 ```
 
 Configure kubeconfig:
@@ -382,11 +382,30 @@ curl -6 -v -L https://www.kouidri.fr
 
 ## k3s update
 
-Simply run:
+Always pin the version: without `INSTALL_K3S_VERSION` the script follows the `stable`
+channel and may jump a minor version unannounced. Go up one minor at a time, and check
+first that the Flux release in `gotk-components.yaml` supports the target Kubernetes
+minor (see its release notes).
 
+Before the upgrade, stop k3s (containers keep running, `KillMode=process`) and back up
+its datastore and encryption key:
+
+```bash
+sudo systemctl stop k3s
+B="/root/k3s-backup-$(k3s --version | awk 'NR==1{print $3}')-$(date +%Y%m%d-%H%M)"
+sudo mkdir -p "${B:?}"
+sudo tar -C / -czf "$B/k3s-server.tgz" var/lib/rancher/k3s/server etc/rancher/k3s
+sudo cp /usr/local/bin/k3s "$B/"
 ```
-curl -sfL https://get.k3s.io | sh -s -
+
+Then install the target version (this restarts k3s):
+
+```bash
+curl -sfL https://get.k3s.io | sudo INSTALL_K3S_VERSION=v1.37.2+k3s1 sh -s -
 ```
+
+Read the k3s release notes for new packaged components: they are deployed even when
+unused (v1.37 added `gateway-api-crd`, now listed in `disable:` of `config.yaml`).
 
 ## k3s monitoring
 
