@@ -17,7 +17,7 @@
 # The per-namespace HelmRelease entries are kept all the same: they name the failing
 # release directly, where the Kustomization event only says that `apps` did not
 # become Ready. Specific message first, safety net behind it.
-apiVersion: notification.toolkit.fluxcd.io/v1beta3
+apiVersion: notification.toolkit.fluxcd.io/v1
 kind: Alert
 metadata:
   name: flux-errors

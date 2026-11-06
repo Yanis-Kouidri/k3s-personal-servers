@@ -5,7 +5,7 @@
 # `channel` verbatim. It is not a credential -- posting to it requires the bot token,
 # which is SOPS-encrypted next to this file -- but it is public, hence the dedicated
 # private channel rather than a personal chat.
-apiVersion: notification.toolkit.fluxcd.io/v1beta3
+apiVersion: notification.toolkit.fluxcd.io/v1
 kind: Provider
 metadata:
   name: telegram
