@@ -1,5 +1,13 @@
 # Wireguard
 
+## Host prerequisite
+
+The WireGuard kernel module is loaded by the host, not by the pod. Install
+`config-install/wireguard.conf` as `/etc/modules-load.d/wireguard.conf`, then
+run `sudo systemctl restart systemd-modules-load`. This must be done before a
+node reboot: the Deployment intentionally has no `/lib/modules` `hostPath`, so
+that a compromised VPN container cannot alter host kernel modules.
+
 ## Get a peer config file
 
 Peers are named (`PEERS` in `config-map.yaml`), and each one gets a
