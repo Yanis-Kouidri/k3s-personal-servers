@@ -106,8 +106,6 @@ spec:
           volumeMounts:
             - name: config
               mountPath: /config
-            - name: modules
-              mountPath: /lib/modules
           resources:
             requests:
               memory: "256Mi"
@@ -134,9 +132,6 @@ spec:
         - name: config
           persistentVolumeClaim:
             claimName: wireguard-pvc
-        - name: modules
-          hostPath:
-            path: /lib/modules
         - name: templates
           configMap:
             name: wireguard-templates
