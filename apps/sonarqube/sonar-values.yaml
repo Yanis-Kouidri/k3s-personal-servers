@@ -32,7 +32,7 @@ monitoringPasscodeSecretKey: "SONAR_WEB_SYSTEMPASSCODE"
 
 community:
   enabled: true
-  buildNumber: "26.10.0.133078"
+  buildNumber: "26.11.0.134175"
 
 resources:
   requests:
