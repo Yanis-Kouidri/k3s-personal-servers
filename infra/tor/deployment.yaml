@@ -33,7 +33,7 @@ spec:
         # restore gone wrong) Tor would otherwise create a brand-new key and publish
         # a different .onion address without a word. To restore, see README.md.
         - name: require-onion-key
-          image: dockurr/tor:0.4.9.16@sha256:5b5c9e5036fff91bdf021ef225fdb0fc9ba4222425b9cbc1858a15681d220590
+          image: dockurr/tor:0.4.9.17@sha256:c1637d01527fb78e8ba5132671e5607d7e267037756ee112fd33be4382822920
           command:
             - sh
             - -c
@@ -61,7 +61,7 @@ spec:
 
       containers:
         - name: tor
-          image: dockurr/tor:0.4.9.16@sha256:5b5c9e5036fff91bdf021ef225fdb0fc9ba4222425b9cbc1858a15681d220590
+          image: dockurr/tor:0.4.9.17@sha256:c1637d01527fb78e8ba5132671e5607d7e267037756ee112fd33be4382822920
           # torrc (tor-config) carries every setting the entrypoint used to add.
           command: ["tor", "-f", "/etc/tor/torrc"]
           securityContext:
