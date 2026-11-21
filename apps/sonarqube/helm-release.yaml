@@ -17,3 +17,19 @@ spec:
     - kind: ConfigMap
       name: sonarqube-values
       valuesKey: values.yaml
+  # The chart's HTTPRoute has no sectionName option, so its parentRef attaches to
+  # every listener of the Gateway, port 80 included. Its hostname is more specific
+  # than the catch-all http-to-https redirect, so SonarQube (login form, tokens) was
+  # served in clear text over HTTP and through the onion service instead of being
+  # redirected. Pin the route to the https listener.
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              group: gateway.networking.k8s.io
+              kind: HTTPRoute
+              name: sonarqube-sonarqube-http-route
+            patch: |
+              - op: add
+                path: /spec/parentRefs/0/sectionName
+                value: https
