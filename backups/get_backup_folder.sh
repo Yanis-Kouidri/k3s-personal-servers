@@ -1,8 +1,8 @@
 #!/bin/bash
 # Pull the VPS backup tree (/home/ubuntu/backups, written by general_pvc_backup.sh)
-# to this machine. Runs on the machine that keeps the off-node copy, daily from
-# anacron (see backups/README.md). Every setting can be overridden from the
-# environment.
+# to this machine. Runs on the machine that keeps the off-node copy, once a day
+# (Windows scheduled task under WSL, anacron on an always-on Linux machine: see
+# backups/README.md). Every setting can be overridden from the environment.
 set -euo pipefail
 
 # Host alias of the VPS in ~/.ssh/config
