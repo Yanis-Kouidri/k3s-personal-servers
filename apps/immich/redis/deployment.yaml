@@ -32,7 +32,7 @@ spec:
           # The Alpine suffix is part of the tag: once upstream moves to a new Alpine,
           # no newer valkey is published under the old suffix and Renovate stops
           # proposing updates (9.1.0-alpine3.23 stayed stuck behind several UAF fixes).
-          image: docker.io/valkey/valkey:9.1.4-alpine3.24@sha256:56729e68bdda139cbd3f6a2538683dc3523325fc5711ea1a379938f1b37893f0
+          image: docker.io/valkey/valkey:9.2.0-alpine3.24@sha256:c8e2d17498838af5d91e12eb7c11220b3434a7b7131a333e3af52ad5e0b80882
           # No capability left. Valkey only writes its RDB snapshot to /data, an
           # emptyDir: a cache, it was already lost with the container before.
           securityContext:
